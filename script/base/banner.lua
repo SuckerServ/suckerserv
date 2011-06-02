@@ -14,7 +14,8 @@ local function sendServerBanner(cn)
         -- cancel if not the same player from 1 second ago
         if sid ~= server.player_sessionid(cn) then return end
         
-        server.player_msg(cn, server.motd)
+        server.player_msg(cn, "Welcome on this \f1SuckerMod server!")
+		server.player_msg(cn, server.motd)
         server.player_vars(cn).shown_banner = true
     end)
 end
@@ -24,8 +25,8 @@ local function onConnect(cn)
     local country = geoip.ip_to_country(server.player_ip(cn))
     
     if show_country_message and #country > 0 then
-        server.msg(string.format(">>>>> %s is going to frag from %s. <<<<<", green(server.player_displayname(cn)), green(country)))
-        local admin_message = normal_message .. " (IP ADDRESS: " .. green(server.player_ip(cn)) .. ")"
+        server.msg(string.format(">>>>> %s is going to frag from %s. <<<<<", blue(server.player_displayname(cn)), blue(country)))
+        local admin_message = normal_message .. " (IP ADDRESS: " .. blue(server.player_ip(cn)) .. ")"
         
         for _, cn in ipairs(server.clients()) do
             
