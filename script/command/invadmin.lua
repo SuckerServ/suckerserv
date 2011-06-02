@@ -43,7 +43,7 @@ local function run(cn, pw)
                     return
                 end
                 
-                set_invisible_admin(cn, user_id)
+                set_invadmin(cn, user_id)
             end)
         end
     end
