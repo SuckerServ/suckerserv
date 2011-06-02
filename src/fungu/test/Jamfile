@@ -1,0 +1,16 @@
+
+import testing ;
+import type ;
+import generators ;
+
+use-project /boost : ../utils/boost ;
+
+project
+    : requirements <include>../ <library>/boost//unit_test_framework <define>BOOST_TEST_DYN_LINK ;
+
+unit-test string_test : string_test.cpp ;
+#unit-test dynamic_call_test : dynamic_call_test.cpp ;
+
+#unit-test cubescript_runtime_test : cubescript/runtime_test.cpp ;
+#unit-test cubescript_expression_test : cubescript/expression_test.cpp ;
+#unit-test cubescript_function_test : cubescript/function_test.cpp ;

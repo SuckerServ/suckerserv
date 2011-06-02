@@ -1,0 +1,316 @@
+#!/bin/sh
+#
+# Hopmod Game Server Control Script
+#
+
+################################################################################
+
+# refuse root
+if [ "x${UID}" = "x0" ] || [ "x$(whoami)" = "xroot" ]
+then
+    echo "You cannot use the server as root!"
+    exit 1
+fi
+
+################################################################################
+
+v_system=$(uname)
+
+f_starter=$(basename $0)
+d_main=
+
+if echo $v_system | grep -q "BSD"
+then
+    d_main=$(dirname $(cd $(dirname $0) ; pwd))
+else
+    d_main=$(dirname $(dirname $(readlink -f $0)))
+fi
+
+cd $d_main
+
+if [ ! -d bin ] || [ ! -d log ] || [ ! -d conf ] || [ ! -d script ]
+then
+    echo "Incomplete Installation! bin/, log/, conf/ or script/ are missing."
+    exit 1
+fi
+
+################################################################################
+
+. bin/env.sh
+
+v_remove_status_log=n
+
+################################################################################
+
+p_exec() {
+
+    if [ -p serverexec ]
+    then
+        echo "$1" > serverexec
+    else
+	return 1
+    fi
+    
+    return 0
+}
+
+################################################################################
+
+p_start_server() {
+
+    if [ -p serverexec ]
+    then
+	return 1
+    fi
+    
+    # enable core dump
+    ulimit -c unlimited
+    
+    # cleanup and intialization
+    rm -f log/status.log
+    touch log/status.log
+    touch log/error.log
+    
+    ERROR_START=
+    if echo $v_system | grep -q "BSD"
+    then
+	ERROR_START=$(stat -f %Sp log/error.log)
+    else
+	ERROR_START=$(stat -c %s log/error.log)
+    fi
+    
+    ERROR_START=$(( $ERROR_START + 1 ))
+    
+    # start the game server as a background process
+    nohup bin/monitor bin/sauer_server ${SERVER_OPTIONS} 1>log/status.log 2>>log/error.log </dev/null &
+    
+    # wait for server to start up and print the initial status messages
+    until $(cat log/status.log | grep -q *READY*)
+    do
+        #stop if server has terminated
+        jobs %- > /dev/null 2>&1
+        RUNNING=$?
+        if [ "$RUNNING" = "1" ]
+        then
+            break
+        fi
+    done
+    
+    tail -c +$ERROR_START log/error.log
+    cat log/status.log
+    
+    if [ "$v_remove_status_log" = "y" ]
+    then
+        rm log/status.log
+    fi
+    
+    return 0
+}
+
+p_restart_server() {
+
+    if ! p_exec restart
+    then
+	$d_main/bin/$f_starter start
+    fi
+}
+
+p_stop_server() {
+
+    if ! p_exec shutdown
+    then
+	return 1
+    fi
+    
+    return 0
+}
+
+################################################################################
+
+p_status() {
+
+    out=$(tty)
+    
+    if [ -n "$1" ]
+    then
+	out="$2"
+    fi
+    
+    if ! p_exec "write_server_status [$out]"
+    then
+	return 1
+    fi
+    
+    sleep 1
+    return 0
+}
+
+p_update_conf() {
+
+    if ! p_exec reloadscripts
+    then
+	return 1
+    fi
+    
+    return 0
+}
+
+p_password() {
+
+    if ! p_exec "admin_password $2"
+    then
+	return 1
+    fi
+    
+    return 0
+}
+
+################################################################################
+
+p_open_shell() {
+
+    if [ ! -p serverexec ]
+    then
+        return 1
+    fi
+    
+    msg="Press CTRL+C to quit."
+    
+    case "$1" in
+	'ruby')
+	    echo $msg
+	    exec bin/utils/shell.rb
+	;;
+	'perl')
+	    echo $msg
+	    exec bin/utils/shell.pl
+	;;
+	*)
+	    if [ ! -e bin/utils/shell ]
+	    then
+		return 2
+	    else
+		exec bin/utils/shell
+	    fi
+	;;
+    esac
+    
+    return 0
+}
+
+p_luapp() {
+
+    exec bin/utils/luapp "$*"
+}
+
+################################################################################
+
+p_msg_no_server() {
+
+    echo "Server is not active."
+    exit 0
+}
+
+################################################################################
+
+case "$1" in
+    'start')
+	case "$2" in
+	    'luapp')
+		if [ "x$3" = "x" ]
+		then
+		    echo "No file given."
+		    echo "usage: $0 start luapp luafile"
+		    exit 2
+		fi
+		
+		shift 2
+		p_luapp "$*"
+	    ;;
+	    'shell')
+		ret_val=$(p_open_shell "$3" ; echo $?)
+		if [ ! "$ret_val" = "0" ]
+		then
+		    case "$ret_val" in
+			'1')
+		    	    p_msg_no_server
+			;;
+			'2')
+		    	    echo "You must specify a shell: ruby or perl."
+		    	    exit 2
+			;;
+			*)
+		    	    echo "Unexpected error."
+		    	    exit 3
+			;;
+		    esac
+		fi
+	    ;;
+	    *)
+		if [ "x$2" = "x--no-statuslog" ]
+                then
+                    v_remove_status_log=y
+                fi
+        
+        if [ ! -x bin/sauer_server ]
+        then
+            echo "Cannot find or execute bin/sauer_server"
+            exit 1
+        fi
+        
+        if [ ! -x bin/monitor ]
+        then
+            echo "Cannot find or execute bin/monitor"
+            exit 1
+        fi
+        
+		if ! p_start_server
+		then
+		    echo "It appears the game server is already running."
+		fi
+	    ;;
+	esac
+    ;;
+    'restart')
+	p_restart_server
+    ;;
+    'stop')
+        p_stop_server
+    ;;
+    'status')
+	if ! p_status "$2"
+	then
+	    p_msg_no_server
+	fi
+    ;;
+    'updateconf')
+        if ! p_update_conf
+	then
+	    p_msg_no_server
+	fi
+    ;;
+    'password')
+        if ! p_password "$2"
+	then
+	    p_msg_no_server
+	fi
+    ;;
+    'help')
+	echo "usage: $0 [start] [--no-statuslog]"
+	echo "       $0 [start] luapp luafile"
+	echo "       $0 [start] shell [ruby|perl]"
+	echo ""
+	echo "       $0 stop"
+	echo ""
+	echo "       $0 restart"
+	echo ""
+	echo "       $0 status [output file]"
+	echo "       $0 updateconf"
+	echo "       $0 password 'new password'"
+    ;;
+    *)
+        exec $d_main/bin/$f_starter start $*
+    ;;
+esac
+
+exit 0

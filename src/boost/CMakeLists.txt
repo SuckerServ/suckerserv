@@ -1,0 +1,2 @@
+set(BOOST_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
+add_subdirectory(libs)

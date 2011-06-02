@@ -1,0 +1,14 @@
+== How to Build Hopmod ==
+
+See http://hopmod.e-topic.info/index.php5?title=Installation
+
+
+Compiling with the compile script:
+
+- make the script executeable -> chmod +x compile.sh
+- ./compile.sh
+
+Arguments:
+
+Debug Build: ./compile.sh 0 debug
+Recompile: ./compile.sh 1 [debug]

@@ -1,0 +1,385 @@
+#!/bin/sh
+#
+# Hopmod Auth Server Control Script
+#
+
+################################################################################
+
+# refuse root
+if [ "x${UID}" = "x0" ] || [ "x$(whoami)" = "xroot" ]
+then
+    echo "You cannot use the server as root!"
+    exit 1
+fi
+
+################################################################################
+
+v_system=$(uname)
+
+f_starter=$(basename $0)
+d_main=
+
+if echo $v_system | grep -q "BSD"
+then
+    d_main=$(dirname $(cd $(dirname $0) ; pwd))
+else
+    d_main=$(dirname $(dirname $(readlink -f $0)))
+fi
+
+cd $d_main
+
+if [ ! -d bin ] || [ ! -d log ] || [ ! -d conf ] || [ ! -d script ]
+then
+    echo "Incomplete Installation! bin/, log/, conf/ or script/ are missing."
+    exit 1    
+fi
+
+################################################################################
+
+. bin/env.sh
+
+v_remove_status_log=n
+
+################################################################################
+
+p_exec() {
+
+    if [ -p authexec ]
+    then
+        echo "$1" > authexec
+    else
+	return 1
+    fi
+    
+    return 0
+}
+
+################################################################################
+
+p_start() {
+
+    if [ -p authexec ]
+    then
+        return 1
+    fi
+    
+    # enable core dump
+    ulimit -c unlimited
+    
+    # cleanup and initiation
+    rm -f log/authstatus.log
+    touch log/authstatus.log
+    touch log/autherror.log
+    
+    ERROR_START=
+    if echo $v_system | grep -q "BSD"
+    then
+	ERROR_START=$(stat -f %Sp log/autherror.log)
+    else
+	ERROR_START=$(stat -c %s log/autherror.log)
+    fi
+    
+    ERROR_START=$(( $ERROR_START + 1 ))
+    
+    # start the game server as a background process
+    nohup bin/sauer_authserver ${AUTHSERVER_OPTIONS} 1>log/authstatus.log 2>>log/autherror.log </dev/null &
+    
+    #wait for server to start up and print the initial status messages
+    until $(cat log/authstatus.log | grep -q *READY*)
+    do
+        #stop if server has terminated
+        jobs %- > /dev/null 2>&1
+        RUNNING=$?
+        if [ "$RUNNING" = "1" ]
+        then
+            break
+        fi
+    done
+    
+    tail -c +$ERROR_START log/autherror.log
+    cat log/authstatus.log
+    
+    if [ "$v_remove_status_log" = "y" ]
+    then
+	rm log/authstatus.log
+    fi
+    
+    return 0
+}
+
+p_stop() {
+
+    if ! p_exec shutdown
+    then
+	return 1
+    fi
+    
+    return 0
+}
+
+################################################################################
+
+p_keygen() {
+
+    v_priv=
+    v_pub=
+    for k in $(bin/utils/keygen)
+    do
+	if [ "x$v_priv" = "x" ]
+	then
+	    v_priv=$k
+	else
+	    v_pub=$k
+	    break
+	fi
+    done
+    
+    echo "private key: $v_priv"
+    echo "public key:  $v_pub"
+}
+
+p_luapp() {
+
+    exec bin/utils/luapp "$*"
+}
+
+p_convert() {
+
+    exec bin/utils/convert "$1" "$2" "$3" "$4" "$5"
+}
+
+################################################################################
+
+p_help() {
+
+    echo "usage: $0 [start] [--no-statuslog]"
+    echo "       $0 [start] luapp <luafile>"
+    echo "       $0 stop"
+    echo "       $0 restart"
+    echo "       $0 manage [gen[erate]] key"
+    echo "       $0 manage user add <name> <domain> <pubkey>"
+    echo "       $0 manage user del <name> <domain>"
+    echo "       $0 manage user change name   <name> <domain> <new_name>"
+    echo "       $0 manage user change key    <name> <domain> <pubkey>"
+    echo "       $0 manage user change domain <name> <domain> <new_domain>"
+    echo "       $0 manage domain add <name> [case_insensitive]"
+    echo "       $0 manage domain del <name>"
+    echo "       $0 manage domain change name        <name> <new_name>"
+    echo "       $0 manage domain change sensitivity <name> [case_insensitive]"
+    echo "       $0 manage list domains"
+    echo "       $0 manage list users <domain>"
+    echo "       $0 convert old text   <textfile>"
+    echo "       $0 convert old sqlite <sqlitefile>"
+    echo "       $0 convert text   <textfile>"
+    echo "       $0 convert sqlite <sqlitefiles-dir>"
+    echo "       $0 convert mysql <hostname> <username> <password> <database>"
+}
+
+################################################################################
+
+case "$1" in
+    'start')
+	case "$2" in
+	    'luapp')
+                if [ "x$3" = "x" ]
+                then
+                    p_help
+                    exit 2
+                fi
+                
+                shift 2
+                p_luapp "$*"
+            ;;
+            *)
+        	if [ "x$2" = "x--no-statuslog" ]
+		then
+		    v_remove_status_log=y
+		fi
+		
+    		if ! p_start
+    		then
+    		    echo "It appears the auth server is already running."
+    		fi
+	    ;;
+	esac
+    ;;
+    'stop')
+        p_stop
+    ;;
+    'restart')
+	p_stop
+	sleep 1
+	p_start
+    ;;
+    'manage')
+	case "$2" in
+	    'generate'|'gen')
+		p_keygen
+    	    ;;
+            'key')
+        	exec $d_main/bin/$f_starter manage generate key
+    	    ;;
+	    'user')
+		case "$3" in
+		    'add')
+			if [ "x$6" = "x" ] || [ "x$5" = "x" ] || [ "x$4" = "x" ]
+			then
+			    p_help
+			    exit 2
+			fi
+			
+			p_exec "add_user \"$4\" \"$5\" \"$6\""
+		    ;;
+		    'del')
+			if [ "x$5" = "x" ] || [ "x$4" = "x" ]
+			then
+			    p_help
+			    exit 2
+			fi
+			
+			p_exec "del_user \"$4\" \"$5\""
+		    ;;
+		    'change')
+			case "$4" in
+			    'name')
+				if [ "x$7" = "x" ] || [ "x$6" = "x" ] || [ "x$5" = "x" ]
+				then
+				    p_help
+				    exit 2
+				fi
+				
+				p_exec "change_user_name \"$5\" \"$6\" \"$7\""
+			    ;;
+			    'key')
+				if [ "x$7" = "x" ] || [ "x$6" = "x" ] || [ "x$5" = "x" ]
+				then
+				    p_help
+				    exit 2
+				fi
+				
+				p_exec "change_user_key \"$5\" \"$6\" \"$7\""
+			    ;;
+			    'domain')
+				if [ "x$7" = "x" ] || [ "x$6" = "x" ] || [ "x$5" = "x" ]
+				then
+				    p_help
+				    exit 2
+				fi
+				
+				p_exec "change_user_domain \"$5\" \"$6\" \"$7\""
+			    ;;
+			    *)
+				p_help
+				exit 2
+			    ;;
+			esac
+		    ;;
+		    *)
+			p_help
+			exit 2
+		    ;;
+		esac
+	    ;;
+	    'domain')
+		case "$3" in
+		    'add')
+			if [ "x$4" = "x" ]
+			then
+			    p_help
+			    exit 2
+			fi
+			
+			if [ ! "x$5" = "x" ]
+			then
+			    p_exec "add_domain \"$4\" \"$5\""
+			else
+			    p_exec "add_domain \"$4\""
+			fi
+		    ;;
+		    'del')
+			if [ "x$4" = "x" ]
+			then
+			    p_help
+			    exit 2
+			fi
+			
+			p_exec "del_domain \"$4\""
+		    ;;
+		    'change')
+			case "$4" in
+			    'name')
+				if [ "x$6" = "x" ] || [ "x$5" = "x" ]
+				then
+				    p_help
+				    exit 2
+				fi
+				
+				p_exec "change_domain_name \"$5\" \"$6\""
+			    ;;
+			    'sensitivity')
+				if [ "x$5" = "x" ]
+				then
+				    p_help
+				    exit 2
+				fi
+				
+				if [ ! "x$6" = "x" ]
+				then
+				    p_exec "change_domain_sensitivity \"$5\" \"$6\""
+				else
+				    p_exec "change_domain_sensitivity \"$4\""
+				fi
+			    ;;
+			    *)
+				p_help
+				exit 2
+			    ;;
+			esac
+		    ;;
+		    *)
+			p_help
+			exit 2
+		    ;;
+		esac
+	    ;;
+	    'list')
+		case "$3" in
+		    'domains')
+			p_exec "list_domains"
+		    ;;
+		    'users')
+			if [ "x$4" = "x" ]
+			then
+			    p_help
+			    exit 2
+			fi
+			
+			p_exec "list_users \"$4\""
+		    ;;
+		    *)
+			p_help
+			exit 2
+		    ;;
+		esac
+	    ;;
+	    *)
+		p_help
+		exit 2
+	    ;;
+	esac
+    ;;
+    'convert')
+	p_convert "$2" "$3" "$4" "$5" "$6"
+    ;;
+    'help')
+	p_help
+    ;;
+    '--no-statuslog')
+	exec $d_main/bin/$f_starter start $*
+    ;;
+    *)
+	exec $d_main/bin/$f_starter start $*
+    ;;
+esac
+
+exit 0

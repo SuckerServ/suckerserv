@@ -1,0 +1,17 @@
+
+import testing ;
+
+unit-test timedbans_service_test : 
+    timedbans_service_test.cpp
+    /boost//headers ;
+
+unit-test player_command_test : 
+    player_command_test.cpp 
+    ../parse_player_command.cpp
+    /boost//headers
+    /lua//headers 
+    : <include>../../fungu/include ;
+    
+unit-test schedule_service_test : 
+    schedule_service_test.cpp
+    /boost//headers ;
