@@ -24,13 +24,10 @@ local function onConnect(cn)
     local country = geoip.ip_to_country(server.player_ip(cn))
     
     if show_country_message and #country > 0 then
-        
-        local normal_message = string.format("%s connected from %s.", green(server.player_displayname(cn)), green(country))
-        local admin_message = normal_message .. " (IP: " .. green(server.player_ip(cn)) .. ")"
+        server.msg(string.format(">>>>> %s is going to frag from %s. <<<<<", green(server.player_displayname(cn)), green(country)))
+        local admin_message = normal_message .. " (IP ADDRESS: " .. green(server.player_ip(cn)) .. ")"
         
         for _, cn in ipairs(server.clients()) do
-            
-            local message = normal_message
             
             if server.player_priv_code(cn) == server.PRIV_ADMIN then
                 message = admin_message
