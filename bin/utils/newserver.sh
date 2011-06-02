@@ -26,7 +26,7 @@ fi
 mkdir -p $DEST
 
 mkdir $DEST/bin
-for aa in utils env.sh sauer_server
+for aa in utils env.sh sauer_server monitor
 do
     ln -s $d_main/bin/$aa $DEST/bin/$aa
 done
