@@ -32,7 +32,7 @@ local function run(cn)
 	        
 	        server.setadmin(cn)
 	        
-	        server.msg(server.player_displayname(cn) .. " claimed admin as '" .. magenta(user_id) .. "'")
+	        server.msg(string.format(server.claimadmin_message, server.player_displayname(cn), magenta(user_id)))
 	        server.log(string.format("%s playing as %s(%i) used auth to claim admin.", user_id, server.player_name(cn), cn))
 	    end)
     end

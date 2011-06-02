@@ -33,7 +33,7 @@ local function run(cn)
                 
                 server.setmaster(cn)
                 
-                server.msg(server.player_displayname(cn) .. " claimed master as '" .. magenta(user_id) .. "'")
+                server.msg(string.format(server.claimmaster_message, server.player_displayname(cn), magenta(user_id)))
                 server.log(string.format("%s playing as %s(%i) used auth to claim master.", user_id, server.player_name(cn), cn))
             else
                 server.player_msg(cn,red("An admin or master is already there."))
