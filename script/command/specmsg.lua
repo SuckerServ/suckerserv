@@ -20,7 +20,7 @@ return function(cn, ...)
 	end
 
 	for client in server.gspectators() do
-		server.player_msg(p.cn,"(" .. green("spec-chat") .. ")  (" .. green(server.player_name(cn)) .. " (" .. magenta(cn) .. ")): " .. text)
+		server.player_msg(client.cn, string.format(server.specmsg_command_message, server.player_name(cn), cn, text))
 	end
 
 end
