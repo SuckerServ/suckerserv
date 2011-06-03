@@ -3,6 +3,7 @@ return function(cn, countdown)
 
 	if not countdown then
 		server.pausegame(false)
+		server.msg(red(">>> " ..white"Pause is now " ..blue"off"))
 	else
 		local cdown = tonumber(countdown)
 
