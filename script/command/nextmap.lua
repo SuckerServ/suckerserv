@@ -5,6 +5,6 @@ return function(cn)
     end
     
     local map =  map_rotation.get_map_name(server.gamemode)
-    server.player_msg(cn, string.format("The next map is %s", blue(map)))
+    server.player_msg(cn, string.format("The next map is %s", green(map)))
 end
 
