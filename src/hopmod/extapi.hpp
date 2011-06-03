@@ -100,6 +100,7 @@ namespace server
     void set_player_admin(int);
     void player_slay(int);
     void player_respawn(int);
+    void player_nospawn(int, int);
     bool player_changeteam(int,const char *);
     int player_rank(int);
     bool player_isbot(int);

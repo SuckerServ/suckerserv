@@ -170,6 +170,7 @@ void register_server_script_bindings(script::env & env)
     script::bind_freefunc(server::player_win, "player_win", env);
     script::bind_freefunc(server::player_slay, "player_slay", env);
     script::bind_freefunc(server::player_respawn, "player_respawn", env);
+    script::bind_freefunc(server::player_nospawn, "player_nospawn", env);
     script::bind_freefunc((void (*)(int))server::suicide, "player_suicide", env);
     script::bind_freefunc(server::player_changeteam, "changeteam", env);
     script::bind_freefunc(server::player_bots, "player_bots", env);

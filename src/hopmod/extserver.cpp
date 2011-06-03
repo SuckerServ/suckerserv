@@ -1027,4 +1027,11 @@ void player_respawn(int cn)
     try_respawn(ci, ci);
 }
 
+void player_nospawn(int cn, int no_spawn)
+{
+    clientinfo *ci = getinfo(cn);
+    if (!ci) return;
+    ci->no_spawn = no_spawn;
+}
+
 #endif

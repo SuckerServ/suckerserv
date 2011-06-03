@@ -278,6 +278,7 @@ namespace server
         int ping, lastpingupdate, lastposupdate, lag, aireinit;
         string clientmap;
         int mapcrc;
+        int no_spawn;
         bool warned, gameclip;
         ENetPacket *getdemo, *getmap, *clipboard;
         int lastclipboard, needclipboard;
@@ -1376,6 +1377,7 @@ namespace server
 
     void sendspawn(clientinfo *ci)
     {
+        if (ci->no_spawn == 1) return;
         gamestate &gs = ci->state;
         spawnstate(ci);
         sendf(ci->ownernum, 1, "rii7v", N_SPAWNSTATE, ci->clientnum, gs.lifesequence,
