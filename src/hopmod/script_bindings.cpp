@@ -195,6 +195,7 @@ void register_server_script_bindings(script::env & env)
     script::bind_freefunc(server::player_force_spec, "force_spec", env);
     script::bind_freefunc(server::player_spec, "spec", env);
     script::bind_freefunc(server::player_unspec, "unspec", env);
+    script::bind_freefunc(server::player_unforce_spec, "unforce_spec", env);
     script::bind_freefunc(server::unsetmaster, "unsetmaster", env);
     script::bind_freefunc(server::set_player_master, "setmaster", env);
     script::bind_freefunc(server::set_player_admin, "setadmin", env);

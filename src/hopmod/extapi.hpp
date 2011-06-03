@@ -91,6 +91,7 @@ namespace server
     void player_force_spec(int);
     void player_spec(int);
     void player_unspec(int);
+    void player_unforce_spec(int);
     void spec_all();
     int player_bots(int);
     int player_pos(lua_State *);

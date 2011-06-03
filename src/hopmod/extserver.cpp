@@ -453,6 +453,13 @@ void player_unspec(int cn)
     setspectator(get_ci(cn), false);
 }
 
+void player_unforce_spec(int cn)
+{
+    clientinfo * ci = get_ci(cn);
+    ci->allow_self_unspec = true;
+    setspectator(ci, false);
+}
+
 void spec_all()
 {
     loopv(clients)
