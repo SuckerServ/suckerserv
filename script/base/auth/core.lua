@@ -157,7 +157,7 @@ local function start_auth_challenge(cn, user_id, domain)
     domain = auth.directory.get_domain(domain)
     
     if not domain then
-        server.player_msg(cn, "challenge request failed: unknown domain")
+        server.player_msg(cn, server.auth_unknown_domain_message)
         return
     end
     

@@ -25,7 +25,7 @@ local function send_info_message(sender)
     if not message then
        local cn = auth_player_cn
        local name = server.player_displayname(cn)
-       message = string.format("%s claimed master as '%s'", name, magenta(auth_name))
+       message = string.format(server.claimmaster_message, name, auth_name)
     end
     
     sender(message)
@@ -42,7 +42,7 @@ auth.listener("", function(cn, user_id, domain, status)
         local name = server.player_name(cn)
         
         if banned[user_id] then
-            server.player_msg(cn, red("You have been banned from using /auth on this server"))
+            server.player_msg(cn, server.player_auth_banned_message)
             return
         end
         
@@ -57,7 +57,7 @@ auth.listener("", function(cn, user_id, domain, status)
             
             server.log(string.format("%s(%i) claimed master as '%s'", name, cn, user_id))
         else
-            server.player_msg(cn, red("Master is disabled."))
+            server.player_msg(cn, server.player_master_disabled_message)
         end
     end
 end)

@@ -6,7 +6,7 @@ function server.restart()
     if tonumber(server.playercount) == 0 then return server.restart_now() end
 
     set_cancel_restart = false
-    local warning_msg = "The server is set for a restart at the end of this game."
+    local warning_msg = server.restart_warning_message
     
     server.msg(warning_msg)
     
@@ -33,6 +33,6 @@ function server.restart()
 end
 
 function server.cancel_restart()
-    server.msg("Server restart cancelled.")
+    server.msg(server.restart_cancelled_message)
     set_cancel_restart = true
 end

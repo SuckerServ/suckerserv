@@ -8,33 +8,32 @@
 
 return function(cn, target_cn)
 
-	if server.stats_use_sqlite == 0 then
-		return false, "command requires sqlite"
+	if not server.find_names_by_ip then
+		return false, "Not available with this database"
 	end
 
 	if not target_cn then
-
 		return false, "#names <cn>|\"<name>\""
 	end
 
 	if not server.valid_cn(target_cn) then
-
 		target_cn = server.name_to_cn_list_matches(cn,target_cn)
-
 		if not target_cn then
-
 			return
 		end
 	end
 
-	local db = sqlite3.open(server.stats_db_filename)
+        local current_name = server.player_name(target_cn)
+        local names = server.find_names_by_ip(server.player_ip(target_cn), current_name)
 
-	local str = "Other names used by " .. server.player_name(target_cn) .. ": "
-	for name, count in db:cols("SELECT DISTINCT name, count(name) as count FROM players WHERE ipaddr = '" .. server.player_ip(target_cn) .. "'") do
-		str = str .. name .. "(" .. count .. "),"
-	end
-	server.player_msg(cn, str)
+        local namelist = ""
 
-	db:close()
+        for index, name in ipairs(names) do
+            local sep = ""
+            if #namelist > 0 then sep = ", " end
+            namelist = namelist .. sep .. name
+        end
+
+	server.player_msg(cn, namelist)
 
 end

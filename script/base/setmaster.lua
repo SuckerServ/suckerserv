@@ -39,7 +39,7 @@ local function setmaster(cn, hash, set)
         failed[cn] = (failed[cn] or 0) + 1
         
         if failed[cn] == FAILED_LIMIT then
-            server.player_msg(cn, red("WARNING: no longer accepting your setmaster requests"))
+            server.player_msg(cn, server.setmaster_refused_message)
         end
     end
     

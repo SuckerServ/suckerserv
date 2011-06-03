@@ -14,11 +14,11 @@ function server.mute(cn, mute_time, reason)
     
     for _, cn in ipairs(server.players()) do 
         if KEY_FUNCTION(cn) == key then
-            local message = "You have been muted"
+            local message = server.player_mute_message
             if reason then
-                message = message .. " because " .. reason
+                message = string.format(server.player_mute_reason_message, message, reason)
             end
-            server.player_msg(cn, red(message))
+            server.player_msg(cn, message)
         end
     end
     
@@ -35,7 +35,7 @@ function server.unmute(cn)
     
     for _, cn in ipairs(server.clients()) do
 		if KEY_FUNCTION(cn) == key then
-			server.player_msg(cn, "You have been unmuted.")
+			server.player_msg(cn, server.player_unmute_message)
 		end
     end
 end
@@ -57,7 +57,7 @@ local function block_text(cn, text)
     local is_muted = muted[KEY_FUNCTION(cn)]
     
     if is_muted then
-        server.player_msg(cn, red("Your chat messages are being blocked."))
+        server.player_msg(cn, server.player_block_chat_message)
         return -1
     else -- Check for mute triggers in their message
         

@@ -24,12 +24,12 @@ local function mapvote(cn, map, mode)
     end
     
     if deny_mapvote then
-        server.player_msg(cn, red("Map voting is disabled."))
+        server.player_msg(cn, server.mapvote_disabled_message)
         return -1
 	end
     
     if not allowed_modes[mode] then
-        server.player_msg(cn, string.format(red("Vote rejected: disallowed game mode"), yellow(mode)))
+        server.player_msg(cn, string.format(server.mapvote_disallowed_gamemode, mode))
         return -1
     end
     
@@ -38,12 +38,12 @@ local function mapvote(cn, map, mode)
     end
     
     if deny_unknown_map and not supported_maps[map] then
-        server.player_msg(cn, string.format(red("Vote rejected: %s is an unknown map"), yellow(map)))
+        server.player_msg(cn, string.format(server.mapvote_rejected_unknownmap, map))
         return -1
     end
     
     if deny_excluded_map and not map_rotation.is_known_map(map, mode) then
-        server.player_msg(cn, string.format(red("Vote rejected: %s is not in the %s map rotation"), yellow(map), yellow(mode)))
+        server.player_msg(cn, string.format(server.mapvote_outside_maprotation, map, mode))
         return -1
     end
 end
