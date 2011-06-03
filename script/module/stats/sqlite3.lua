@@ -1,6 +1,6 @@
 require "sqlite3utils"
 
-local db, insert_game, insert_team, insert_player, select_player_totals, find_names_by_ip
+local db, insert_game, insert_team, insert_player, select_player_totals, select_names_by_ip
 
 local function open(settings)
 
@@ -117,8 +117,8 @@ local function open(settings)
     select_player_totals = db:prepare("SELECT * FROM playertotals WHERE name = :name")
     if not select_player_totals then return nil, db:error_message() end
     
-    find_names_by_ip = db:prepare("SELECT DISTINCT name FROM players WHERE ipaddr = :ipaddr ORDER BY name ASC")
-    if not find_names_by_ip then return nil, db:error_message() end
+    select_names_by_ip = db:prepare("SELECT DISTINCT name FROM players WHERE ipaddr = :ipaddr ORDER BY name ASC")
+    if not select_names_by_ip then return nil, db:error_message() end
     
     server.stats_db_absolute_filename = server.PWD .. "/" .. settings.filename
     
@@ -172,8 +172,8 @@ end
 
 local function find_names_by_ip(ip, exclude_name)
     local names = {}
-    find_names_by_ip:bind_names{ipaddr = ip}
-    for row in find_names_by_ip:nrows() do
+    select_names_by_ip:bind_names{ipaddr = ip}
+    for row in select_names_by_ip:nrows() do
         if not exclude_name or exclude_name ~= row.name then
             names[#names + 1] = row.name
         end

@@ -34,6 +34,6 @@ return function(cn, target_cn)
             namelist = namelist .. sep .. name
         end
 
-	server.player_msg(cn, namelist)
+	server.player_msg(cn, string.format(server.names_command_message, current_name, namelist))
 
 end
