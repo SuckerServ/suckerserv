@@ -1021,4 +1021,10 @@ void try_respawn(clientinfo * ci, clientinfo * cq)
     sendspawn(cq);
 }
 
+void player_respawn(int cn)
+{
+    clientinfo * ci = getinfo(cn);
+    try_respawn(ci, ci);
+}
+
 #endif
