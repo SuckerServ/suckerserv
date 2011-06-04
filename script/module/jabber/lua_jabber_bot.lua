@@ -31,7 +31,7 @@ print_debug("[Startup] : Loading lua_jabber_bot module")
 
 -- Send a message to the bot
 local function send_reply(msg)
-    local file = io.open("conf/jabber/bot.fifo", "w")
+    local file = io.open("script/module/jabber/bot.fifo", "w")
     file:write(msg)
     file:close()
 end
@@ -282,9 +282,9 @@ local function sendAdminMessage()
     server.console(xmpp.nick, chat)
 end
 
-os.execute("lua conf/jabber/bot_listener.lua " .. server.xmpp_jid .. " " .. server.xmpp_password .. " " .. server.xmpp_muc_jid .. " " .. xmpp_muc_password .. " " .. server.xmpp_muc_nick .. " " .. server.xmpp_debug .. " &")
+os.execute("lua script/module/jabber/bot_listener.lua " .. server.xmpp_jid .. " " .. server.xmpp_password .. " " .. server.xmpp_muc_jid .. " " .. xmpp_muc_password .. " " .. server.xmpp_muc_nick .. " " .. server.xmpp_debug .. " &")
 
-filename="conf/jabber/to_server.fifo"
+filename="script/module/jabber/to_server.fifo"
 server_fifo = assert(io.open(filename, "r"))
 
 -- Main loop
