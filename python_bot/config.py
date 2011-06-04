@@ -1,14 +1,14 @@
-irc_nickname = 'hopbot'
+irc_nickname = 'Suckerbot'
 
 irc_identity = {
     'gamesurge': {
         'host': '195.8.250.180',
         'port': 6667,
         'channels': (
-            '#hopmod',
+            '#suckerserv',
         ),
         'line_rate': 2.0,
-		'default_channel': '#hopmod',
+		'default_channel': '#suckerserv',
     },
 }['gamesurge']
 
