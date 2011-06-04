@@ -270,8 +270,10 @@ server.event_handler("spectator", function(cn, value)
     sendmsg(string.format(irc_color_blue("%s ")..irc_color_grey("(%i) ")..irc_color_brown("%s ")..irc_color_blue("spectators"),server.player_name(cn),cn,action_tag))
 end)
 
+server.event_handler("specall", function() sendmsg (irc_color_grey("Players are all")..irc_color_blue("specs")) end)
 server.event_handler("gamepaused", function() sendmsg(irc_color_grey("game is ")..irc_color_brown("paused")) end)
 server.event_handler("gameresumed", function() sendmsg(irc_color_grey("game is ")..irc_color_brown("resumed")) end)
+
 
 server.event_handler("addbot", function(cn,skill,owner)
     local addedby = "server"
@@ -299,44 +301,6 @@ server.event_handler("checkmaps", function(cn)
 		sendmsg(string.format(irc_color_red("%s(cn:%i/map:%s/ip:%s) is using a modified map"),server.player_name(cn),cn, server.map, server.player_ip(cn)))
     end
 end)
-
-
-local function get_best_stats(time)
-    local players = server.clients()
-    table.sort(players, function(a, b) return server.player_frags(a) > server.player_frags(b) end)
-    local msg = ""
-    local str = ""
-    if time > 0 then
-        str = "GAME STATS"
-    else
-        str = "GAME ENDED"
-    end
-    msg = "7" .. str .. ": ([" .. (server.gamemode or "unknown") .. "/" .. (server.map or "unknown") .. "]/".. #players .. " Players) BEST PLAYERS: ["
-    for i, cn in ipairs(players) do 
-        if i > 2 then break end
-        local format = ""
-		local health = ""
-		if server.gamemode == "ctf" or server.gamemode == "ffa" then
-			health = "/(" .. server.player_health(cn) .. "/" .. server.player_maxhealth(cn) .. ")"
-		end
-        if i == 1 then format = "" end
-        if i == 2 then msg = msg .. "/ " end
-        msg = msg .. string.format("%s%s (%i/%i/%i%s%s)%s", format, server.player_name(cn), server.player_frags(cn), server.player_deaths(cn), server.player_accuracy(cn), "%", health, format)
-        if i == 2 then 
-            msg = msg .. "] " 
-        else
-            msg = msg .. " "
-        end
-    end
-    if #players == 0 then
-        msg = msg .. "No Players] "
-    end
-    if #players == 1 then msg = msg .. "]" end
-    if time > 0 then 
-        msg = msg .. " TIME REMAINING: " .. time .. " Minutes"
-    end
-    return msg
-end
 
 server.event_handler("timeupdate", function(time) -- post game stats each minute
     if #server.clients() >= 1 then
