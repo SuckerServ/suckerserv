@@ -22,8 +22,8 @@ static basic_binder * delete_basic_binder(basic_binder * binding)
 }
 
 parser::parser()
- :m_program_description(""),
-  m_argument_repeat_last(0)
+ :m_argument_repeat_last(0),
+  m_program_description("")
 {
     options_group unnamed;
     unnamed.description = NULL;
@@ -294,7 +294,7 @@ void parser::help(const char * program_name)
 {
     std::cout<<"Usage: "<<program_name<<" [OPTION]... ";
     
-     for(int i = 0; i < m_arguments.size(); i++)
+     for(unsigned int i = 0; i < m_arguments.size(); i++)
     {
         std::cout<<(i > 0 ? " " : "" )
             <<uppercase(m_arguments[i].value_name)
