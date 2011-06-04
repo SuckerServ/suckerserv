@@ -1,0 +1,55 @@
+HOPMOD PythonBot (c) by Michael, Commands (c) by Thomas
+
+To run the Bot you need to have Python and Twistd for Python installed.
+Once you have them installed, you can run the Bot with:
+ # twistd -ny hopmod_bot.tac &
+ 
+ 
+Commandlist:
+
+.servers -> prints a sorted list of the connected servers
+
+Admin Commands (requires operator in the channel)
+
+.<servername> ping              -> check if the server answers
+.<servername> players           -> prints playerlist of connected players
+.<servername> restart           -> restart the server
+.<servername> uptime            -> prints the server uptime of hopmod
+.<servername> kick <cn>         -> prints the server uptime of hopmod
+.<servername> stats <cn>        -> prints player stats
+.<servername> mute <cn> <min>   -> mute a player
+.<servername> unmute <cn>       -> unmute a player
+.<servername> disconnect <cn>   -> disconnect a player
+.<servername> spec <cn>         -> spec a player
+.<servername> unspec <cn>       -> unspec a player
+.<servername> pause             -> pauses the game
+.<servername> resume            -> resumes the game
+.<servername> ip <cn>           -> prints the ip of the player
+.<servername> map <newmap>      -> changes the map
+.<servername> changetime <min>  -> change gametime
+.<servername> say <text>        -> say something to the players
+
+Adding Servers:
+
+Checkout config.py for that
+
+'server1': { <- name of the server
+    'host':          'localhost', <- host of the server
+    'port':           28795, <- irc listener port (gameport + 10)
+    'password':       '', <- irc listener password (you can define that password in the config of hopmod)
+    'format':         '\00301%s\003', <- color for the bot
+    'reconnect_time': 60, <- reconnect time in seconds, if the server was disconnect or restarted
+},
+
+Attention: Don't copy that example to the config without removing the comments!
+
+
+
+
+
+
+
+
+
+ 
+
