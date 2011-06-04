@@ -63,26 +63,6 @@ _4 = bind_placeholder.create(4)
 _5 = bind_placeholder.create(5)
 _6 = bind_placeholder.create(6)
 
-function bind(func, ...)
-
-    local bind_args = arg
-    
-    return function(...)
-    
-        local call_args = {}
-        
-        for index, value in pairs(bind_args) do
-            if bind_placeholder.detected(value) then
-                call_args[index] = arg[value.index]
-            else
-                call_args[index] = value
-            end
-        end
-        
-        return func(unpack(call_args, 1, table.maxn(bind_args)))
-    end
-end
-
 function _if(expr, true_value, false_value)
     if expr then
         return true_value

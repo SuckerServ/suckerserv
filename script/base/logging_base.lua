@@ -8,6 +8,26 @@ end
 
 local logfile = io.open("log/" .. filename .. ".log","a+")
 
+function bind(func, ...)
+
+    local bind_args = arg
+    
+    return function(...)
+    
+        local call_args = {}
+        
+        for index, value in pairs(bind_args) do
+            if bind_placeholder.detected(value) then
+                call_args[index] = arg[value.index]
+            else
+                call_args[index] = value
+            end
+        end
+        
+        return func(unpack(call_args, 1, table.maxn(bind_args)))
+    end
+end
+
 function server.log(msg)
     assert(msg ~= nil)
     logfile:write(os.date("[%a %d %b %X] ",os.time()))
