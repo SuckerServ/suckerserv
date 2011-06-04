@@ -162,7 +162,7 @@ server.event_handler("connect", function (cn)
 
     if country == "" then country = "unknown" end
 
-    sendmsg(string.format(irc_color_orange("CONNECT: ")..irc_color_green("%s ")..irc_color_grey("(%i) ")..irc_color_orange("COUNTRY: ")..irc_color_brown("%s"),server.player_name(cn),cn,country)) 
+    sendmsg(string.format(irc_color_red("CONNECT: ")..irc_color_blue("%s ")..irc_color_green("(%i) ")..irc_color_green("from ")..irc_color_blue("%s"),server.player_name(cn),cn,country)) 
 end)
 
 
@@ -184,7 +184,7 @@ server.event_handler("disconnect", function (cn,reason)
 		reason = "normal"
     end
 
-    sendmsg(string.format(irc_color_orange("DISCONNECT: ")..irc_color_green("%s ")..irc_color_grey("(%i) ")..irc_color_orange("REASON: ")..irc_color_brown("%s"), server.player_name(cn), cn, reason))
+    sendmsg(string.format(irc_color_red("DISCONNECT: ")..irc_color_blue("%s ")..irc_color_green("(%i) ")..irc_color_green("REASON: ")..irc_color_blue("%s"), server.player_name(cn), cn, reason))
 end)
 
 server.event_handler("kick", function(cn, bantime, admin, reason)
@@ -199,11 +199,11 @@ server.event_handler("kick", function(cn, bantime, admin, reason)
 end)
 
 server.event_handler("rename",function(cn, oldname, newname)
-    sendmsg(string.format(irc_color_blue("%s ")..irc_color_grey("(%i) ")..irc_color_brown("renamed to ")..irc_color_orange("%s"),oldname,cn,newname))
+    sendmsg(string.format(irc_color_blue("%s ")..irc_color_green("(%i) ")..irc_color_green("renamed to ")..irc_color_blue("%s"),oldname,cn,newname))
 end)
 
 server.event_handler("reteam",function(cn, oldteam, newteam)
-    sendmsg(string.format(irc_color_blue("%s ")..irc_color_grey("(%i) ")..irc_color_brown("switched to team ")..irc_color_orange("%s"),server.player_name(cn),cn,newteam))
+    sendmsg(string.format(irc_color_blue("%s ")..irc_color_green("(%i) ")..irc_color_green("switched to team ")..irc_color_blue("%s"),server.player_name(cn),cn,newteam))
 end)
 
 server.event_handler("text", function(cn, msg)
@@ -217,15 +217,15 @@ server.event_handler("text", function(cn, msg)
     
     local mute_tag = ""
     if server.is_muted(cn) then mute_tag = "(muted)" end
-    sendmsg(string.format(irc_color_blue("%s ")..irc_color_grey("(%i): ")..irc_color_neon("%s%s"),server.player_name(cn),cn,mute_tag,msg))
+    sendmsg(string.format(irc_color_blue("%s ")..irc_color_green("(%i): ")..irc_color_blue("%s%s"),server.player_name(cn),cn,mute_tag,msg))
 end)
 
 server.event_handler("sayteam", function(cn, msg)
-    sendmsg(string.format(irc_color_blue("%s ")..irc_color_grey("(%i)[team]: ")..irc_color_neon("%s"),server.player_name(cn),cn,msg))
+    sendmsg(string.format(irc_color_blue("%s ")..irc_color_green("(%i)[team]: ")..irc_color_blue("%s"),server.player_name(cn),cn,msg))
 end)
 
 server.event_handler("mapvote", function(cn, map, mode)
-    sendmsg(string.format(irc_color_orange("MAPVOTE: ")..irc_color_blue("%s ")..irc_color_grey("(%i) ")..irc_color_orange("MODE: ")..irc_color_neon("%s ")..irc_color_orange("MAP: ")..irc_color_neon("%s"),server.player_name(cn),cn,mode,map))
+    sendmsg(string.format(irc_color_red("MAPVOTE: ")..irc_color_blue("%s ")..irc_color_green("(%i) ")..irc_color_green("MODE: ")..irc_color_blue("%s ")..irc_color_green("MAP: ")..irc_color_blue("%s"),server.player_name(cn),cn,mode,map))
 end)
 
 local MAPNAME = ""
@@ -239,7 +239,7 @@ server.event_handler("mapchange", function(map, mode)
     if sc > 0 then playerstats = playerstats .. " " .. tostring(sc) .. " spectators" end
     
     if sendmsg ~= nil then
-	sendmsg(string.format(irc_color_light_green("NEWGAME: ")..irc_color_orange("MODE: ")..irc_color_neon("%s ")..irc_color_orange("MAP: ")..irc_color_neon("%s")..irc_color_purple(" %i")..irc_color_neon(" Players"), map, mode, #server.clients()))
+	sendmsg(string.format(irc_color_red("NEWGAME: ")..irc_color_green("MODE: ")..irc_color_blue("%s ")..irc_color_green("MAP: ")..irc_color_blue("%s")..irc_color_blue(" %i")..irc_color_green(" Players"), map, mode, #server.clients()))
     end
 end)
 
@@ -252,13 +252,13 @@ server.event_handler("masterchange", function(cn, value)
     local action_tag = "claimed"
     if tonumber(value) == 0 then action_tag = "relinquished" end
 
-    sendmsg(string.format(irc_color_blue("%s ")..irc_color_grey("(%i) ")..irc_color_brown("claimed ")..irc_color_blue("%s"), server.player_name(cn), cn, action_tag, server.player_priv(cn)))
+    sendmsg(string.format(irc_color_blue("%s ")..irc_color_green("(%i) ")..irc_color_green("claimed ")..irc_color_blue("%s"), server.player_name(cn), cn, action_tag, server.player_priv(cn)))
 end)
 
 server.sleep(1, function()
 	auth.listener("", function(cn, user_id, domain, status)
 		if status ~= auth.request_status.SUCCESS then return end
-		sendmsg(string.format(irc_color_blue("%s ")..irc_color_grey("(%i) ")..irc_color_brown("claimed ")..irc_color_blue("master ")..irc_color_brown("as ")..irc_color_grey("'")..irc_color_pink("%s")..irc_color_grey("'"), server.player_name(cn), cn, user_id))
+		sendmsg(string.format(irc_color_blue("%s ")..irc_color_green("(%i) ")..irc_color_green("claimed ")..irc_color_blue("master ")..irc_color_green("as ")..irc_color_green("'")..irc_color_blue("%s")..irc_color_green("'"), server.player_name(cn), cn, user_id))
 	end)
 end)
 
@@ -267,22 +267,21 @@ server.event_handler("spectator", function(cn, value)
     local action_tag = "joined"
     if tonumber(value) == 0 then action_tag = "left" end
     
-    sendmsg(string.format(irc_color_blue("%s ")..irc_color_grey("(%i) ")..irc_color_brown("%s ")..irc_color_blue("spectators"),server.player_name(cn),cn,action_tag))
+    sendmsg(string.format(irc_color_blue("%s ")..irc_color_green("(%i) ")..irc_color_green("%s ")..irc_color_blue("spectators"),server.player_name(cn),cn,action_tag))
 end)
 
-server.event_handler("specall", function() sendmsg (irc_color_grey("Players are all")..irc_color_blue("specs")) end)
-server.event_handler("gamepaused", function() sendmsg(irc_color_grey("game is ")..irc_color_brown("paused")) end)
-server.event_handler("gameresumed", function() sendmsg(irc_color_grey("game is ")..irc_color_brown("resumed")) end)
+server.event_handler("gamepaused", function() sendmsg(irc_color_green("game is ")..irc_color_blue("paused")) end)
+server.event_handler("gameresumed", function() sendmsg(irc_color_green("game is ")..irc_color_blue("resumed")) end)
 
 
 server.event_handler("addbot", function(cn,skill,owner)
     local addedby = "server"
     if cn ~= -1 then addedby = server.player_name(cn) end
-    sendmsg(string.format(irc_color_blue("%s ")..irc_color_grey("(%i) ")..irc_color_brown("added a bot with the skill of ")..irc_color_orange("%i"), addedby, cn, skill))
+    sendmsg(string.format(irc_color_blue("%s ")..irc_color_green("(%i) ")..irc_color_green("added a bot with the skill of ")..irc_color_blue("%i"), addedby, cn, skill))
 end)
 
 server.event_handler("delbot", function(cn)
-    sendmsg(string.format(irc_color_blue("%s ")..irc_color_grey("(%i) ")..irc_color_brown("deleted a bot"),server.player_name(cn),cn))
+    sendmsg(string.format(irc_color_blue("%s ")..irc_color_green("(%i) ")..irc_color_green("deleted a bot"),server.player_name(cn),cn))
 end)
 
 server.sleep(1, function()
