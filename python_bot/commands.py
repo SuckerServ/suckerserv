@@ -139,6 +139,12 @@ def f(server_write, args, **_):
 server['specall'] = f
 
 def f(server_write, args, **_):
+	server_write('''\
+			code:server.unspecall(true)\
+			''')
+server['unspecall'] = f
+
+def f(server_write, args, **_):
     server_write('''\
 			code:local cn = tonumber('%s');\
 			if server.valid_cn(cn) then\
