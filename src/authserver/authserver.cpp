@@ -274,8 +274,6 @@ void purgeauths(client &c)
 
 void reqauth(client & c, uint id, char * name, char * domain)
 {
-    if(!domain) domain = "";
-    
     purgeauths(c);
     
     time_t t = time(NULL);
@@ -288,10 +286,10 @@ void reqauth(client & c, uint id, char * name, char * domain)
     
     string ip;
     if(enet_address_get_host_ip(&c.address, ip, sizeof(ip)) < 0) copystring(ip, "-");
-    conoutf("%s: attempting \"%s\"@\"%s\" as %u from %s", ct ? ct : "-", name, domain, id, ip);
+    conoutf("%s: attempting \"%s\"@\"%s\" as %u from %s", ct ? ct : "-", name, domain ? domain : "", id, ip);
     
     bool found = false;
-    domains_map::const_iterator domainIt = users.find(domain);
+    domains_map::const_iterator domainIt = users.find(domain ? domain : "");
     users_map::const_iterator userIt;
     
     if(domainIt != users.end())
