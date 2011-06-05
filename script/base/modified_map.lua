@@ -26,6 +26,7 @@ server.event_handler("mapcrc", function(cn, map, crc)
 
         server.msg(string.format(server.client_crcfail_message, server.player_displayname(cn)))
         server.log(string.format("%s(%i) is using a modified map (crc %s)", server.player_name(cn), cn, crc))
+		server.spec(cn)
         
         failed_action(cn)
         
