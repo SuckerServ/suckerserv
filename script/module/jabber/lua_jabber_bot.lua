@@ -101,7 +101,7 @@ end
 -- Command list
 xmpp_commands = {
     ['kick']        = function(cn, reason) server.kick(cn, 0, xmpp_nick, reason) end,
-    ['version']     = function() send_reply("HopMod JabberBot 0.99 (#hopmod@irc.gamesurge.net)") end,
+    ['version']     = function() send_reply("SuckerServ/HopMod JabberBot 0.99 (#suckerserv@irc.gamesurge.net)") end,
     ['spec']        = server.spec,
     ['unspec']      = server.unspec,
     ['mute']        = server.mute,

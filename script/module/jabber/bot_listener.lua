@@ -60,9 +60,9 @@ xmpp_bot:hook("stanza", function(stanza)
         stanza = stanza;
     };
     if stanza.name == "message" and stanza.attr.type == "groupchat" then
-        if not event.body or not event.sender.nick or event.delay then return; end
-		data="<room>" .. event.sender.room .. "</room>" .. "<nick>" .. event.sender.nick .. "</nick>" .. "<body>" .. event.body .. "</body>"
-		print_debug(data)
+        if not event.body or not event.sender.nick or event.delay or event.sender.nick == xmpp_muc_nick then return; end
+        data="<room>" .. event.sender.room .. "</room>" .. "<nick>" .. event.sender.nick .. "</nick>" .. "<body>" .. event.body .. "</body>"
+        print_debug(data)
         local to_server_fifo = io.open(to_server_fifo_location, "w")
         to_server_fifo:write(data)
         to_server_fifo:close()
