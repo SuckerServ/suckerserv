@@ -3,7 +3,7 @@ add_subdirectory(lua)
 add_subdirectory(boost)
 add_subdirectory(fungu)
 add_subdirectory(lsqlite3-7)
-add_subdirectory(authserver EXCLUDE_FROM_ALL)
+add_subdirectory(authserver)
 add_subdirectory(luasql EXCLUDE_FROM_ALL)
 
 include(CheckLibraryExists)
@@ -27,6 +27,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/fpsgame
     ${CMAKE_CURRENT_SOURCE_DIR}/hopmod
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/authserver
     ${ENET_INCLUDE_DIRS}
     ${LUA_INCLUDE_DIRS}
     ${BOOST_INCLUDE_DIRS}
@@ -55,7 +56,10 @@ set(LUA_MODULES_SOURCES
     hopmod/lua/cubescript.cpp
     hopmod/lua/geoip.cpp
     hopmod/lua/filesystem.cpp
-    hopmod/lua/packlib.c)
+    hopmod/lua/packlib.c
+    hopmod/cubescript/cubescript.cpp
+    hopmod/cubescript/lua_command_stack.cpp
+    hopmod/cubescript/lua/pcall.cpp )
 
 add_library(lua_modules STATIC ${LUA_MODULES_SOURCES})
 target_link_libraries(lua_modules -lGeoIP -pthread sauertools ${SCRIPTING_LIBRARIES})
