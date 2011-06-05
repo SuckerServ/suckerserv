@@ -1,14 +1,13 @@
-== How to Build Hopmod ==
+== How to build SuckerServ ==
 
-See http://hopmod.e-topic.info/index.php5?title=Installation
-
+See http://code.google.com/p/suckerserv/wiki/Installation
 
 Compiling with the compile script:
+Make the script executeable and run it →
 
-- make the script executeable -> chmod +x compile.sh
-- ./compile.sh
+    chmod +x compile.sh
+    ./compile.sh
 
-Arguments:
-
-Debug Build: ./compile.sh 0 debug
-Recompile: ./compile.sh 1 [debug]
+Usage: ./compile.sh [--recompile] [--debug] — Build SuckerServ
+          --recompile   — Delete $COMPILEDIR (release_build or debug_build with --debug) before compiling SuckerServ again
+          --debug       — Make a debug build

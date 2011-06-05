@@ -2,10 +2,11 @@
 PROJECT="$(tput bold ; tput setaf 3)SuckerServ$(tput sgr0)"
 THREADS=`cat /proc/cpuinfo | grep processor | wc -l`
 ARG_LENGTH=$#
-if [[ $ARG_LENGTH > 2 ]]; then
-  echo "Usage: $0 [--recompile] [--debug] - Build SuckerServ"
-  echo "    --recompile    Delete \$COMPILEDIR before compiling SuckerServ again" 
-  echo "    --debug        Make a debug build"
+if [[ $ARG_LENGTH > 2 || "$1" = "--help" ]]; then
+  echo "Usage: $(tput bold ; tput setaf 4)$0$(tput sgr0) [--$(tput bold ; tput setaf 5)recompile$(tput sgr0)] [--$(tput bold ; tput setaf 1)debug$(tput sgr0)] — Build $PROJECT"
+  echo "          --$(tput bold ; tput setaf 5)recompile$(tput sgr0)   — Delete $(tput bold ; tput setaf 6)\$COMPILEDIR$(tput sgr0) (release_build or debug_build with --$(tput bold ; tput setaf 1)debug$(tput sgr0)) before compiling $PROJECT again" 
+  echo "          --$(tput bold ; tput setaf 1)debug$(tput sgr0)       — Make a $(tput bold ; tput setaf 1)debug$(tput sgr0) build"
+  exit
 fi
 STRCOMPILE="$(tput bold ; tput setaf 2)Compiling$(tput sgr0)"
 COMPILEDIR="release_build"
