@@ -56,10 +56,7 @@ set(LUA_MODULES_SOURCES
     hopmod/lua/cubescript.cpp
     hopmod/lua/geoip.cpp
     hopmod/lua/filesystem.cpp
-    hopmod/lua/packlib.c
-    hopmod/cubescript/cubescript.cpp
-    hopmod/cubescript/lua_command_stack.cpp
-    hopmod/cubescript/lua/pcall.cpp )
+    hopmod/lua/packlib.c)
 
 add_library(lua_modules STATIC ${LUA_MODULES_SOURCES})
 target_link_libraries(lua_modules -lGeoIP -pthread sauertools ${SCRIPTING_LIBRARIES})
