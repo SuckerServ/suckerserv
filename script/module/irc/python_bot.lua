@@ -301,11 +301,4 @@ server.event_handler("checkmaps", function(cn)
     end
 end)
 
-server.event_handler("timeupdate", function(time) -- post game stats each minute
-    if #server.clients() >= 1 then
-        sendmsg(get_best_stats(time))
-    end
-    return -1
-end)
-
 -- end of game events
