@@ -291,9 +291,9 @@ int player_shots(int cn)
 int player_accuracy(int cn)
 {
     clientinfo * ci = get_ci(cn);
-    int shots = ci->state.shots;
-    int hits = shots - ci->state.misses;
-    return static_cast<int>(roundf(static_cast<float>(hits)/std::max(shots,1)*100));
+    int damagewasted = ci->state.explosivedamage + ci->state.shotdamage - ci->state.damage;
+    int damage = ci->state.damage;
+    return static_cast<int>(roundf(static_cast<float>(damage)/std::max(damage+damagewasted,1)*100));
 }
 
 int player_privilege_code(int cn)
