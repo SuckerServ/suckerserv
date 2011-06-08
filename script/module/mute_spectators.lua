@@ -5,13 +5,13 @@ local is_enabled
 
 function server.mute_spectators(enable)
 
-    is_enabled = enabled
+    is_enabled = enable
 end
 
 
 function msg_admins(cn, msg)
     
-    local line = string.format("%s: %s", server.player_displayname(cn), green(msg))
+    local line = string.format(server.spectator_muted_message, server.player_displayname(cn), msg)
     
     for _, cn in ipairs(server.clients()) do
         if server.player_priv_code(cn) == server.PRIV_ADMIN then
@@ -23,7 +23,7 @@ end
 
 server.event_handler("text", function(cn, text)
 
-    if server.player_status_code(cn) == server.SPECTATOR and server.player_priv_code(cn) ~= server.PRIV_ADMIN and server.paused == 0 and is_enabled
+    if server.player_status_code(cn) == server.SPECTATOR and server.player_priv_code(cn) ~= server.PRIV_ADMIN and server.paused == false and is_enabled
     then
         msg_admins(cn, text)
         return -1
