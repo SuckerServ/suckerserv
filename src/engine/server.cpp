@@ -157,7 +157,7 @@ void filtertext(char *dst, const char *src, bool whitespace, int len)
             if(!*++src) break;
             continue;
         }
-        if(isspace(c) ? whitespace : isprint(c))
+        if(c == ' ' ? whitespace : isprint(c))
         {
             *dst++ = c;
             if(!--len) break;
