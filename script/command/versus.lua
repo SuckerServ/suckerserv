@@ -77,6 +77,8 @@ local function onIntermission()
     end
     
     running = false
+	server.mastermode = 2
+	server.unspecall()
 end
 
 
