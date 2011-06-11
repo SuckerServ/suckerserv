@@ -27,7 +27,7 @@ local function current_stats(sendTo, player)
     server.player_msg(sendTo, stats)
     
     if gamemodeinfo.teams then
-        server.player_msg(sendTo, string.format(stats_teamkills_message, red(server.player_teamkills(player))))
+        server.player_msg(sendTo, string.format(server.stats_teamkills_message, red(server.player_teamkills(player))))
     end
 end
 
