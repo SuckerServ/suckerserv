@@ -12,6 +12,6 @@ return function(cn, ...)
 		end
 	end
     
-    server.msg(string.format(server.notice_message, server.player_displayname(cn), text))
+    server.msg(string.format(server.action_message, server.player_displayname(cn), text))
 end
 

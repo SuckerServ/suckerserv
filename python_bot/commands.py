@@ -108,6 +108,21 @@ def f(server_write, args, **_):
 server['spec'] = f
 
 def f(server_write, args, **_):
+	server_write('''\
+			code:local cn = tonumber('%s');\
+			if server.valid_cn(cn) then\
+				server.slay(cn)\
+				sendmsg("player slayed")\
+			else\
+				sendmsg("player not found")\
+			end\
+			\
+			\
+			''' % args)
+server['slay'] = f
+			
+
+def f(server_write, args, **_):
     server_write('''\
 			code:local cn = tonumber('%s');\
 			if server.valid_cn(cn) then\
@@ -143,6 +158,18 @@ def f(server_write, args, **_):
 			code:server.unspecall(true)\
 			''')
 server['unspecall'] = f
+
+def f(server_write, args, **_):
+	server_write('''\
+			code:server.recorddemo\
+			''')
+server['recorddemo'] = f
+
+def f(server_write, args, **_):
+	server_write('''\
+			code:server.stopdemo\
+			''')
+server['stopdemo'] = f
 
 def f(server_write, args, **_):
     server_write('''\
