@@ -4,7 +4,7 @@ player_command_descriptions = {
     msg = {"<cn|name> <message>", "Send a private message to another player"},
     nextmap = {"", "Get the name of the map for the next game"},
     admin = {"", "Gain admin privilege using auth"},
-	cookie = {"<cn|name>", "Send a this food to your friend"},
+	cookie = {"<cn|name>", "Send this food to your friend"},
 	action = {"msg", "Say what you are actually doing"}
 }
 
