@@ -1,7 +1,7 @@
 return function(cn, tcn, ...)
     
 	if not tcn then
-		return false, "#msg <cn|name> <message>"
+		return false, "#cookie <cn>"
 	end
  
 	if not server.valid_cn(tcn) then
