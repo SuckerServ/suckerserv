@@ -107,7 +107,7 @@ local function check_name(cn)
 end
 
 
-server.event_handler("connect", check_name)
+server.event_handler("maploaded", check_name)
 
 server.event_handler("rename", check_name)
 
