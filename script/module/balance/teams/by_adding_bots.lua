@@ -16,15 +16,14 @@ end
 local bots_added = 0
 local has_flag = {}
 
-
 local function addbots(num)
     
     if num == 0 then return end
-    
+
     if bot_skill_low then
-	for x = 1, num do server.addbot(math.random(bot_skill_low, bot_skill_high)) end
+        for x = 1, num do server.addbot(math.random(bot_skill_low, bot_skill_high)) end
     else
-	for x = 1, num do server.addbot(-1) end
+        for x = 1, num do server.addbot(-1) end
     end
 end
 
@@ -34,7 +33,7 @@ local function delbots(num)
     local num = math.min(num, #bots)
     
     for x = 1, num do
-	if not has_flag[127 + x] then server.delbot(bots[x]) end
+	    if not has_flag[127 + x] then server.delbot(bots[x]) end
     end
 end
 
@@ -73,7 +72,6 @@ local function check_balance()
     end
 end
 
-
 server.event_handler("disconnect",  check_balance)
 server.event_handler("connect",     check_balance)
 server.event_handler("spectator",   check_balance)
@@ -86,16 +84,13 @@ server.event_handler("mapchange", function()
     check_balance() -- for one player case
 end)
 
-if using_moveblock
-then
+if using_moveblock then
     server.event_handler("chteamrequest", function(cn, curteam, newteam)
-    
-	local teams = server.team_sizes()
-	
-	if (teams[curteam] or 0) > (teams[newteam] or 0) then
-    	    server.player_msg(cn, red(string.format("Team change disallowed: \"%s\" team has enough players.", newteam)))
-    	    return -1
-	end
+	    local teams = server.team_sizes()
+	    if (teams[curteam] or 0) > (teams[newteam] or 0) then
+            server.player_msg(cn, red(string.format("Team change disallowed: \"%s\" team has enough players.", newteam)))
+            return -1
+	    end
     end)
 end
 
@@ -109,24 +104,24 @@ end)
 
 server.event_handler("takeflag", function(cn)
 
-    if is_enabled() and server.is_bot(cn) then
-	has_flag[cn] = true
+    if server.is_bot(cn) then
+	    has_flag[cn] = true
     end
 end)
 
 server.event_handler("scoreflag", function(cn)
 
-    if is_enabled() and server.is_bot(cn) then
-	has_flag[cn] = nil
-	check_balance()
+    if server.is_bot(cn) then
+	    has_flag[cn] = nil
+	    check_balance()
     end
 end)
 
 server.event_handler("dropflag", function(cn)
 
-    if is_enabled() and server.is_bot(cn) then
-	has_flag[cn] = nil
-	check_balance()
+    if server.is_bot(cn) then
+	    has_flag[cn] = nil
+	    check_balance()
     end
 end)
 
