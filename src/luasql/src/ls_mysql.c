@@ -16,7 +16,7 @@
 #define NO_CLIENT_LONG_LONG
 #endif
 
-#include "mysql.h"
+#include "mysql/mysql.h"
 
 #include "lua.h"
 #include "lauxlib.h"
