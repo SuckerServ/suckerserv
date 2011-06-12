@@ -34,7 +34,7 @@ end
 return function(cn, map, mode)
     
     if not map_rotation then
-        return false, "server map rotation disabled"
+        return false, server.maprotation_disabled_message
     end
     
     if not map then
@@ -44,7 +44,7 @@ return function(cn, map, mode)
     mode = mode or server.gamemode    
     
     if not server.parse_mode(mode) then
-        return false, "unrecognized game mode"
+        return false, server.unrecognized_gamemode_message
     else
         mode = server.parse_mode(mode)
     end
