@@ -226,15 +226,9 @@ static int destroy_slot(lua_State * L)
     return 0;
 }
 
-static void clear_slots(lua_State * L)
+static void cleanup()
 {
-    for(handle_slot_map::iterator it = handle_to_slot.begin(); it != handle_to_slot.end(); it++)
-        luaL_unref(L, LUA_REGISTRYINDEX, (*it->second.first)[it->second.second]);
     handle_to_slot.clear();
-}
-
-static void clear_signals()
-{
     created_event_slots.clear();
 }
 
@@ -261,7 +255,6 @@ static void cleanup(int)
 {
     slots.clear();
     slots.deallocate_destroyed_slots();
-    lua::clear_signals();
 }
 
 void register_signals(script::env & env)
@@ -332,13 +325,11 @@ void register_signals(script::env & env)
     
     script::bind_freefunc(cubescript::register_event_handler, "event_handler", env);
     script::bind_freefunc(destroy_slot, "cancel_handler", env);
-    script::bind_freefunc(disconnect_all_slots, "cancel_handlers", env);
     
     register_lua_function(lua::register_event_handler,"event_handler");
     register_lua_function(lua::destroy_slot, "cancel_handler");
     register_lua_function(lua::create_signal, "create_event_signal");
     register_lua_function(lua::cancel_signal, "cancel_event_signal");
-  
 }
 
 void cleanup_dead_slots()
@@ -405,6 +396,5 @@ void disconnect_all_slots()
     signal_clearbans_request.disconnect_all_slots();
     signal_varchanged.disconnect_all_slots();
     
-    lua::clear_slots(env->get_lua_state());
+    lua::cleanup();
 }
-
