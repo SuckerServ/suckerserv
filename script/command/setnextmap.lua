@@ -45,6 +45,8 @@ return function(cn, map, mode)
     
     if not server.parse_mode(mode) then
         return false, "unrecognized game mode"
+    else
+        mode = server.parse_mode(mode)
     end
     
     local last_implementation = map_rotation.set_implementation(create_map_rotation_implementation(map, mode))

@@ -65,11 +65,9 @@ do
     }
     
     function server.parse_mode(mode)
-        if not get_gamemode_info(mode) then
-            return mode_aliases[mode] 
-        else
-            return mode
-        end
+        local available_modes = list_to_set(gamemodes)
+        if not available_modes[mode] then mode = mode_aliases[mode] end
+        return mode
     end
 end
 
