@@ -46,10 +46,10 @@ end
 
 function mapbattle.winner(map1, map2)
     if votes1 < votes2 then
-        server.msg(red(">>> ") .. blue("Winner: ") .. green(map2))
+        server.msg(string.format(server.mapbattle_winner_message, map2))
         return map2
     else
-        server.msg(red(">>> ") .. blue("Winner: ") .. green(map1))
+        server.msg(string.format(server.mapbattle_winner_message, map1))
         return map1
     end
 end
@@ -65,7 +65,7 @@ mapbattle.mode.MAPBATTLE = function (map1, map2, gamemode)
         mapa = map1
         mapb = map2
         mode = gamemode
-        server.msg(red(">>> ") .. blue("Vote for map ") .. green(map1) .. blue(" or ") .. green(map2) .. blue(" with 1 or 2"))
+        server.msg(string.format(server.mapbattle_vote_message, map1, map2))
 
         server.sleep(mapbattle.timeout, function()
             if not map_changed then
@@ -93,23 +93,23 @@ end)
 server.event_handler("text", function(cn, text)
     if text == tostring(1) or text == tostring(map1) then
         if has_voted[cn] == true then
-            server.player_msg(cn, red(">>> You have voted already"))
+            server.player_msg(cn, server.mapbattle_vote_already)
             return -1
         end
         votes1 = votes1 + 1
         voted = voted + 1
         has_voted[cn] = true
-        server.msg(red(">>> ") .. green(server.player_displayname(cn)) .. " voted for " .. blue(mapa))
+        server.msg(string.format(server.mapbattle_vote_ok, server.player_displayname(cn), mapa))
 
     elseif text == tostring(2) or text == tostring(map2) then
         if has_voted[cn] == true then
-            server.player_msg(cn, red(">>> You have voted already"))
+            server.player_msg(cn, server.mapbattle_vote_already)
             return -1
         end
         votes2 = votes2 + 1
         voted = voted + 1
         has_voted[cn] = true
-        server.msg(red(">>> ") .. green(server.player_displayname(cn)) .. " voted for " .. blue(mapb))
+        server.msg(string.format(server.mapbattle_vote_ok, server.player_displayname(cn), mapb))
     end
 
     if voted > (#server.clients()/1.5) or voted == (#server.clients()/1.5) then
