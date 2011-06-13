@@ -1,3 +1,7 @@
+--[[
+    Give a cookie (present) to the people you want
+    By LoveForever
+]]
 return function(cn, tcn, ...)
     
 	if not tcn then

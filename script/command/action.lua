@@ -1,3 +1,7 @@
+--[[
+    Say what you are doing actually 
+    By LoveForever
+]]
 return function(cn, ...)
 	local text = ""
     
