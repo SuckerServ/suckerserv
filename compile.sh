@@ -35,3 +35,6 @@ if [ $THREADS = 1 ]; then
 fi
 echo "$STRCOMPILE $PROJECT using $(tput bold ; tput setaf 4)$THREADS$(tput sgr0) $STRTHREADS ($BUILDTYPE build)"
 time (cmake $COMPILEFLAGS .. ; make -j$THREADS install)
+[[ "$?" != "0" ]] && echo "$(tput bold ; tput setaf 1)COMPILATION FAILED$(tput sgr0)" && exit 1
+cd ../bin
+for i in sauer_server sauer_authserver server authserver monitor env utils/newserver.sh utils/convert utils/luapp utils/keygen utils/shell.rb utils/shell.pl; do chmod +x $i; done
