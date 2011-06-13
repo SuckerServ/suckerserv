@@ -63,7 +63,7 @@ server.event_handler("started", function()
     load_once("command/_bindings")
     log_unknown_player_commands()
     
-    server.log_status("-> Successfully loaded Hopmod")
+    server.log_status("-> Successfully loaded Suckerserv")
 end)
 
 server.event_handler("shutdown", function() 
