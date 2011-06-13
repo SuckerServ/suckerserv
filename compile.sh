@@ -37,4 +37,4 @@ echo "$STRCOMPILE $PROJECT using $(tput bold ; tput setaf 4)$THREADS$(tput sgr0)
 time (cmake $COMPILEFLAGS .. ; make -j$THREADS install)
 [[ "$?" != "0" ]] && echo "$(tput bold ; tput setaf 1)COMPILATION FAILED$(tput sgr0)" && exit 1
 cd ../bin
-for i in sauer_server sauer_authserver server authserver monitor env utils/newserver.sh utils/convert utils/luapp utils/keygen utils/shell.rb utils/shell.pl; do chmod +x $i; done
+for i in sauer_server sauer_authserver server authserver monitor env.sh utils/newserver.sh utils/convert utils/luapp utils/keygen utils/shell.rb utils/shell.pl; do chmod +x $i; done
