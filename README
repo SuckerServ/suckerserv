@@ -1,6 +1,8 @@
 == How to build SuckerServ ==
 
-See http://code.google.com/p/suckerserv/wiki/Installation
+http://piernov.org/dokuwiki/en:suckerserv:installation
+
+Be sure to install all Dependencies needed!!! (cmake, libgeoip-dev, libsqlite3-dev, zlib1g-dev, subversion, libmysqlclient-dev)
 
 Compiling with the compile script:
 Make the script executeable and run it →
@@ -11,3 +13,7 @@ Make the script executeable and run it →
 Usage: ./compile.sh [--recompile] [--debug] — Build SuckerServ
           --recompile   — Delete $COMPILEDIR (release_build or debug_build with --debug) before compiling SuckerServ again
           --debug       — Make a debug build
+
+		  
+
+For more info: #suckerserv @ irc.gamesurge.net
