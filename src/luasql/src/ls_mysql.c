@@ -18,8 +18,8 @@
 
 #include "mysql/mysql.h"
 
-#include "lua.h"
-#include "lauxlib.h"
+#include "../../lua/src/lua.h"
+#include "../../lua/src/lauxlib.h"
 #if ! defined (LUA_VERSION_NUM) || LUA_VERSION_NUM < 501
 #include "compat-5.1.h"
 #endif
