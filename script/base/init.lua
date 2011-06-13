@@ -63,7 +63,7 @@ server.event_handler("started", function()
     load_once("command/_bindings")
     log_unknown_player_commands()
     
-    server.log_status("-> Successfully loaded Suckerserv")
+    server.log_status(server.server_start_message)
 end)
 
 server.event_handler("shutdown", function() 
