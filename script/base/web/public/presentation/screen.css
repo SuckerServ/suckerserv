@@ -1,0 +1,88 @@
+body{ font-size:0.9em; font-family:verdana; color:#1A1A1A;}
+h1{font-size:1.5em;}
+.clear{clear:both; height:0; padding:0; margin:0;}
+a{color:#0077CC;}
+a:hover{color:#4A6B82;}
+a:focus{background:#DEEFF7;}
+table th{text-align:left;}
+
+.text-shell{width:100%;}
+.text-shell-heading{padding-left:18px; font-weight:bold;}
+.text-shell-output{height:200px; border:inset 1px #000000; margin:1px; overflow:scroll;}
+.text-shell-output-padding{padding:3px;}
+.text-shell input{display:block; width:100%; border:inset 1px black; padding:2px 0 2px;}
+.text-shell input:focus, #command-shell input:focus{background:#DEEFF7;}
+
+.player-control-links{float:left;}
+.kick-button{display:block; width:16px; height:16px; background:url(cross_circle.png) no-repeat; outline-style:none;}
+
+.admin{background-color:#FFAC75;;}
+.master{background-color:#80FF80;}
+.dead{opacity:0.5;}
+
+#loading{text-align:center;}
+
+#serverinfo span{margin:0 1em 0 0;}
+#netstats span{margin:0 1em 0 0;}
+
+#gameinfo{/*background:#ffe86a; border-bottom:solid 1px #D1B200;*/ /*color:#524500;*/ padding:0.25em; font-weight:bold; margin:0;}
+#gameinfo span{}
+#gameinfo-map{font-size:1.3em;}
+
+#players table{width:100%;}
+.playertable-heading{text-align:left; background:#ffe86a; /*border-top:solid 1px #FFF4B8;*/ border-bottom:solid 1px #D1B200; color:#524500; padding:0.25em; font-weight:bold;}
+.playertable-heading-team_good{background:#ff3635; border-bottom:solid 1px #CC0000; color:#800000;}
+.playertable-heading-team_evil{background:#2b67ff; border-bottom:solid 1px #0030A8; color:#002175;}
+#spectators table{width:100%;}
+
+#command-links{font-size:0.84em;margin:1em;}
+#command-links ul{margin:0; margin-bottom:1em; padding:0;}
+#command-links li{list-style:none; display:inline; margin-right:1em;}
+
+#chat-shell-heading{background:transparent url(balloons.png) no-repeat;}
+.chat-shell-name{float:left; width:170px; overflow:hidden; margin-right:5px; text-align:right; font-weight:bold;}
+.chat-shell-text{word-wrap:break-word;}
+.chat-shell-message{margin:0; padding:0;}
+.chat-shell-admin{color:#FF531A;}
+.chat-shell-master{color:#0eaf0a;}
+
+#command-shell {width:100%; margin-top:10px;}
+#command-shell-heading {padding-left:18px; background:transparent url(gear.png) no-repeat; font-weight:bold;}
+#command-shell-output {height:120px; border:inset 1px #000000; margin:1px; overflow:scroll;}
+#command-shell-output-padding {padding:3px;}
+#command-shell input {display:block; width:100%; border:inset 1px black;}
+#command-shell input, #command-shell-output {font-family:courier new;}
+#command-shell .error-output {padding-left:15px;color:#FF7673;}
+#command-shell-output .normal-output {padding-left:15px;}
+#command-shell-output .normal-no-output {margin-left:15px; background:transparent url(success.png) no-repeat; height:16px; width:16px;}
+#command-shell-output .echo-output {}
+
+#netstats-download-rate{background:url(down-arrow.png) no-repeat; padding-left:20px; margin:0 1em 0 1em;}
+#netstats-upload-rate{background:url(up-arrow.png) no-repeat; padding-left:20px;  margin:0 1em 0 1em;}
+
+#left-column{float:left; width:600px;}
+#right-column{margin-left:610px; min-width:400px;}
+
+#footer{margin-top:20px; text-align:center; color:#BFBFBF; font-size:0.7em;}
+
+#loginpage h1{text-align:center;}
+#loginpage form{display:block; width:350px; margin:auto;}
+#loginpage label,
+#loginpage .label-space{display:inline-block; width:100px; margin-right:10px; text-align:right;}
+#loginpage .form-error{text-align:center; color:red; font-weight:bold;}
+
+#nav{
+    float:right;
+    margin:0 -0.6em 0 0;
+    padding:0;
+    background:#DEEFF7;
+    -moz-border-radius-topleft:6px;
+    -moz-border-radius-bottomleft:6px;
+    -webkit-border-top-left-radius:6px;
+    -webkit-border-bottom-left-radius:6px;
+    -webkit-box-shadow: 1px 1px 5px #999;
+}
+
+#nav li{display:inline-block; list-style:none; border-right:solid 1px #78BCDE;}
+#nav a{display:inline-block; line-height:2em; padding:0 1em 0 1em; text-decoration:none;  border-right:solid 1px #F3F9FC;}
+

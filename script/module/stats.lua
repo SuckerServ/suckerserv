@@ -1,0 +1,2 @@
+exec("stats/init.lua")
+
