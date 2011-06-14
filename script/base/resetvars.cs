@@ -66,11 +66,12 @@ global web_admins []
 
 global mute_triggers [nigger nigga negro kike faggot motherfucker jude wichser kanake polake kinderficker "scheiss auslaender"]
 
-global saveconf_vars [saveconf_vars servername motd maxclients admin_password]
+global saveconf_vars [saveconf_vars servername motd maxclients admin_password master_password]
 
 global command_prefixes "^^[#@!]"
 
 global admin_password ""
+global master_password ""
 global allow_setmaster 0
 
 global irc_socket_password ""

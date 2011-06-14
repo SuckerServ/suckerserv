@@ -3,8 +3,8 @@ require "verse.client"
 
 local st = require("util.stanza");
 local xmpp_bot = verse.new()
-local to_server_fifo_location="script/module/jabber/to_server.fifo"
-local bot_fifo_location="script/module/jabber/bot.fifo"
+local to_server_fifo_location="conf/to_server.fifo"
+local bot_fifo_location="conf/bot.fifo"
 
 xmpp_jid = arg[1]
 xmpp_password = arg[2]
