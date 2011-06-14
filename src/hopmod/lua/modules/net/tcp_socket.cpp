@@ -223,7 +223,11 @@ static void async_read_handler(
     lua_State * L, lua::weak_ref callback, const char * event_name,
     const boost::system::error_code & ec, const char * buffer, std::size_t length)
 {
-    if(callback.is_expired()) return;
+    if(callback.is_expired())
+    {
+        managed_socket->read_buffer.unlock_read();
+        return;
+    }
     
     lua::get_error_handler(L);
     int error_function = lua_gettop(L);
@@ -244,9 +248,10 @@ static void async_read_handler(
         luaL_buffinit(L, &copy_buffer);
         luaL_addlstring(&copy_buffer, buffer, length);
         luaL_pushresult(&copy_buffer);
-        managed_socket->read_buffer.unlock_read();
         args = 1;
     }
+    
+    managed_socket->read_buffer.unlock_read();
     
     if(lua::pcall(L, args, 0, error_function) != 0) 
         log_error(L, event_name);

@@ -47,7 +47,6 @@ public:
     
     void unlock_read()
     {
-        if(!m_read_lock) return;
         m_buffer.consume(m_consume);
         m_read_lock = false;
         m_consume = 0;
