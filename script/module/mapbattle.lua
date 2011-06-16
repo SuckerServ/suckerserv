@@ -39,9 +39,9 @@ function mapbattle.get_next_map(num, mode)
         end
     end
     local countmaps = #mapvar or 0
-    if playing == countmaps then playing = 0 end
+    if playing > countmaps-2 then playing = 0 end
     local nextmap = mapvar[playing+num]
-    return nextmap or default_map
+    return nextmap or mapbattle.defaultmap
 end
 
 function mapbattle.winner(map1, map2)
@@ -91,30 +91,38 @@ server.event_handler("mapchange", function()
 end)
 
 server.event_handler("text", function(cn, text)
-    if text == tostring(1) or text == tostring(map1) then
-        if has_voted[cn] == true then
-            server.player_msg(cn, server.mapbattle_vote_already)
-            return -1
-        end
-        votes1 = votes1 + 1
-        voted = voted + 1
-        has_voted[cn] = true
-        server.msg(string.format(server.mapbattle_vote_ok, server.player_displayname(cn), mapa))
+    if map_changed then return end
+    for _,player in pairs(server.players()) do
+        if cn == player then
+            if text == tostring(1) or text == tostring(map1) then
+                if has_voted[cn] == true then
+                    server.player_msg(cn, server.mapbattle_vote_already)
+                    return -1
+                end
+                votes1 = votes1 + 1
+                voted = voted + 1
+                has_voted[cn] = true
+                server.msg(string.format(server.mapbattle_vote_ok, server.player_displayname(cn), mapa))
 
-    elseif text == tostring(2) or text == tostring(map2) then
-        if has_voted[cn] == true then
-            server.player_msg(cn, server.mapbattle_vote_already)
-            return -1
-        end
-        votes2 = votes2 + 1
-        voted = voted + 1
-        has_voted[cn] = true
-        server.msg(string.format(server.mapbattle_vote_ok, server.player_displayname(cn), mapb))
-    end
+            elseif text == tostring(2) or text == tostring(map2) then
+                if has_voted[cn] == true then
+                    server.player_msg(cn, server.mapbattle_vote_already)
+                    return -1
+                end
+                votes2 = votes2 + 1
+                voted = voted + 1
+                has_voted[cn] = true
+                server.msg(string.format(server.mapbattle_vote_ok, server.player_displayname(cn), mapb))
+            end
 
-    if voted > (#server.clients()/1.5) or voted == (#server.clients()/1.5) then
-        if map_changed == true then return end
-        map_changed = true
-        server.changemap(mapbattle.winner(mapa, mapb), mode)
+            if voted > (#server.players()/1.5) or voted == (#server.players()/1.5) then
+                if map_changed == true then return end
+                map_changed = true
+                server.changemap(mapbattle.winner(mapa, mapb), mode)
+            end
+            return
+        end
     end
+    server.player_msg(cn, server.mapbattle_cant_vote_message)
+    return -1
 end)
