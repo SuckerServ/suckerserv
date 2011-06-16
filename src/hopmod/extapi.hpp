@@ -185,6 +185,8 @@ namespace server
     struct clientinfo;
     void try_respawn(clientinfo * ci, clientinfo * cq);
     
+    void player_forgive_tk(int);
+
 } //namespace server
 
 #endif

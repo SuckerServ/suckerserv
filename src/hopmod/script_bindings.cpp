@@ -348,5 +348,6 @@ void register_server_script_bindings(script::env & env)
     script::bind_freefunc(dir_exists, "dir_exists", env);
     
     script::bind_var(server::spectator_delay, "spectator_delay", env);
+    script::bind_freefunc(server::player_forgive_tk, "player_forgive_tk", env);
 }
 
