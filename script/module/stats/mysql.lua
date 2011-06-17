@@ -215,5 +215,20 @@ local function find_names_by_ip(ip, exclude_name)
     end
     return names
 end
+
+local function player_ranking(player_name)
+    player_ranking = execute_statement("SELECT name FROM playertotals ORDER BY frags DESC")
+    local names = {}
+	row = player_ranking:fetch ({}, "a")
+    while row do
+        if not exclude_name or exclude_name ~= row.name then
+            names[#names + 1] = row.name
+        end
+		row = player_ranking:fetch (row, "a")
+    end
+    for rank,name in pairs(names) do
+        if name == player_name then return tostring(rank) end
+    end
+end
  
-return {open = open, commit_game = commit_game, player_totals = player_totals, find_names_by_ip = find_names_by_ip}
+return {open = open, commit_game = commit_game, player_totals = player_totals, find_names_by_ip = find_names_by_ip, player_ranking = player_ranking}

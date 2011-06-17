@@ -367,7 +367,7 @@ function internal.initialize(commit_backends, query_backend, settings)
         local connect_handler
         
         connect_handler = server.event_handler("connect", function(cn)
-            server.player_msg(cn, red("Stats are disabled for this match"))
+            server.player_msg(cn, server.stats_disabled_message)
         end)
         
         mapchange_handler = server.event_handler("mapchange", function()
@@ -381,11 +381,11 @@ function internal.initialize(commit_backends, query_backend, settings)
                 internal.loadAuthHandlers(settings.auth_domain)
             end
             
-            server.sleep(10000, function() server.msg(green("Stats enabled")) end)
+            server.sleep(10000, function() server.msg(server.stats_enabled_message) end)
         end)
         
         -- Give a message to current players after reloadscripts() called
-        server.msg(red("Sorry, stats have been disabled for this match"))
+        server.msg(server.stats_reload_disabled_message)
     end
     
     internal.backends = commit_backends

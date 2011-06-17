@@ -14,13 +14,18 @@ local function total_stats(query_backend, sendto, player)
     local kpd = round(row.frags / row.deaths, 2)
     local acc = round((row.hits / row.shots)*100)
 
-    server.player_msg(sendto, string.format("Games %s Frags %s Deaths %s Kpd %s Accuracy %s Wins %s",
-        yellow  (row.games),
-        green   (row.frags),
-        red     (row.deaths),
-        yellow  (kpd),
-        yellow  (acc .. "%"),
-        green   (row.wins)))
+    if not player_ranking then
+        player_ranking = "Unknown" 
+    end
+    
+    server.player_msg(sendto, string.format(server.stats_total_player_message,
+        row.games,
+        row.frags,
+        row.deaths,
+        kpd,
+        acc,
+        row.wins,
+        player_ranking))
 end
 
 local function initialize(query_backend)
