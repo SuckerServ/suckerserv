@@ -120,7 +120,7 @@ return function(cn, map, mode, lockteams)
     if lockteams == "lockteams" then teams_locked = true end
 
     if not map then
-        return false, "#fairgame <map> [<mode>] [lockteams]"
+        return false, "#cw <map> [<mode>] [lockteams]"
     end    
     
     mode = mode or server.gamemode    
