@@ -39,6 +39,7 @@ local active = server.event_handler("maploaded", function(cn)
             server.msg(string.format(server.fairgame_countdown_message, countdown, plural))
             
             if countdown == 0 then
+                server.pausegame(false)
                 server.msg(server.fairgame_started_message)
                 for _, cn in ipairs(server.players()) do server.player_nospawn(cn, 0); server.player_respawn(cn) end
                 runned = true
@@ -104,4 +105,5 @@ return function(cn, map, mode, lockteams)
     server.mastermode_owner = -1
     
     server.changemap(map, mode, -1)
+    server.pausegame(true)
 end
