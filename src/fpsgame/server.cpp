@@ -514,6 +514,8 @@ namespace server
     int reservedslots = 0;
     int reservedslots_use = 0;
     
+    int intermtime = 10000;
+
     string serverdesc = "", serverpass = "";
     string smapname = "";
     int interm = 0;
@@ -1709,7 +1711,7 @@ namespace server
             if(gamemillis < gamelimit) return;
             
             sendf(-1, 1, "ri2", N_TIMEUP, 0);
-            interm = gamemillis+10000;
+            interm = gamemillis+intermtime;
             calc_player_ranks();
             signal_intermission();
         }

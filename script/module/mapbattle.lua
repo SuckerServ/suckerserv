@@ -14,7 +14,7 @@ local mode = nil
 local voted = 0
 
 mapbattle.selected = "MAPBATTLE" --mode on intermission
-mapbattle.timeout = 30000
+mapbattle.timeout = server.intermission_time - 1000
 mapbattle.defaultmap = "ot"
 
 function mapbattle.reset_votes()
@@ -55,7 +55,7 @@ function mapbattle.winner(map1, map2)
 end
 
 mapbattle.mode.DEFAULT = function (map1, map2, gamemode) 
-    server.sleep(2000, function()
+    server.sleep(mapbattle.timeout, function()
         server.changemap(map1, gamemode)
     end)
 end
@@ -78,7 +78,6 @@ mapbattle.mode.MAPBATTLE = function (map1, map2, gamemode)
 end
 
 server.event_handler("intermission", function() 
-        server.pausegame(1)
         mapbattle.reset_votes()
         local map1 = map_rotation.get_map_name(server.gamemode)
         local map2 = mapbattle.get_next_map(2)

@@ -267,6 +267,7 @@ void register_server_script_bindings(script::env & env)
     hopmod::bind_var(server::aiman::botlimit, "botlimit", env);
     hopmod::bind_var(server::aiman::botbalance, "botbalance", env);
     hopmod::bind_funvar<const char *>(server::gamemodename, "gamemode", env);
+    script::bind_var(server::intermtime, "intermission_time", env);
     
     hopmod::bind_var(server::display_open, "display_open", env);
     hopmod::bind_var(server::allow_mm_veto, "allow_mastermode_veto", env);

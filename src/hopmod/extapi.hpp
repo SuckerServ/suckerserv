@@ -31,6 +31,7 @@ namespace server
     extern int gamelimit;
     extern bool gamepaused;
     extern int gamemode;
+    extern int intermtime;
     
     extern int mastermode;
     extern int mastermode_owner;
