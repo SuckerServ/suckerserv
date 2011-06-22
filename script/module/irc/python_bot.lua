@@ -309,6 +309,10 @@ server.event_handler("checkmaps", function(cn)
     end
 end)
 
+server.event_handler("scoreflag", function(cn)
+		sendmsg(string.format(irc_color_blue("%s ")..irc_color_green("scored for team ")..irc_color_blue("%s"), server.player_name(cn), server.player_team(cn)))
+end)
+
 server.event_handler("failedconnect", function(ip, reason)
 		sendmsg(string.format(irc_color_red("Ip: %s couldn't connect bacause of reason: %s"), ip, reason))
 end)
