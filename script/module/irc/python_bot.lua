@@ -214,7 +214,15 @@ server.event_handler("text", function(cn, msg)
     if string.match(msg, "^#.*") then 
         return 
     end
+	
+	if string.match(msg, "1") then 
+        return 
+    end
     
+	if string.match(msg, "2") then 
+        return 
+    end
+	
     local mute_tag = ""
     if server.is_muted(cn) then mute_tag = "(muted)" end
     sendmsg(string.format(irc_color_blue("%s ")..irc_color_green("(%i): ")..irc_color_blue("%s%s"),server.player_name(cn),cn,mute_tag,msg))
@@ -299,6 +307,10 @@ server.event_handler("checkmaps", function(cn)
     for sessionid, cn in pairs(modified_clients) do
 		sendmsg(string.format(irc_color_red("%s(cn:%i/map:%s/ip:%s) is using a modified map"),server.player_name(cn),cn, server.map, server.player_ip(cn)))
     end
+end)
+
+server.event_handler("failedconnect", function(ip, reason)
+		sendmsg(string.format(irc_color_red("Ip: %s couldn't connect bacause of reason: %s"), ip, reason))
 end)
 
 local function get_best_stats(time)
