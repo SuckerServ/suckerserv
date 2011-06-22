@@ -47,6 +47,7 @@ local function resume()
 end
 
 local disconnect = server.event_handler("disconnect", function(cn)
+    if not running then return; end
     if players[server.player_id(cn)] then server.pausegame(true) end
     players[server.player_id(cn)] = "not_loaded"
 end)
@@ -105,7 +106,7 @@ local mapchange = server.event_handler("mapchange", function(map, mode)
 end)
 
 local teamchange = server.event_handler("chteamrequest", function(cn)
-    if not teams_locked then return end
+    if not teams_locked or not running then return end
     server.player_msg(cn, server.fairgame_teams_locked_message)
     return -1
 end)
