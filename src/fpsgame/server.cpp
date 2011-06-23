@@ -1683,7 +1683,7 @@ namespace server
     {
         clientinfo *ci = getinfo(sender);
         if(!ci || (ci->state.state==CS_SPECTATOR && !ci->privilege && !ci->local) || (!ci->local && !m_mp(reqmode))) return;
-        copystring(ci->mapvote, map);
+        strncpy(ci->mapvote, map, 50);
         ci->modevote = reqmode;
         if(!ci->mapvote[0]) return;
         if(ci->local || mapreload || (ci->privilege && mastermode>=MM_VETO))
