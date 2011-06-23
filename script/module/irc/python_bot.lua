@@ -211,15 +211,12 @@ server.event_handler("text", function(cn, msg)
     if server.player_isbot(cn) then return end
 	
     -- Hide player commands
-    if string.match(msg, "^#.*") then 
+    if string.match(msg, server.command_prefixes) then
         return 
     end
 	
-	if string.match(msg, "1") then 
-        return 
-    end
-    
-	if string.match(msg, "2") then 
+	--Hide mapbattle votes
+	if (msg == "1" or msg == "2") and server.mapbattle_running then
         return 
     end
 	
@@ -320,6 +317,15 @@ end)
 server.event_handler("reloadhopmod", function()
 		sendmsg(string.format(irc_color_red("RELOAD: Reloading hopmod")))
 end)
+
+-- Auth Listener for masterauth events
+auth.listener("", function(cn, user_id, domain, status)
+    if status ~= auth.request_status.SUCCESS then return end
+    local msg = string.format(irc_color_green("%i")..irc_color_blue("successfully authed"), server.player_name(cn), cn)
+    sendmsg(irc_color_red("AUTH: ") .. msg)
+end)
+
+--
 
 local function get_best_stats(time)
     local players = server.clients()
