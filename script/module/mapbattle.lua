@@ -13,6 +13,7 @@ local mapb = nil
 local mode = nil
 local voted = 0
 
+server.mapbattle_running = false
 mapbattle.selected = "MAPBATTLE" --mode on intermission
 mapbattle.timeout = server.intermission_time - 1000
 mapbattle.defaultmap = "ot"
@@ -26,6 +27,7 @@ function mapbattle.reset_votes()
     mapa = nil
     mapb = nil
     voted = 0
+    server.mapbattle_running = false
 end
 
 function mapbattle.get_next_map(num, mode)
@@ -105,9 +107,11 @@ mapbattle.mode.MAPBATTLE = function (map1, map2, gamemode)
         mapb = map2
         mode = gamemode
         server.msg(string.format(server.mapbattle_vote_message, map1, map2))
+        server.mapbattle_running = true
 
         server.sleep(mapbattle.timeout, function()
             if not map_changed then
+                server.mapbattle_running = false
                 server.changemap(mapbattle.winner(mapa, mapb), gamemode)
                 map_changed = true
             end
@@ -129,7 +133,7 @@ server.event_handler("mapchange", function()
 end)
 
 server.event_handler("text", function(cn, text)
-    if map_changed then return end
+    if map_changed  or not server.mapbattle_running then return end
     if text ~= "1" and text ~= "2" and text ~= mapa and text ~= mapb then return end
     mapbattle.process_vote(cn, text)
 end)

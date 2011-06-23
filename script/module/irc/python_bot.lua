@@ -211,18 +211,15 @@ server.event_handler("text", function(cn, msg)
     if server.player_isbot(cn) then return end
 	
     -- Hide player commands
-    if string.match(msg, "^#.*") then 
+    if string.match(msg, server.command_prefixes) then 
         return 
     end
-	
-	if string.match(msg, "1") then 
+
+    -- Hide mapbattle votes
+    if (msg == "1" or msg == "2") and server.mapbattle_running then 
         return 
     end
-    
-	if string.match(msg, "2") then 
-        return 
-    end
-	
+
     local mute_tag = ""
     if server.is_muted(cn) then mute_tag = "(muted)" end
     sendmsg(string.format(irc_color_blue("%s ")..irc_color_green("(%i): ")..irc_color_blue("%s%s"),server.player_name(cn),cn,mute_tag,msg))
