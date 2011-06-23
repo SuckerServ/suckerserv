@@ -197,3 +197,9 @@ def f(server_write, args, **_):
 				server.changetime(tonumber('%s')*1000*60)\
 			''' % args)
 server['changetime'] = f
+
+def f(server_write, args, **_):
+    server_write('''\
+			code:server.reloadscripts(1)\
+			''')
+server['reload'] = f		
