@@ -211,15 +211,18 @@ server.event_handler("text", function(cn, msg)
     if server.player_isbot(cn) then return end
 	
     -- Hide player commands
-    if string.match(msg, server.command_prefixes) then 
+    if string.match(msg, "^#.*") then 
         return 
     end
-
-    -- Hide mapbattle votes
-    if (msg == "1" or msg == "2") and server.mapbattle_running then 
+	
+	if string.match(msg, "1") then 
         return 
     end
-
+    
+	if string.match(msg, "2") then 
+        return 
+    end
+	
     local mute_tag = ""
     if server.is_muted(cn) then mute_tag = "(muted)" end
     sendmsg(string.format(irc_color_blue("%s ")..irc_color_green("(%i): ")..irc_color_blue("%s%s"),server.player_name(cn),cn,mute_tag,msg))
@@ -312,6 +315,10 @@ end)
 
 server.event_handler("failedconnect", function(ip, reason)
 		sendmsg(string.format(irc_color_red("Ip: %s couldn't connect bacause of reason: %s"), ip, reason))
+end)
+
+server.event_handler("reloadhopmod", function()
+		sendmsg(string.format(irc_color_red("RELOAD: Reloading hopmod")))
 end)
 
 local function get_best_stats(time)
