@@ -54,7 +54,7 @@ query_backend = commit_backends[server.stats_query_backend]
 
 if query_backend then
     
-    local global_query_interface = {"find_names_by_ip", "player_ranking"}
+    local global_query_interface = {"find_names_by_ip", "player_ranking", "player_ranking_by_period", "player_stats_by_period"}
     
     for _, query_function_name in pairs(global_query_interface) do
         if query_backend[query_function_name] then
@@ -66,6 +66,8 @@ if query_backend then
 else
     server.find_names_by_ip = function() return nil end
     server.player_ranking = function() return nil end
+    server.player_stats_by_period = function() return nil end
+    server.player_ranking_by_period = function() return nil end
     
     if server.stats_query_backend ~= "" then
         server.log_error(string.format("Error in stats module: unused/unknown %s commit backend is trying to be used for the query backend.")) 
