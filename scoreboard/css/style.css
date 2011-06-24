@@ -1,0 +1,227 @@
+body,table,table.tablesorter
+{
+    font-family: Verdana,Helvetica,Arial,sans-serif;
+    font-size:84%;
+}
+body, input[type=text]
+{
+    background-color: #302c28;
+    color: #EEEEEE;
+}
+
+h1,.footer{text-align:center;}
+
+a{color:#FFBB00;}
+a:hover{color: #FF9900;}
+a:visited{color: #FFBB00;}
+img{border:0;}
+table
+{
+    border-collapse:collapse;
+}
+table td,table th{border:solid 1px  #555555;}
+table th{background-color:#3f3934;}
+table th{padding:15px;}
+table td{padding:5px; color:#EEEEEE;}
+table img{border: solid 1px #000000;}
+.highlight td{color: #ffba00}
+
+
+table.tablesorter {
+        /*font-family:arial;
+        margin:10px 0pt 15px;
+        font-size: 8pt;*/
+	margin:0 auto;
+        width: 100%;
+        text-align: center;
+}
+table.tablesorter thead tr th, table.tablesorter tfoot tr th {
+        border: 1px solid #FFF;
+}
+table.tablesorter thead tr .header {
+		padding:5px;
+		padding-right:25px;
+        background-image: url(../images/tablesorter/bg.gif);
+        background-repeat: no-repeat;
+        background-position: center right;
+        cursor: pointer;
+}
+table.tablesorter tbody tr.odd td {
+        background-color:#F0F0F6;
+}
+table.tablesorter thead tr .headerSortUp {
+		padding-right:25px;
+        background-image: url(../images/tablesorter/asc.gif);
+}
+table.tablesorter thead tr .headerSortDown {
+		padding-right:25px;
+        background-image: url(../images/tablesorter/desc.gif);
+}
+table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
+background-color: #FFFFFF;}
+.error{
+	font-weight:bold;
+	background-color:#e51d14;
+	color:#EEEEEE;
+	padding:5px;
+}
+.dlgbox
+{
+	
+}
+
+#filter-panel{padding:10px 0px 10px 0px;}
+
+#filter-panel .filter-form
+{
+	background-color:#3F3934;
+	padding:1em;
+	line-height:3em;
+}
+#filter-panel .selected
+{
+        background-color:#3A3A3A;
+        color: #ffffff;
+        font-weight:bold;
+}
+
+#filter-panel form
+{
+	display:inline;
+}
+#pagebar a
+{
+	border:1px solid #BBBBBB;
+	/*background-color:#E5E5E5;*/
+	padding:0.25em;
+	margin-right:0.25em;
+	line-height:2.5em;
+	font-weight:bold;
+	text-decoration:none;
+}
+
+#pagebar a:hover
+{
+	background-color:#E5E5E5;
+}
+
+#pagebar .selected
+{
+	background-color:#3A3A3A;
+	color: #ffffff;
+	font-weight:bold;
+}
+
+
+#sddm
+{       margin: 0;
+        padding: 0;
+        z-index: 30
+	color: FFF;
+}
+
+
+#sddm li
+{       margin: 0;
+        padding-right: 50;
+        list-style: none;
+        float: right;
+        font: bold 8px arial}
+
+#sddm li a
+{       display: block;
+        margin: 0 1px 0 0;
+        padding: 4px 10px;
+        width: 105px;
+        background: #3F3934;
+        text-align: center;
+        text-decoration: none}
+
+#sddm li a:hover
+{       background: #E5E5E5}
+
+#sddm div
+{       position: absolute;
+        visibility: hidden;
+        margin: 0;
+        padding: 0;
+        background: #FFF;
+        border: 1px }
+
+        #sddm div a
+        {       position: relative;
+                display: block;
+                margin: 0;
+                padding: 5px 10px;
+                width: 105px;
+                white-space: nowrap;
+                text-align: left;
+                text-decoration: none;
+                font: 8px arial}
+
+        #sddm div a:hover
+	{
+                color: #FF9900}
+
+
+
+
+
+
+
+
+
+h1 {
+border-bottom:1px dotted #FFFFFF;
+letter-spacing:-1px;
+padding-bottom:10px;
+}
+h1, h2, h3 {
+color:#FFFFFF;
+}
+table th, .headcol {
+background:#3F3934 none repeat scroll 0 50%;
+border:1px solid #BBBBBB;
+color:#FFBB00;
+font-weight:bold;
+padding:8px 5px;
+}
+#content {
+margin:50px;
+}
+.entrylist li {
+color: #FFF;
+list-style-image:none;
+list-style-position:outside;
+list-style-type:none;
+}
+.entrylist a {
+color: #FFF;
+}
+div#rightColumn {
+        text-align:center;
+        width: 50%;
+        height: 800px;
+        overflow: auto;
+        position: relative;
+        float: right;
+}
+div#leftcolumn {
+        text-align:center;
+        width: 49%;
+        height: 800px;
+        position: relative;
+        float: left;
+        overflow: auto;
+}
+.footer
+{
+    color: #a0a0a0;
+    font-size:small;
+    position: relative;
+}
+div#container {
+        width: 100%;
+        height: 800px;
+}
+
