@@ -9,6 +9,14 @@ local ratio = server.mapsucks_ratio
 local lower_time = server.mapsucks_lower_time
 local mapsucks = {}
 
+
+server.event_handler("text", function(cn, text)
+	    if (string.match(text, "SUCKS") or string.match(text, "sucks"))
+		then 
+		server.player_msg(cn, string.format(server.mapsucks_analysetext_message))
+	    end
+end)
+
 server.event_handler("connect", function(cn)
     cn_id = server.player_id(cn)
     if not mapsucks[cn_id] then return end
