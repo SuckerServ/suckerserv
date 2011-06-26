@@ -17,7 +17,7 @@ server = {
 
 def f(server_write, args, nickname, **_):
     server_write('''code:\
-	server.msg("REMOTE ADMIN (%s): %s");\
+	server.msg("\f3>>> \f1REMOTE ADMIN (%s)\ff: %s");\
 	sendmsg("REMOTE ADMIN (%s): %s")\
 	''' % (nickname, args, nickname, args))
 	
