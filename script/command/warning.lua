@@ -54,6 +54,7 @@ return function(cn, tcn, ...)
 
 		server.player_msg(tcn," ")
 		server.msg("(" .. red(msg) .. ")  " .. "(" .. green(server.player_displayname(tcn)) .. ")  " .. orange(text))
+		server.msg(string.format(server.warning_warn_message, msg, server.player_displayname(tcn), text))
 		server.player_msg(tcn," ")
 
 		server.player_vars(tcn).warning_count = warn_count + 1

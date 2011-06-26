@@ -20,11 +20,11 @@ local function cmd_suddendeath(cn, option)
     if (option == "0") or (option == "off")
     then
         server.suddendeath()
-        server.player_msg(cn, "Suddendeath mode disabled. There may be ties.")
+        server.player_msg(cn, string.format(server.sd_disabled_message))
     elseif (option == "1") or (option == "on")
     then
         server.suddendeath(true)
-        server.player_msg(cn, "Suddendeath mode enabled. There will be no ties.")
+        server.player_msg(cn, string.format(sd_enabled_message))
     else
 	return false, msg_info
     end

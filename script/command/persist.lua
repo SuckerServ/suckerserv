@@ -17,12 +17,12 @@ return function(cn,option)
 	elseif tonumber(option) == 1 then
 
 		server.reassignteams = 0
-		server.player_msg(cn,orange("reshuffle teams at mapchange disabled"))
+		server.player_msg(cn, string.format(server.persist_disabled_message))
 
 	elseif tonumber(option) == 0 then
 
 		server.reassignteams = 1
-		server.player_msg(cn, orange("reshuffle teams at mapchange enabled"))
+		server.player_msg(cn, string.format(server.persist_enabled_message))
 
 	else
 

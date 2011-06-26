@@ -67,11 +67,11 @@ local function onIntermission()
 
     if server.player_score(player1_cn) > server.player_score(player2_cn) then
     
-        server.msg(green("--[ 1on1 Game ended - " .. green(server.player_name(player1_cn)) .. " won the Game!"))       
+		server.msg(string.format(server.versus_win_message, server.player_name(player1_cn)))
     
     elseif server.player_score(player1_cn) < server.player_score(player2_cn) then
     
-        server.msg(green("--[ 1on1 Game ended - " .. green(server.player_name(player2_cn)) .. " won the Game!"))
+        server.msg(string.format(server.versus_win_message, server.player_name(player2_cn)))
     else
         server.msg("--[ 1on1 Game ended - No Winner!")
     end
@@ -104,6 +104,7 @@ local function onDisconnect(cn)
     if id == player1_id or id == player2_id then 
     
         server.msg(red("--[ Opponent " .. green(server.player_name(cn)) .. " Disconnected Pausing Game"))
+		server.msg(string.format(server.versus_disconnect_message, server.player_name(cn)))
         server.pausegame(true)
         
         suspended = true
@@ -139,12 +140,12 @@ return function(cn, player1, player2, mode, map)
     end
     
     if not server.valid_cn(player1) or not server.valid_cn(player2) then
-        server.player_msg(cn, red("Invalid CN given for the first or second argument."))
+        server.player_msg(cn, string.format(server.versus_invalidcn_message))
         return
     end
     
     if player1 == player2 then 
-        server.player_msg(cn, red("player 1 and player 2 have the same CN."))
+        server.player_msg(cn, string.format(server.versus_samecn_message))
        return 
     end
     
@@ -157,9 +158,9 @@ return function(cn, player1, player2, mode, map)
     
     installHandlers()
     
-    server.msg(green("--[ 1on1 - " .. red(server.player_name(player1)) .. " against " .. red(server.player_name(player2)) .. " mode: " .. orange(mode)  .. " map: " .. orange(map) ))
-    server.msg(green("--[ 1on1 - " .. red(server.player_name(player1)) .. " against " .. red(server.player_name(player2)) .. " mode: " .. orange(mode)  .. " map: " .. orange(map) ))
-    server.msg(green("--[ 1on1 - " .. red(server.player_name(player1)) .. " against " .. red(server.player_name(player2)) .. " mode: " .. orange(mode)  .. " map: " .. orange(map) ))
+	server.msg(string.format(server.versus_announce_message, server.player_name(player1), server.player_name(player2), mode, map))
+    server.msg(string.format(server.versus_announce_message, server.player_name(player1), server.player_name(player2), mode, map))
+    server.msg(string.format(server.versus_announce_message, server.player_name(player1), server.player_name(player2), mode, map))
     
     server.specall()
     server.unspec(player1)
@@ -174,7 +175,7 @@ return function(cn, player1, player2, mode, map)
         
         countdown = countdown - 1
         
-        server.msg(orange(string.format("-- [ Loading the map in %i seconds", countdown)))
+        server.msg(orange(string.format(server.versus_countdown_message, countdown)))
         
         if countdown == 0 then
             server.changemap(map, mode, -1)
