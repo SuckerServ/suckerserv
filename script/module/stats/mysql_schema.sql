@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS `games` (
   `id`          bigint(11) NOT NULL AUTO_INCREMENT,
-  `servername`  varchar(16) NOT NULL,
+  `servername`  varchar(32) COLLATE latin1_general_ci NOT NULL,
   `datetime`    datetime NOT NULL,
   `gamemode`    tinytext NOT NULL,
   `mapname`     tinytext NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS  `players` (
   `id`              bigint(11) NOT NULL AUTO_INCREMENT,
   `game_id`         bigint(11) NOT NULL,
   `team_id`         bigint(11) NOT NULL,
-  `name`            varchar(16) NOT NULL,
+  `name`            varchar(32) COLLATE latin1_general_ci NOT NULL,
   `ipaddr`          varchar(16),
   `country`         tinytext,
   `score`           smallint(6) NOT NULL,
@@ -52,10 +52,11 @@ CREATE TABLE IF NOT EXISTS  `players` (
 
 CREATE TABLE IF NOT EXISTS  `playertotals` (
   `id`              bigint(11) NOT NULL AUTO_INCREMENT,
-  `name`            varchar(16) COLLATE latin1_general_ci NOT NULL,
+  `name`            varchar(32) COLLATE latin1_general_ci NOT NULL,
   `ipaddr`          varchar(16) CHARACTER SET ascii,
   `country`         tinytext COLLATE latin1_general_ci,
-
+  `first_game`      text,
+  `last_game`       text,
   `frags`           mediumint(8) unsigned NOT NULL DEFAULT 0,
   `max_frags`       mediumint(8) unsigned NOT NULL DEFAULT 0,
   `deaths`          mediumint(8) unsigned NOT NULL DEFAULT 0,
