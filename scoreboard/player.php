@@ -1,27 +1,29 @@
 <?php
 ///////////////////////Player Details Page
-session_start();
+$pagename = "player details";
 include("includes/geoip.inc");
 include("includes/hopmod.php");
 
-startbench();
-$querydate = "month";
-if ( isset($_GET['querydate']) ) {
-	if ($_GET['querydate'] != "day" | "week" | "month" | "year") { $querydate = "month";} else { $querydate = $_GET['querydate']; }
+function no_name() {
+?>
+<h1>Please provide a correct player name</h1>
+<?php stopbench(); ?>
+</body>
+</html>
+<?php
+exit;
 }
+
 if ( isset($_GET['showprofile']) ) {
 	$profile_name = "and name='".sqlite_escape_string($_GET['showprofile'])."' ";
 }
-if ( isset($_GET['name']) ) {
-}
-check_get();
+if (isset($_GET['name']) and $_GET['name'] != "") {
+    $_SESSION['name'] = $_GET['name'];
+} elseif (isset($_SESSION['name']) and $_SESSION['name'] != "") {
+} else { no_name(); }
 // Setup Geoip for location information.
 $gi = geoip_open("/usr/share/GeoIP/GeoIP.dat",GEOIP_STANDARD);
 
-// Pull Variables from Running Hopmod Server
-serverDetails($serverhost, $serverport);
-// Setup statsdb and assign it to an object.
-$dbh = setup_pdo_statsdb($db);
 
 $start_date = date("Y");
 $start_date = strtotime("1 January $start_date");
@@ -47,7 +49,7 @@ select games.id as id,datetime,gamemode,mapname,duration,players,servername
         from games
                 inner join players on players.game_id=games.id
 
-        where games.datetime > $start_date and name = '".addslashes($_SESSION['name'])."' order by datetime desc limit ".$_SESSION['paging'].",".$rows_per_page." 
+        where games.datetime > $start_date and name = '".addslashes($_SESSION['name'])."' order by ". $_SESSION['orderby']." desc limit ".$_SESSION['paging'].",".$rows_per_page." 
 ";
 $pager_query = "
 select count(*) from 
@@ -58,26 +60,11 @@ select count(*) from
         where games.datetime > $start_date and name = '".addslashes($_SESSION['name'])."') T
 ";
 ?>
-<html>
-<head>
-	<title><?php print $server_title; ?> scoreboard</title>
-	<script type="text/javascript" src="js/overlib.js"><!-- overLIB (c) Erik Bosrup --></script>
-	<script type="text/javascript" src="js/jquery-latest.js"></script>
-	<script type="text/javascript" src="js/jquery.tablesorter.js"></script>
-	<script type="text/javascript" src="js/jquery.uitablefilter.js"></script>
-	<script type="text/javascript" src="js/hopstats.js"></script>
-	<link rel="stylesheet" type="text/css" href="css/style.css" />
-</head>
-<body>
-<noscript><div class="error">This page uses JavaScript for table column sorting and producing an enhanced tooltip display.</div></noscript>
-
-
-
 <div id="content-container">
 <div id="content"><div style="">
 <h1><?php print $_SESSION['name'] ?>'s profile</h1>
 
-<div class="box" style="position:absolute">
+<div style="clear:both;float:left" class="box" style="position:absolute">
 <table class="navbar" cellpadding="0" cellspacing="1">
 <?php
 //Build table data

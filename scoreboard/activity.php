@@ -1,14 +1,8 @@
 <?php
+$pagename = "Daily Activity";
 include("includes/geoip.inc");
 include("includes/hopmod.php");
 
-// Start session for session vars
-session_start();
-// Start page benchmark
-startbench();
-
-// Check for any http GET activity
-check_get();
 if (! isset($_SESSION['days'])) { $_SESSION['days'] = 0;}
 if ($_GET['select_day'] == "next") { $_SESSION['days'] = ($_SESSION['days'] + 1);header("location: activity.php");}
 if ($_GET['select_day'] == "previous") { $_SESSION['days'] = ($_SESSION['days'] - 1);header("location: activity.php");}
@@ -40,7 +34,7 @@ from
                 round((0.0+sum(frags))/sum(deaths),2) as Kpd
         from players
                 inner join games on players.game_id=games.id
-        where UNIX_TIMESTAMP(games.datetime) between $start_date and $end_date and mapname != '' group by name order by Kpd desc) T
+        where UNIX_TIMESTAMP(games.datetime) between $start_date and $end_date and mapname != '' group by name order by ".$_SESSION['orderby']." desc) T
 	limit ".$_SESSION['paging'].",$rows_per_page ;
 
 ";
@@ -60,10 +54,6 @@ select count(*)
         where UNIX_TIMESTAMP(games.datetime) between '$start_date' and '$end_date' and mapname != '' and gamemode != ''  order by datetime desc
 ";
 
-serverDetails($serverhost, $serverport); //Get the server configuration and name.
-
-// Setup statsdb and assign it to an object.
-$dbh = setup_pdo_statsdb($db);
 $count_day_games = count_rows("
 select count(*)
         from games
@@ -78,41 +68,27 @@ from
         where UNIX_TIMESTAMP(games.datetime) between $start_date and $end_date and mapname != '' group by name ) T
 
 ");
-
 ?>
+        <div id="container">
+            <h1><?php print "$server_title "; print "$month"; ?>'s daily activity for <span style="font-style:italic; font-size:1.1em; color:#000077"><?php print date(" jS M Y",$start_date); ?></span></h1>
+            <div id="filter-panel">
+                <span class="filter-form"><a style="border:0.2em solid; padding:0.5em;margin:0 -0.7em 0 -0.7em;#555555;color:red; font-weight:bold;font-size:1.1em" href="./"><?php print "$server_title"; ?>'s Scoreboard</a></span>
+                <span class="filter-form"><form id="filter-form">Name Filter: <input name="filter" id="filter" value="" maxlength="30" size="30" type="text"></form></span>
+            </div>
+            <div class="pagebar">
+                <a href="activity.php?select_day=previous">&#171; Previous day</a>
+                <a href="activity.php?select_day=next">Next day &#187;</a>
+            </div>
 
-<html>
-<head>
-	<title><?php print $server_title; ?> Daily Activity</title>
-	<script type="text/javascript" src="js/overlib.js"><!-- overLIB (c) Erik Bosrup --></script>
-	<script type="text/javascript" src="js/jquery-latest.js"></script>
-	<script type="text/javascript" src="js/jquery.tablesorter.js"></script>
-	<script type="text/javascript" src="js/jquery.uitablefilter.js"></script>
-	<script type="text/javascript" src="js/hopstats.js"></script>
-	<link rel="stylesheet" type="text/css" href="css/style.css" />
-</head>
-<body>
-<br />
-<h1>Daily Activity for <span style="font-style:italic; font-size:1.1em"><?php print date(" jS M Y",$start_date); ?></span></h1>
-<div id=container>
-	<div id="pagebar">
-		<a href="activity.php?select_day=previous">&#171; Previous day</a>
-		<a href="activity.php?select_day=next">Next day &#187;</a>
-	</div>
-	<div id="leftColumn">
-    <h2> Games (<?php print $count_day_games; ?>)</h2><br>
-    <?php build_pager($_GET['page'],$games_pager_query); //Generate Pager Bar ?>
-	<?php match_player_table($dbh->query($day_games)); //Build game table data ?>
-
-	
-	</div>
-	<div id="rightColumn">
-		<h2> Players (<?php print $player_count; ?>)</h2><br>
-	<?php build_pager($_GET['page'],$players_pager_query); //Generate Pager Bar ?>
-	<?php stats_table($sql); //Build stats table data ?>
-	</div>
-</div>
-	<br /><br /><br /><br /><br />
-<?php stopbench(); //Stop and display benchmark.?>
-</body>
+            <div id="leftColumn">
+                <?php build_pager($_GET['page'],$games_pager_query); //Generate Pager Bar ?>
+                <?php match_player_table($dbh->query($day_games)); //Build game table data ?>
+            </div>
+            <div id="rightColumn">
+                <?php build_pager($_GET['page'],$players_pager_query); //Generate Pager Bar ?>
+                <?php stats_table($sql); //Build game table data ?>
+            </div>
+        </div>
+        <?php stopbench(); //Stop and display benchmark.?>
+    </body>
 </html>

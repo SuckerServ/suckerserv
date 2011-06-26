@@ -1,6 +1,6 @@
 $(document).ready(function()
 {
-        $("#hopstats,#hopstats1").tablesorter({
+        $("#hopstats").tablesorter({
                         headers:
                         {
                                 0 : { sorter: "text" },
@@ -12,9 +12,20 @@ $(document).ready(function()
                                 6 : { sorter: "digit" },
                                 7 : { sorter: "digit" },
                                 8 : { sorter: "digit" },
-                                9 : { sorter: "digit" },
-                                10 : { sorter: "digit" },
-                                11 : { sorter: "digit" }
+                                9 : { sorter: "digit" }
+                        },
+
+        });
+        $("#matchstats").tablesorter({
+                        headers:
+                        {
+                                0 : { sorter: "digit" },
+                                1 : { sorter: "text" },
+                                2 : { sorter: "text" },
+                                3 : { sorter: "digit" },
+                                4 : { sorter: "text" },
+                                5 : { sorter: "text" },
+                                6 : { sorter: "digit" }
                         },
 
         });

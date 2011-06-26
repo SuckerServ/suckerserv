@@ -1,6 +1,25 @@
 <?php
+$pagename = "game details";
 include("includes/geoip.inc");
 include("includes/hopmod.php");
+
+function no_id() {
+?>
+<h1>Please provide a correct game ID</h1>
+<?php stopbench(); ?>
+</body>
+</html>
+<?php
+exit;
+}
+
+if ( isset($_GET['showprofile']) ) {
+	$profile_name = "and name='".sqlite_escape_string($_GET['showprofile'])."' ";
+}
+if (isset($_GET['id']) and $_GET['id'] != "") {
+    $_SESSION['id'] = $_GET['id'];
+} elseif (isset($_SESSION['id']) and $_SESSION['id'] != "") {
+} else { no_id(); }
 
 $day_end = strtotime("today +1 day");
 $week_end = strtotime("this week today +1 week");
@@ -30,36 +49,13 @@ select 	name,
         round((0.0+sum(frags))/sum(deaths),2) as Kpd
 from players
         inner join games on players.game_id=games.id
-where game_id = '".$_GET['id']."' group by name order by frags desc
+where game_id = '".$_SESSION['id']."' group by name order by ".$_SESSION['orderby']." desc
 ";
 
-// Start page benchmark
-startbench();
 
-// Check for any http GET activity
-check_get();
-// Pull Variables from Running Hopmod Server
-serverDetails($serverhost, $serverport);
-// Setup statsdb and assign it to an object.
-$dbh = setup_pdo_statsdb($db);
 
 ?>
-
-<html>
-<head>
-	<title><?php print $server_title; ?> scoreboard</title>
-	<script type="text/javascript" src="js/overlib.js"><!-- overLIB (c) Erik Bosrup --></script>
-	<script type="text/javascript" src="js/jquery-latest.js"></script>
-	<script type="text/javascript" src="js/jquery.tablesorter.js"></script>
-	<script type="text/javascript" src="js/jquery.uitablefilter.js"></script>
-	<script type="text/javascript" src="js/hopstats.js"></script>
-	<link rel="stylesheet" type="text/css" href="css/style.css" />
-</head>
-<body>
-
-<noscript><div class="error">This page uses JavaScript for table column sorting and producing an enhanced tooltip display.</div></noscript>
-</div>
-<?php match_table($_GET['id']); //Build stats table data ?>
+<?php match_table($_SESSION['id']); //Build stats table data ?>
 <?php stats_table($sql); ?>
 <br />
 <?php stopbench(); //Stop and display benchmark.?>
