@@ -33,6 +33,13 @@ server.event_handler("intermission", function()
     teamkills = {}
 end)
 
+server.event_handler("text", function(cn, text)
+	    if (string.match(text, "np") or string.match(text, "no problem") or string.match(text, "NO PROBLEM") or string.match(text, "NP"))
+		then 
+		server.player_msg(cn, string.format(server.forgive_analysetext_message))
+	    end
+end)
+
 return function(cn)
     cn_id = server.player_id(cn)
     if not teamkills[cn_id] then return false, server.forgive_not_teamkilled_message end
