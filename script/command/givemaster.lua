@@ -18,7 +18,7 @@ return function(cn, target)
 	end
 
 	server.unsetmaster()
-	server.player_msg(target, server.player_displayname(cn) .. " has passed master privilege to you.")
+	server.player_msg(target, string.format(server.givemaster_message, server.player_displayname(cn)))
 	server.setmaster(target)
 
 end
