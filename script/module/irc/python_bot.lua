@@ -244,7 +244,7 @@ server.event_handler("mapchange", function(map, mode)
     if sc > 0 then playerstats = playerstats .. " " .. tostring(sc) .. " spectators" end
     
     if sendmsg ~= nil then
-	sendmsg(string.format(irc_color_red("NEWGAME: ")..irc_color_green("MODE: ")..irc_color_blue("%s ")..irc_color_green("MAP: ")..irc_color_blue("%s")..irc_color_blue(" %i")..irc_color_green(" Players"), mode, map, #server.clients()))
+	sendmsg(string.format(irc_color_pink("NEWGAME: ")..irc_color_green("MODE: ")..irc_color_blue("%s ")..irc_color_green("MAP: ")..irc_color_blue("%s")..irc_color_blue(" %i")..irc_color_green(" Players"), mode, map, #server.clients()))
     end
 end)
 
@@ -396,7 +396,7 @@ end
 server.event_handler("intermission", function() 
         local map1 = map_rotation.get_map_name(server.gamemode)
         local map2 = mapbattle.get_next_map(2)
-		sendmsg(string.format(irc_color_red("MAPBATTLE: ")..irc_color_green("MAP1: ")..irc_color_blue("%s ")..irc_color_green("or MAP2: ")..irc_color_blue("%s"), map1, map2))
+		sendmsg(string.format(irc_color_pink("MAPBATTLE: ")..irc_color_green("MAP1: ")..irc_color_blue("%s ")..irc_color_green("or MAP2: ")..irc_color_blue("%s"), map1, map2))
 end)
 
 -- End of  Listener
