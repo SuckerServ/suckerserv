@@ -325,7 +325,7 @@ auth.listener("", function(cn, user_id, domain, status)
     sendmsg(irc_color_red("AUTH: ") .. msg)
 end)
 
---
+--> Get-Best-Stats Listener
 
 local function get_best_stats(time)
     local players = server.clients()
@@ -371,4 +371,32 @@ server.event_handler("timeupdate", function(time) -- post game stats each minute
     return -1
 end)
 
--- end of game events
+-- End of Get-Best-Stats Listener
+
+--> MapBattle Listener
+
+local mapbattle = { mode = {} }
+
+function mapbattle.get_next_map(num, mode)
+    if mode == nil then mode = server.gamemode or "ffa" end
+    maps =  map_rotation.get_map_rotation(mode)
+    local mapvar = maps[mode]
+    local playing = 0
+    for k,v in pairs(mapvar) do
+        if v == server.map then 
+            playing = k
+        end
+    end
+    local countmaps = #mapvar or 0
+    if playing > countmaps-2 then playing = 0 end
+    local nextmap = mapvar[playing+num]
+    return nextmap or mapbattle.defaultmap
+end
+
+server.event_handler("intermission", function() 
+        local map1 = map_rotation.get_map_name(server.gamemode)
+        local map2 = mapbattle.get_next_map(2)
+		sendmsg(string.format(irc_color_red("MAPBATTLE: ")..irc_color_green("MAP1: ")..irc_color_blue("%s ")..irc_color_green("or MAP2: ")..irc_color_blue("%s"), map1, map2))
+end)
+
+-- End of  Listener
