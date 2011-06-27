@@ -1,7 +1,8 @@
 --[[
 
 HopMod Module for the Python-IRC-Bot
-(c) 2009-2010 by Thomas, PunDit, Michael
+(c) 2009-2011 by Thomas, PunDit, Michael
+More function added by LoveForEver for Suckerserv
 
 The SocketListener will wait on the serverport + 10 (for example 28785 + 10 = 28795) for the bot
 
@@ -318,6 +319,8 @@ server.event_handler("reloadhopmod", function()
 		sendmsg(string.format(irc_color_red("RELOAD: Reloading hopmod")))
 end)
 
+
+
 -- Auth Listener for masterauth events
 auth.listener("", function(cn, user_id, domain, status)
     if status ~= auth.request_status.SUCCESS then return end
@@ -393,10 +396,23 @@ function mapbattle.get_next_map(num, mode)
     return nextmap or mapbattle.defaultmap
 end
 
-server.event_handler("intermission", function() 
+server.event_handler("intermission", function() -- shows wich maps are selected
         local map1 = map_rotation.get_map_name(server.gamemode)
         local map2 = mapbattle.get_next_map(2)
 		sendmsg(string.format(irc_color_pink("MAPBATTLE: ")..irc_color_green("MAP1: ")..irc_color_blue("%s ")..irc_color_green("or MAP2: ")..irc_color_blue("%s"), map1, map2))
+end)
+
+server.event_handler("text", function(cn, msg) -- shows wich maps people in-game votes
+	local map1 = map_rotation.get_map_name(server.gamemode)
+    local map2 = mapbattle.get_next_map(2)
+	
+	if (msg == "1") and server.mapbattle_running then
+        sendmsg(string.format(irc_color_pink("MAPBATTLE: ")..irc_color_blue("%s (%i) ")..irc_color_green("voted for ")..irc_color_blue("%s"), server.player_name(cn), cn, map1))
+    end
+	
+	if (msg == "2") and server.mapbattle_running then
+        sendmsg(string.format(irc_color_pink("MAPBATTLE: ")..irc_color_blue("%s (%i) ")..irc_color_green("voted for ")..irc_color_blue("%s"), server.player_name(cn), cn, map2))
+    end
 end)
 
 -- End of  Listener
