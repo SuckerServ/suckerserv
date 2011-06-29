@@ -8,7 +8,7 @@
 local teamkills = {}
 
 server.event_handler("teamkill", function(actor, target)
-    server.player_msg(target, string.format(server.forgive_propose_message, actor))
+    server.player_msg(target, string.format(server.forgive_propose_message, server.player_displayname(actor)))
     actor_id = server.player_id(actor)
     target_id = server.player_id(target)
     if not teamkills[actor_id] then
