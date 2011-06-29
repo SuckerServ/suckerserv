@@ -61,6 +61,7 @@ player_command_alias("specchat", "specmsg")
 player_command_alias("sm",       "specmsg")
 player_command_alias("schat",    "specmsg")
 player_command_alias("sc",       "specmsg")
+player_command_script("rename",   nil, "admin")
 
 local suddendeath_commands = loadfile(player_command_filename("suddendeath"))()
 player_command_function("suddendeath", suddendeath_commands.suddendeath_cmd, "admin")
