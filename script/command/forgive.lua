@@ -46,7 +46,7 @@ return function(cn)
     actor_id = teamkills[cn_id]["teamkilled_by"][#teamkills[cn_id]["teamkilled_by"]] or nil
     if not actor_id then return false, server.forgive_not_teamkilled_message end
     actor_cn = teamkills[actor_id]["cn"]
-    for actor_teamkilled in pairs(teamkills[actor_id]["teamkilled"]) do
+    for _,actor_teamkilled in pairs(teamkills[actor_id]["teamkilled"]) do
         if cn_id == actor_teamkilled then
             server.player_forgive_tk(actor_cn)
             table.remove(teamkills[cn_id]["teamkilled_by"], actor_id)
