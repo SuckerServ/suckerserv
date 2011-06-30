@@ -35,7 +35,7 @@ server.event_handler("connect", function(cn)
 			    
 			    server.set_invisible_master(cn)
 			    
-			    server.player_msg(cn,"Your rights have been raised to invisible-master.")
+			    server.player_msg(cn, string.format(server.invmaster_activation_message))
 			    server.log(user_id .. " playing as " .. server.player_name(cn) .. "(" .. cn .. ") used auth to claim invmaster.")
 			end)
 		    end

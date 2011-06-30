@@ -36,7 +36,7 @@ local function run(cn)
                 server.msg(string.format(server.claimmaster_message, server.player_displayname(cn), user_id))
                 server.log(string.format("%s playing as %s(%i) used auth to claim master.", user_id, server.player_name(cn), cn))
             else
-                server.player_msg(cn,red("An admin or master is already there."))
+                server.player_msg(cn, string.format(server.master_already_message))
             end
         end)
     end

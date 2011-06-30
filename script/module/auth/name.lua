@@ -26,7 +26,7 @@ local function rename(cn)
 
     server.player_rename(cn, "unnamed", true)
     
-    server.player_msg(cn, "You have used a reserved name of another player. Server renamed you to 'unnamed'.")
+    server.player_msg(cn, server.name_rename_message)
     server.player_msg(cn, " ")
 end
 

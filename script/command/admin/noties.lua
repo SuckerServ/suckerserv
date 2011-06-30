@@ -22,11 +22,11 @@ return function(cn, option)
     if (option == "0") or (option == "off")
     then
 	server.no_ties()
-	server.player_msg(cn, "no ties module disabled.")
+	server.player_msg(cn, string.format(server.noties_disabled_message))
     elseif (option == "1") or (option == "on")
     then
 	server.no_ties(true)
-	server.player_msg(cn, "no ties module enabled.")
+	server.player_msg(cn, string.format(server.noties_enabled_message))
     else
 	return false, msg_info
     end

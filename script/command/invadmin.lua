@@ -14,7 +14,7 @@ local function set_invadmin(cn, name)
 
     server.set_invisible_admin(cn)
     
-    server.player_msg(cn,"Your rights have been raised to invisible-admin.")
+    server.player_msg(cn, string.format(server.invadmin_activation_message))
     
     if not name then
         server.log(string.format("%s(%i) claimed (inv)admin.", server.player_name(cn), cn))

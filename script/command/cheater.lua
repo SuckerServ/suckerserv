@@ -49,14 +49,14 @@ local function run(cn,cheat)
 
 	if cheat_report > 4 then
 
-		server.player_msg(cn,orange("Don't spam with the #cheater command or you will be ignored."))
+		server.player_msg(cn, string.format(server.cheater_spam_message))
 	end
 
 	if cheat_report < 8 then
 
 		if server.player_connection_time(cheat) > 10 then
 
-			server.player_msg(cn,"Thank you for your report, hopefully an admin will check this out very soon.")
+			server.player_msg(cn, string.format(server.cheater_thanks_message))
 			server.log("CHEATER: " .. server.player_name(cheat) .. "(" .. cheat .. ") was reported by " .. server.player_name(cn) .. "(" .. cn .. ")")
         end
     end
