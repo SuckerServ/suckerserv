@@ -43,7 +43,7 @@ end)
 return function(cn)
     cn_id = server.player_id(cn)
     if not teamkills[cn_id] then return false, server.forgive_not_teamkilled_message end
-    actor_id = teamkills[cn_id]["teamkilled_by"][#teamkills[cn_id]["teamkilled_by"]] or nil
+    actor_id = teamkills[cn_id]["teamkilled_by"][table_size(teamkills[cn_id]["teamkilled_by"])] or nil
     if not actor_id then return false, server.forgive_not_teamkilled_message end
     actor_cn = teamkills[actor_id]["cn"]
     for _,actor_teamkilled in pairs(teamkills[actor_id]["teamkilled"]) do

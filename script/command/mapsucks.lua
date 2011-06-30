@@ -9,7 +9,6 @@ local ratio = server.mapsucks_ratio
 local lower_time = server.mapsucks_lower_time
 local mapsucks = {}
 
-
 server.event_handler("text", function(cn, text)
 	    if (string.match(text, "SUCKS") or string.match(text, "sucks"))
 		then 
@@ -32,16 +31,17 @@ return function(cn)
         if cn == player then
             cn_id = server.player_id(cn)
             if not mapsucks[cn_id] then
-                if #mapsucks > 1 then plural = "s" else plural = "" end
                 mapsucks[cn_id] = cn
-                server.player_msg(cn, string.format(server.mapsucks_message, (#mapsucks - 1)))
-				server.msg(string.format(server.mapsucks_announce_message, (#mapsucks)))
-                if #mapsucks > (#server.players() / ratio) then
+                mapsucks_size = table_size(mapsucks)
+                if mapsucks_size > 2 then plural = "s" else plural = "" end
+                server.player_msg(cn, string.format(server.mapsucks_message, (mapsucks_size - 1)))
+                server.msg(string.format(server.mapsucks_announce_message, mapsucks_size))
+                if mapsucks_size > (#server.players() / ratio) then
                     server.changetime(lower_time*60*1000)
                     if lower_time > 1 then plural_time = "s" else plural_time = "" end
                     if #server.players() > 1 then plural_players = "s" else plural_players = "" end
                     if plural_players == "s" then conjugate = "" else conjugate = "s" end
-                    server.msg(string.format(server.mapsuckes_timelowered_message, lower_time, plural_time, #mapsucks, #server.players(), plural_players, conjugate))
+                    server.msg(string.format(server.mapsuckes_timelowered_message, lower_time, plural_time, mapsucks_size, #server.players(), plural_players, conjugate))
                 end
                 return
             else

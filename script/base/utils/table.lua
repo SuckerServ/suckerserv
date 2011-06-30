@@ -10,6 +10,14 @@ function table_count(tt, item)
     return count
 end
 
+function table_size(t)
+  local max = 0
+  for k,v in pairs(t) do
+    max = max + 1
+  end
+  return max
+end
+
 function empty(table)
     local isEmpty = true
     for _ in pairs(table) do 
