@@ -24,7 +24,7 @@ local function onConnect(cn)
     
     local country = geoip.ip_to_country(server.player_ip(cn))
     
-    if show_country_message and #country > 0 then.
+    if show_country_message and #country > 0 then
 
         if server.player_ranking then 
             player_ranking = server.player_ranking(server.player_name(cn)) 

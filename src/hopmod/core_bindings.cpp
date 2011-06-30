@@ -348,6 +348,7 @@ void bind_core_variables(lua_State * L, int T)
     bind_prop(L, T, "timeleft", server::get_minutes_left, server::set_minutes_left);
     bind_prop(L, T, "seconds_left", server::get_seconds_left, server::set_seconds_left);
     bind_var(L, T, "intermission", server::interm);
+    bind_var(L, T, "intermission_time", server::intermtime);
     bind_ro_var(L, T, "uptime", totalmillis);
     bind_ro_var(L, T, "gamemillis", server::gamemillis);
     bind_ro_var(L, T, "gamelimit", server::gamelimit);
