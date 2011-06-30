@@ -1,5 +1,5 @@
 local Json = require "Json"
-local _ = require "Underscore"
+local _ = require "underscore"
 
 local function commit_game(game, players, teams)
 
