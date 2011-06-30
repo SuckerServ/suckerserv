@@ -143,7 +143,7 @@ function internal.addPlayer(cn)
         if server.player_vars(cn).stats_auth_name then
             t.auth_name = server.player_vars(cn).stats_auth_name
         else
-            auth.send_auth_request(cn, auth_domain)
+            server.send_auth_request(cn, auth_domain)
         end
     end
     

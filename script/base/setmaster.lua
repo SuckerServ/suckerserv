@@ -33,6 +33,12 @@ local function setmaster(cn, hash, set)
         else
             server.set_invisible_admin(cn)
         end
+    elseif server.hashpassword(cn, server.master_password) == hash then
+        if no_master then
+            server.setmaster(cn) 
+        else
+            server.set_invisible_master(cn)
+        end
     else
         server.log(string.format("Player: %s(%i) IP: %s -- failed setmaster login!", server.player_name(cn), cn, server.player_ip(cn)))
         
