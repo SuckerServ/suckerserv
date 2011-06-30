@@ -1,7 +1,8 @@
 package = "lsqlite3"
-version = "0.7-1"
+version = "0.8-1"
 source = {
-    url = "http://luaforge.net/frs/download.php/2565/lsqlite3-7.tar.gz"
+    url = "http://lua.sqlite.org/index.cgi/zip/lsqlite3_svn08.zip?uuid=svn_8",
+    file = "lsqlite3_svn08.zip"
 }
 description = {
     summary = "A binding for Lua to the SQLite3 database library",
@@ -13,7 +14,7 @@ description = {
         either database or SQL statement objects.
     ]],
     license = "MIT/X11",
-    homepage = "http://luaforge.net/projects/luasqlite/"
+    homepage = "http://lua.sqlite.org/"
 }
 dependencies = {
     "lua >= 5.1"

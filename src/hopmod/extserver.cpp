@@ -479,6 +479,13 @@ void player_unspec(int cn)
     setspectator(get_ci(cn), false);
 }
 
+void player_forgive_tk(int cn)
+{
+    clientinfo * ci = get_ci(cn);
+    ci->state.frags++;
+    ci->state.teamkills--;
+}
+
 void spec_all()
 {
     loopv(clients)

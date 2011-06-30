@@ -31,6 +31,7 @@ namespace server
     extern int gamelimit;
     extern bool gamepaused;
     extern int gamemode;
+    extern int intermtime;
     
     extern int mastermode;
     extern int mastermode_owner;
@@ -107,6 +108,7 @@ namespace server
     void unsetmaster();
     bool set_player_master(int);
     void set_player_admin(int);
+    void player_forgive_tk(int);
     void player_slay(int);
     void player_respawn(int);
     void player_nospawn(int, int);

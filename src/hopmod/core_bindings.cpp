@@ -98,6 +98,7 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "unforce_spec", server::player_unforce_spec);
     bind_function(L, T, "spec", server::player_spec);
     bind_function(L, T, "unspec", server::player_unspec);
+    bind_function(L, T, "player_forgive_tk", server::player_forgive_tk);
     bind_function(L, T, "unsetmaster", server::unsetmaster);
     bind_function(L, T, "setmaster", server::set_player_master);
     bind_function(L, T, "setadmin", server::set_player_admin);
