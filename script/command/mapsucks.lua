@@ -34,7 +34,7 @@ return function(cn)
             if not mapsucks[cn_id] then
                 if #mapsucks > 1 then plural = "s" else plural = "" end
                 mapsucks[cn_id] = cn
-                server.player_msg(cn, string.format(server.mapsucks_message, (#mapsucks - 1), plural))
+                server.player_msg(cn, string.format(server.mapsucks_message, (#mapsucks - 1)))
 				server.msg(cn, string.format(server.mapsucks_announce_message, (#mapsucks)))
                 if #mapsucks > (#server.players() / ratio) then
                     server.changetime(lower_time*60*1000)
