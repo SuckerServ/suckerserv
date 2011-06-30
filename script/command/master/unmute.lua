@@ -25,5 +25,4 @@ return function(cn,tcn)
 	end
 
 	server.unmute(tcn)
-	server.player_msg(cn, string.format(player_unmute_admin_message, tcn))
 end
