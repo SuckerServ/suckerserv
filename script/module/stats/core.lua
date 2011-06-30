@@ -277,12 +277,14 @@ function internal.loadAuthHandlers(domain)
         
         if status ~= auth.request_status.SUCCESS then return end
         
-        server.player_vars(cn).stats_auth_name = name
+        server.player_vars(cn).stats_auth_name = user_id
         
         local t = internal.getPlayerTable(server.player_id(cn))
-        t.auth_name = name
-        
-        server.player_msg(cn, "You are logged in as " .. magenta(name) .. ".")
+        t.auth_name = user_id
+
+        if server.stats_tell_auth_name == 1 then
+            server.player_msg(cn, string.format(server.stats_logged_in_message, user_id))
+        end
     end)
 
     function internal.unloadAuthHandlers()
