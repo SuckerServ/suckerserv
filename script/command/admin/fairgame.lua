@@ -1,3 +1,10 @@
+--[[
+
+    A command to start a little match
+    By piernov <piernov@piernov.org>
+
+]]
+
 local running = false
 local runned = false
 local teams_locked = false
@@ -10,6 +17,11 @@ local function clear_game()
     teams_locked = false
     gamecount = 0
     players = {}
+    for _, cn in ipairs(server.players()) do
+        server.unspec(cn)
+        server.player_nospawn(cn, 0)
+        server.player_respawn(cn)
+    end
 end
 
 local active = server.event_handler("maploaded", function(cn)
@@ -17,11 +29,6 @@ local active = server.event_handler("maploaded", function(cn)
     if not running then return; end
 	if not players[server.player_id(cn)] then return; end
     players[server.player_id(cn)] = "loaded"
-
-    if not runned then
-        server.player_nospawn(cn, 1)
-        server.player_slay(cn)
-    end
     
     for k,v in pairs(players) do
         if v == "not_loaded" then return end
@@ -98,6 +105,8 @@ return function(cn, map, mode, lockteams)
 
     for _, cn in ipairs(server.players()) do
         players[server.player_id(cn)] = "not_loaded"
+        server.player_nospawn(cn, 1)
+        server.player_slay(cn)
     end
 
     server.mastermode = 2
