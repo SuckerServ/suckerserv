@@ -98,7 +98,7 @@ local function check_name(cn)
 	
 	    if result
 	    then
-                name_cache[v.nameprotect_wanted_authname] = server.uptime
+		name_cache[server.player_vars(cn).nameprotect_wanted_authname] = server.uptime
 		
 		request_key(cn)
 	    end
@@ -107,7 +107,11 @@ local function check_name(cn)
 end
 
 
-server.event_handler("maploaded", check_name)
+server.event_handler("maploaded", function(cn)
+    server.sleep(5000, function()
+        check_name(cn)
+    end)
+end)
 
 server.event_handler("rename", check_name)
 
