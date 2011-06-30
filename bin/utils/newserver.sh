@@ -26,12 +26,11 @@ fi
 mkdir -p $DEST
 
 mkdir $DEST/bin
-for aa in utils env.sh sauer_server
+for aa in utils env.sh sauer_server monitor
 do
     ln -s $d_main/bin/$aa $DEST/bin/$aa
 done
 cp $d_main/bin/server $DEST/bin/
-cp $d_main/bin/monitor $DEST/bin/
 
 ln -s $d_main/lib $DEST/lib
 ln -s $d_main/script $DEST/script
@@ -45,3 +44,5 @@ mkdir $DEST/log/demo
 
 cp $d_main/conf/server.conf $DEST/conf/server.conf
 cp $d_main/conf/maps.conf $DEST/conf/maps.conf
+cp $d_main/conf/maps.conf $DEST/conf/new_maps.conf
+cp $d_main/conf/auth.lua $DEST/conf/auth.lua

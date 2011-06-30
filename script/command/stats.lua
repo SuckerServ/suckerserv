@@ -23,11 +23,11 @@ local function current_stats(sendTo, player)
         server.player_msg(sendTo, string.format("Current game stats for %s:", server.player_displayname(player)))
     end
     
-    local stats = string.format(server.stats_player_message, server.player_score(player), server.player_frags(player), server.player_deaths(player), server.player_accuracy(player) .. "%")
+    local stats = string.format(server.stats_player_message, server.player_score(player), server.player_frags(player), server.player_deaths(player), server.player_accuracy(player))
     server.player_msg(sendTo, stats)
     
     if gamemodeinfo.teams then
-        server.player_msg(sendTo, string.format(server.stats_teamkills_message, red(server.player_teamkills(player))))
+        server.player_msg(sendTo, string.format(server.stats_teamkills_message, server.player_teamkills(player), player_ranking))
     end
 end
 

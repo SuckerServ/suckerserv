@@ -24,9 +24,16 @@ local function onConnect(cn)
     
     local country = geoip.ip_to_country(server.player_ip(cn))
     
-    if show_country_message and #country > 0 then
+    if show_country_message and #country > 0 then.
+
+        if server.player_ranking then 
+            player_ranking = server.player_ranking(server.player_name(cn)) 
+        end
+        if not player_ranking then
+            player_ranking = "Unknown" 
+        end
         
-        local normal_message = string.format(server.client_connect_message, server.player_displayname(cn), country)
+        local normal_message = string.format(server.client_connect_message, server.player_displayname(cn), country, player_ranking)
         local admin_message = string.format(server.client_connect_admin_message, normal_message, server.player_ip(cn))
         
         for _, cn in ipairs(server.clients()) do

@@ -1,7 +1,8 @@
 --[[
 
 HopMod Module for the Python-IRC-Bot
-(c) 2009-2010 by Thomas, PunDit, Michael
+(c) 2009-2011 by Thomas, PunDit, Michael
+More function added by LoveForEver for Suckerserv
 
 The SocketListener will wait on the serverport + 10 (for example 28785 + 10 = 28795) for the bot
 
@@ -211,10 +212,15 @@ server.event_handler("text", function(cn, msg)
     if server.player_isbot(cn) then return end
 	
     -- Hide player commands
-    if string.match(msg, "^#.*") then 
+    if string.match(msg, server.command_prefixes) then
         return 
     end
-    
+	
+	--Hide mapbattle votes
+	if (msg == "1" or msg == "2") and server.mapbattle_running then
+        return 
+    end
+	
     local mute_tag = ""
     if server.is_muted(cn) then mute_tag = "(muted)" end
     sendmsg(string.format(irc_color_blue("%s ")..irc_color_green("(%i): ")..irc_color_blue("%s%s"),server.player_name(cn),cn,mute_tag,msg))
@@ -239,7 +245,7 @@ server.event_handler("mapchange", function(map, mode)
     if sc > 0 then playerstats = playerstats .. " " .. tostring(sc) .. " spectators" end
     
     if sendmsg ~= nil then
-	sendmsg(string.format(irc_color_red("NEWGAME: ")..irc_color_green("MODE: ")..irc_color_blue("%s ")..irc_color_green("MAP: ")..irc_color_blue("%s")..irc_color_blue(" %i")..irc_color_green(" Players"), mode, map, #server.clients()))
+	sendmsg(string.format(irc_color_pink("NEWGAME: ")..irc_color_green("MODE: ")..irc_color_blue("%s ")..irc_color_green("MAP: ")..irc_color_blue("%s")..irc_color_blue(" %i")..irc_color_green(" Players"), mode, map, #server.clients()))
     end
 end)
 
@@ -301,48 +307,177 @@ server.event_handler("checkmaps", function(cn)
     end
 end)
 
-local function get_best_stats(time)
-    local players = server.clients()
-    table.sort(players, function(a, b) return server.player_frags(a) > server.player_frags(b) end)
-    local msg = ""
-    local str = ""
-    if time > 0 then
-        str = "GAME STATS"
-    else
-        str = "GAME ENDED"
-    end
-    msg = "7" .. str .. ": ([" .. (server.gamemode or "unknown") .. "/" .. (server.map or "unknown") .. "]/".. #players .. " Players) BEST PLAYERS: ["
-    for i, cn in ipairs(players) do 
-        if i > 2 then break end
-        local format = ""
-		local health = ""
-		if server.gamemode == "ctf" or server.gamemode == "ffa" then
-			health = "/(" .. server.player_health(cn) .. "/" .. server.player_maxhealth(cn) .. ")"
-		end
-        if i == 1 then format = "" end
-        if i == 2 then msg = msg .. "/ " end
-        msg = msg .. string.format("%s%s (%i/%i/%i%s%s)%s", format, server.player_name(cn), server.player_frags(cn), server.player_deaths(cn), server.player_accuracy(cn), "%", health, format)
-        if i == 2 then 
-            msg = msg .. "] " 
-        else
-            msg = msg .. " "
-        end
-    end
-    if #players == 0 then
-        msg = msg .. "No Players] "
-    end
-    if #players == 1 then msg = msg .. "]" end
-    if time > 0 then 
-        msg = msg .. " TIME REMAINING: " .. time .. " Minutes"
-    end
-    return msg
-end
+--[[
+Begin of scripts from LoveForEver
+For Suckerserv
+(c) 2011 
+]]--
 
-server.event_handler("timeupdate", function(time) -- post game stats each minute
-    if #server.clients() >= 1 and server.irc_display_stats ==1 then
-        sendmsg(get_best_stats(time))
-    end
-    return -1
+server.event_handler("scoreflag", function(cn)
+		sendmsg(string.format(irc_color_blue("%s ")..irc_color_green("scored for team ")..irc_color_blue("%s"), server.player_name(cn), server.player_team(cn)))
 end)
 
--- end of game events
+server.event_handler("failedconnect", function(ip, reason)
+		sendmsg(string.format(irc_color_red("Ip: %s couldn't connect bacause of reason: %s"), ip, reason))
+end)
+
+server.event_handler("reloadhopmod", function()
+		sendmsg(string.format(irc_color_red("RELOAD: Reloading hopmod")))
+end)
+
+
+
+-- Auth Listener for masterauth events
+auth.listener("", function(cn, user_id, domain, status)
+    if status ~= auth.request_status.SUCCESS then return end
+    local msg = string.format(irc_color_green("%i")..irc_color_blue("successfully authed"), server.player_name(cn), cn)
+    sendmsg(irc_color_red("AUTH: ") .. msg)
+end)
+
+
+--> MapBattle Listener
+
+local mapbattle = { mode = {} }
+
+function mapbattle.get_next_map(num, mode)
+    if mode == nil then mode = server.gamemode or "ffa" end
+    maps =  map_rotation.get_map_rotation(mode)
+    local mapvar = maps[mode]
+    local playing = 0
+    for k,v in pairs(mapvar) do
+        if v == server.map then 
+            playing = k
+        end
+    end
+    local countmaps = #mapvar or 0
+    if playing > countmaps-2 then playing = 0 end
+    local nextmap = mapvar[playing+num]
+    return nextmap or mapbattle.defaultmap
+end
+
+server.event_handler("intermission", function() -- shows wich maps are selected
+        local map1 = map_rotation.get_map_name(server.gamemode)
+        local map2 = mapbattle.get_next_map(2)
+		sendmsg(string.format(irc_color_pink("MAPBATTLE: ")..irc_color_green("MAP1: ")..irc_color_blue("%s ")..irc_color_green("or MAP2: ")..irc_color_blue("%s"), map1, map2))
+end)
+
+server.event_handler("text", function(cn, msg) -- shows wich maps people in-game votes
+	local map1 = map_rotation.get_map_name(server.gamemode)
+    local map2 = mapbattle.get_next_map(2)
+	
+	if (msg == "1") and server.mapbattle_running then
+        sendmsg(string.format(irc_color_pink("MAPBATTLE: ")..irc_color_blue("%s (%i) ")..irc_color_green("voted for ")..irc_color_blue("%s"), server.player_name(cn), cn, map1))
+    end
+	
+	if (msg == "2") and server.mapbattle_running then
+        sendmsg(string.format(irc_color_pink("MAPBATTLE: ")..irc_color_blue("%s (%i) ")..irc_color_green("voted for ")..irc_color_blue("%s"), server.player_name(cn), cn, map2))
+    end
+end)
+
+-- End of  Listener
+
+--> Awards Listener
+local stats = server.player_vars_table(server.player_id)
+
+local stats_record_class = {
+    
+    update = function(object, cn, value)
+        
+        if not object.value then
+            object.value = value
+            object.cn = {cn}
+            return
+        end
+        
+        if value < object.value then return end
+        
+        if value == object.value then
+            table.insert(object.cn, cn)
+        else
+            object.value = value
+            object.cn = {cn}
+        end
+    end,
+    
+    list_names = function(object)
+        return print_displaynamelist(object.cn)
+    end,
+    
+    clear = function(object)
+        object.cn = nil
+        object.value = nil
+    end
+}
+
+local best = {
+    frags      = {},
+    kpd        = {},
+    accuracy   = {},
+    takeflag   = {},
+    scoreflag  = {},
+    returnflag = {}
+}
+
+for _, subobject in pairs(best) do
+    setmetatable(subobject, {__index = stats_record_class})
+end
+
+server.event_handler("intermission", function()
+
+    local totalplayercount = server.playercount + server.speccount + server.botcount
+    if totalplayercount < 2 then return end
+	
+	local function update_stats(player)
+    
+        local cn = player.cn
+        local participated = player:frags()
+        
+        if participated then
+            best.accuracy:update(cn, player:accuracy())
+            best.frags:update(cn, player:frags())
+            best.kpd:update(cn, player:frags() - player:deaths())
+			
+			local player_stats = stats.vars(cn)
+			best.takeflag:update(cn, player_stats.takeflag or 0)
+            best.scoreflag:update(cn, player_stats.scoreflag or 0)
+            best.returnflag:update(cn, player_stats.returnflag or 0)
+        end
+	end
+	
+    for p in server.gplayers() do
+        update_stats(p)
+    end
+    
+    for b in server.gbots() do
+	update_stats(b)
+    end
+    
+    if best.kpd.value then
+        local cn = best.kpd.cn[1]
+        best.kpd.value = round((server.player_frags(cn)+1)/(server.player_deaths(cn)+1), 2)
+    end
+    
+    local function format_message(record_name, record, append)
+        if not record.value or #record.cn > 2 then return "" end
+        append = append or ""
+        return irc_color_red(string.format("%s: %s", record_name, irc_color_blue(record:list_names()) .. " " .. irc_color_pink(record.value .. append)))
+    end
+    
+	local stats_message = print_list(
+        format_message("frags", best.frags),
+        format_message("kpd", best.kpd),
+        format_message("accuracy", best.accuracy, "%"),
+		format_message("flag scorere", best.scoreflag))
+        
+    if #stats_message > 0 then
+    sendmsg(string.format(irc_color_orange("AWARDS ").."%s", stats_message))
+    end
+	
+    stats.clear()
+    
+    for _, record in pairs(best) do
+        record:clear()
+    end
+end)
+
+-- end of Awards listener
