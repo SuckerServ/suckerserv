@@ -23,9 +23,9 @@ return function(cn, countdown)
 				else
 
 					if cdown == 1 then
-						server.msg("game will resume in " .. blue(cdown) .. " sec")
+						server.msg(string.format(server.game_resume_sec, cdown))
 					else
-						server.msg("game will resume in " .. blue(cdown) .. " secs")
+						server.msg(string.format(server.game_resume_secs, cdown))
 					end
 					cdown = cdown - 1
 
