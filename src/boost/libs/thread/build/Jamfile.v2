@@ -1,4 +1,4 @@
-# $Id: Jamfile.v2 42230 2007-12-21 11:51:05Z anthonyw $
+# $Id: Jamfile.v2 66171 2010-10-25 07:52:02Z vladimir_prus $
 # Copyright 2006-2007 Roland Schwarz.
 # Copyright 2007 Anthony Williams
 # Distributed under the Boost Software License, Version 1.0. (See
@@ -43,6 +43,7 @@ project boost/thread
       <link>shared:<define>BOOST_THREAD_BUILD_DLL=1
       -<tag>@$(BOOST_JAMROOT_MODULE)%$(BOOST_JAMROOT_MODULE).tag
       <tag>@$(__name__).tag
+      <toolset>gcc:<cxxflags>-Wno-long-long
     : default-build <threading>multi
     ;
 
@@ -180,7 +181,6 @@ rule requirements ( properties * )
 alias thread_sources
     : ## win32 sources ##
       win32/thread.cpp
-      win32/exceptions.cpp
       win32/tss_dll.cpp
       win32/tss_pe.cpp
     : ## requirements ##
@@ -190,7 +190,6 @@ alias thread_sources
 alias thread_sources
     : ## pthread sources ##
       pthread/thread.cpp
-      pthread/exceptions.cpp
       pthread/once.cpp
     : ## requirements ##
       <threadapi>pthread

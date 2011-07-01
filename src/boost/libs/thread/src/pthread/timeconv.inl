@@ -1,10 +1,13 @@
 // Copyright (C) 2001-2003
 // William E. Kempf
+// Copyright (C) 2009 Anthony Williams
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying 
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 // boostinspect:nounnamed
+
+#include <boost/assert.hpp>
 
 namespace {
 const int MILLISECONDS_PER_SECOND = 1000;
@@ -17,8 +20,8 @@ const int NANOSECONDS_PER_MICROSECOND = 1000;
 inline void to_time(int milliseconds, boost::xtime& xt)
 {
     int res = 0;
-    res = boost::xtime_get(&xt, boost::TIME_UTC_);
-    assert(res == boost::TIME_UTC_);
+    res = boost::xtime_get(&xt, boost::TIME_UTC);
+    BOOST_ASSERT(res == boost::TIME_UTC);
 
     xt.sec += (milliseconds / MILLISECONDS_PER_SECOND);
     xt.nsec += ((milliseconds % MILLISECONDS_PER_SECOND) *
@@ -54,8 +57,8 @@ inline void to_timespec_duration(const boost::xtime& xt, timespec& ts)
 {
     boost::xtime cur;
     int res = 0;
-    res = boost::xtime_get(&cur, boost::TIME_UTC_);
-    assert(res == boost::TIME_UTC_);
+    res = boost::xtime_get(&cur, boost::TIME_UTC);
+    BOOST_ASSERT(res == boost::TIME_UTC);
 
     if (boost::xtime_cmp(xt, cur) <= 0)
     {
@@ -85,8 +88,8 @@ inline void to_duration(boost::xtime xt, int& milliseconds)
 {
     boost::xtime cur;
     int res = 0;
-    res = boost::xtime_get(&cur, boost::TIME_UTC_);
-    assert(res == boost::TIME_UTC_);
+    res = boost::xtime_get(&cur, boost::TIME_UTC);
+    BOOST_ASSERT(res == boost::TIME_UTC);
 
     if (boost::xtime_cmp(xt, cur) <= 0)
         milliseconds = 0;
@@ -107,8 +110,8 @@ inline void to_microduration(boost::xtime xt, int& microseconds)
 {
     boost::xtime cur;
     int res = 0;
-    res = boost::xtime_get(&cur, boost::TIME_UTC_);
-    assert(res == boost::TIME_UTC_);
+    res = boost::xtime_get(&cur, boost::TIME_UTC);
+    BOOST_ASSERT(res == boost::TIME_UTC);
 
     if (boost::xtime_cmp(xt, cur) <= 0)
         microseconds = 0;
