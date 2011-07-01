@@ -3,6 +3,7 @@ return function(cn, countdown)
 
 	if not countdown then
 		server.pausegame(false)
+		server.msg(string.format(server.resume_message, server.player_name(cn)))
 	else
 		local cdown = tonumber(countdown)
 
@@ -16,14 +17,15 @@ return function(cn, countdown)
 				if cdown == 0 then
 
 					server.pausegame(false)
+					server.msg(string.format(server.resume_message, server.player_name(cn)))
 					return -1
 
 				else
 
 					if cdown == 1 then
-						server.msg(string.format(server.game_resume_sec, cdown))
+						server.msg("game will resume in " .. blue(cdown) .. " sec")
 					else
-						server.msg(string.format(server.game_resume_secs, cdown))
+						server.msg("game will resume in " .. blue(cdown) .. " secs")
 					end
 					cdown = cdown - 1
 
