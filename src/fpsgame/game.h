@@ -159,7 +159,9 @@ static struct gamemodeinfo
 
 enum { MM_AUTH = -1, MM_OPEN = 0, MM_VETO, MM_LOCKED, MM_PRIVATE, MM_PASSWORD, MM_START = MM_AUTH };
 
-static const char * const mastermodenames[] = { "auth", "open", "veto", "locked", "private", "password" };
+static const char * const mastermodenames[] =  { "auth",   "open",   "veto",       "locked",     "private",    "password" };
+static const char * const mastermodecolors[] = { "",       "\f0",    "\f2",        "\f2",        "\f3",        "\f3" };
+static const char * const mastermodeicons[] =  { "server", "server", "serverlock", "serverlock", "serverpriv", "serverpriv" };
 
 // hardcoded sounds, defined in sounds.cfg
 enum
@@ -583,11 +585,11 @@ struct teamscore
     teamscore() {}
     teamscore(const char *s, int n) : team(s), score(n) {}
 
-    static int compare(const teamscore *x, const teamscore *y)
+    static bool compare(const teamscore &x, const teamscore &y)
     {
-        if(x->score > y->score) return -1;
-        if(x->score < y->score) return 1;
-        return strcmp(x->team, y->team);
+        if(x.score > y.score) return true;
+        if(x.score < y.score) return false;
+        return strcmp(x.team, y.team) < 0;
     }
 };
 
@@ -601,6 +603,8 @@ namespace entities
 
     extern void preloadentities();
     extern void renderentities();
+    extern void resettriggers();
+    extern void checktriggers();
     extern void checkitems(fpsent *d);
     extern void checkquad(int time, fpsent *d);
     extern void resetspawns();
@@ -611,7 +615,7 @@ namespace entities
     extern void pickupeffects(int n, fpsent *d);
     extern void teleporteffects(fpsent *d, int tp, int td, bool local = true);
     extern void jumppadeffects(fpsent *d, int jp, bool local = true);
-    
+
     extern void repammo(fpsent *d, int type, bool local = true);
 }
 
@@ -641,7 +645,6 @@ namespace game
         virtual bool aicheck(fpsent *d, ai::aistate &b) { return false; }
         virtual bool aidefend(fpsent *d, ai::aistate &b) { return false; }
         virtual bool aipursue(fpsent *d, ai::aistate &b) { return false; }
-
     };
 
     extern clientmode *cmode;
@@ -650,7 +653,6 @@ namespace game
     // fps
     extern int gamemode, nextmode;
     extern string clientmap;
-    extern int minremain;
     extern bool intermission;
     extern int maptime, maprealtime, maplimit;
     extern fpsent *player1;
@@ -678,38 +680,9 @@ namespace game
     extern void killed(fpsent *d, fpsent *actor);
     extern void timeupdate(int timeremain);
     extern void msgsound(int n, physent *d = NULL);
-
-    enum
-    {
-        HICON_BLUE_ARMOUR = 0,
-        HICON_GREEN_ARMOUR,
-        HICON_YELLOW_ARMOUR,
-
-        HICON_HEALTH,
-
-        HICON_FIST,
-        HICON_SG,
-        HICON_CG,
-        HICON_RL,
-        HICON_RIFLE,
-        HICON_GL,
-        HICON_PISTOL,
-
-        HICON_QUAD,
-
-        HICON_RED_FLAG,
-        HICON_BLUE_FLAG,
-        HICON_NEUTRAL_FLAG,
-
-        HICON_X       = 20,
-        HICON_Y       = 1650,
-        HICON_TEXTY   = 1644,
-        HICON_STEP    = 490,
-        HICON_SIZE    = 120,
-        HICON_SPACE   = 40
-    };
-
     extern void drawicon(int icon, float x, float y, float sz = 120);
+    const char *mastermodecolor(int n, const char *unknown);
+    const char *mastermodeicon(int n, const char *unknown);
 
     // client
     extern bool connected, remote, demoplayback;
@@ -725,7 +698,6 @@ namespace game
     extern void changemap(const char *name, int mode);
     extern void c2sinfo(bool force = false);
     extern void sendposition(fpsent *d, bool reliable = false);
-    extern void sendmessages(fpsent *d);
 
     // monster
     struct monster;
@@ -759,9 +731,10 @@ namespace game
     extern void explode(bool local, fpsent *owner, const vec &v, dynent *safe, int dam, int gun);
     extern void explodeeffects(int gun, fpsent *d, bool local, int id = 0);
     extern void damageeffect(int damage, fpsent *d, bool thirdperson = true);
-    extern void superdamageeffect(const vec &vel, fpsent *d);
-    extern bool intersect(dynent *d, const vec &from, const vec &to);
-    extern dynent *intersectclosest(const vec &from, const vec &to, fpsent *at);
+    extern void gibeffect(int damage, const vec &vel, fpsent *d);
+    extern float intersectdist;
+    extern bool intersect(dynent *d, const vec &from, const vec &to, float &dist = intersectdist);
+    extern dynent *intersectclosest(const vec &from, const vec &to, fpsent *at, float &dist = intersectdist);
     extern void clearbouncers();
     extern void updatebouncers(int curtime);
     extern void removebouncers(fpsent *owner);
@@ -813,6 +786,7 @@ namespace server
     extern void hashpassword(int cn, int sessionid, const char *pwd, char *result, int maxlen = MAXSTRLEN);
     extern int msgsizelookup(int msg);
     extern bool serveroption(const char *arg);
+    extern bool delayspawn(int type);
 }
 
 #endif

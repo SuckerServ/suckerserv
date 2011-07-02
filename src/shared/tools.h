@@ -54,8 +54,12 @@ static inline T min(T a, T b)
 {
     return a < b ? a : b;
 }
+template<class T>
+static inline T clamp(T a, T b, T c)
+{
+    return max(b, min(a, c));
+}
 
-#define clamp(a,b,c) (max(b, min(a, c)))
 #define rnd(x) ((int)(randomMT()&0xFFFFFF)%(x))
 #define rndscale(x) (float((randomMT()&0xFFFFFF)*double(x)/double(0xFFFFFF)))
 #define detrnd(s, x) ((int)(((((uint)(s))*1103515245+12345)>>16)%(x)))
@@ -77,10 +81,12 @@ static inline T min(T a, T b)
 #define RAD (PI / 180.0f)
 
 #ifdef WIN32
-#ifdef M_PI
-#undef M_PI
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
 #endif
-#define M_PI 3.14159265
+#ifndef M_LN2
+#define M_LN2 0.693147180559945309417
+#endif
 
 #ifndef __GNUC__
 #pragma warning (3: 4189)       // local variable is initialized but not referenced
@@ -92,6 +98,7 @@ static inline T min(T a, T b)
 
 #define strcasecmp _stricmp
 #define PATHDIV '\\'
+
 #else
 #define __cdecl
 #define _vsnprintf vsnprintf
@@ -149,7 +156,7 @@ struct databuf
 
     const T &get()
     {
-        static T overreadval;
+        static T overreadval = 0;
         if(len<maxlen) return buf[len++];
         flags |= OVERREAD;
         return overreadval;
@@ -260,10 +267,91 @@ struct packetbuf : ucharbuf
 template<class T>
 static inline float heapscore(const T &n) { return n; }
 
-template<class T, class U>
-static inline void quicksort(T *buf, int n, int (__cdecl *func)(U *, U *))
+template<class T>
+static inline bool compareless(const T &x, const T &y) { return x < y; }
+
+template<class T, class F>
+static inline void insertionsort(T *start, T *end, F fun)
 {
-    qsort(buf, n, sizeof(T), (int (__cdecl *)(const void *,const void *))func);
+    for(T *i = start+1; i < end; i++)
+    {
+        if(fun(*i, i[-1]))
+        {
+            T tmp = *i;
+            *i = i[-1];
+            T *j = i-1;
+            for(; j > start && fun(tmp, j[-1]); --j)
+                *j = j[-1];
+            *j = tmp;
+        }
+    }
+
+}
+
+template<class T, class F>
+static inline void insertionsort(T *buf, int n, F fun)
+{
+    insertionsort(buf, buf+n, fun);
+}
+
+template<class T>
+static inline void insertionsort(T *buf, int n)
+{
+    insertionsort(buf, buf+n, compareless<T>);
+}
+
+template<class T, class F>
+static inline void quicksort(T *start, T *end, F fun)
+{
+    while(end-start > 10)
+    {
+        T *mid = &start[(end-start)/2], *i = start+1, *j = end-2, pivot;
+        if(fun(*start, *mid)) /* start < mid */
+        {
+            if(fun(end[-1], *start)) { pivot = *start; *start = end[-1]; end[-1] = *mid; } /* end < start < mid */
+            else if(fun(end[-1], *mid)) { pivot = end[-1]; end[-1] = *mid; } /* start <= end < mid */
+            else { pivot = *mid; } /* start < mid <= end */
+        }
+        else if(fun(*start, end[-1])) { pivot = *start; *start = *mid; } /*mid <= start < end */
+        else if(fun(*mid, end[-1])) { pivot = end[-1]; end[-1] = *start; *start = *mid; } /* mid < end <= start */
+        else { pivot = *mid; swap(*start, end[-1]); }  /* end <= mid <= start */
+        *mid = end[-2];
+        do
+        {
+            while(fun(*i, pivot)) if(++i >= j) goto partitioned;
+            while(fun(pivot, *--j)) if(i >= j) goto partitioned;
+            swap(*i, *j);
+        }
+        while(++i < j);
+    partitioned:
+        end[-2] = *i;
+        *i = pivot;
+
+        if(i-start < end-(i+1))
+        {
+            quicksort(start, i, fun);
+            start = i+1;
+        }
+        else
+        {
+            quicksort(i+1, end, fun);
+            end = i;
+        }
+    }
+
+    insertionsort(start, end, fun);
+}
+
+template<class T, class F>
+static inline void quicksort(T *buf, int n, F fun)
+{
+    quicksort(buf, buf+n, fun);
+}
+
+template<class T>
+static inline void quicksort(T *buf, int n)
+{
+    quicksort(buf, buf+n, compareless<T>);
 }
 
 template <class T> struct vector
@@ -343,6 +431,8 @@ template <class T> struct vector
     T &operator[](int i) { ASSERT(i>=0 && i<ulen); return buf[i]; }
     const T &operator[](int i) const { ASSERT(i >= 0 && i<ulen); return buf[i]; }
     
+    void disown() { buf = NULL; alen = ulen = 0; }
+
     void shrink(int i)         { ASSERT(i<=ulen); while(ulen>i) drop(); }
     void setsize(int i) { ASSERT(i<=ulen); ulen = i; }
     
@@ -353,11 +443,13 @@ template <class T> struct vector
     const T *getbuf() const { return buf; }
     bool inbuf(const T *e) const { return e >= buf && e < &buf[ulen]; }
 
-    template<class ST>
-    void sort(int (__cdecl *cf)(ST *, ST *), int i = 0, int n = -1) 
+    template<class F>
+    void sort(F fun, int i = 0, int n = -1) 
     { 
-        quicksort(&buf[i], n < 0 ? ulen : n, cf);
+        quicksort(&buf[i], n < 0 ? ulen-i : n, fun);
     }
+
+    void sort() { sort(compareless<T>); }
 
     void growbuf(int sz)
     {
@@ -785,16 +877,16 @@ template <class T, int SIZE> struct ringbuf
 
     const int length() const { return len; }
 
-    T &add(const T &e)
+    T &add()
     {
-        T &t = (data[index] = e);
+        T &t = data[index];
         index++;
         if(index >= SIZE) index -= SIZE;
         if(len < SIZE) len++;
         return t;
     }
 
-    T &add() { return add(T()); }
+    T &add(const T &e) { return add() = e; }
 
     T &operator[](int i)
     {
@@ -852,16 +944,6 @@ inline char *newstring(const char *s, size_t l) { return copystring(newstring(l)
 inline char *newstring(const char *s)           { return newstring(s, strlen(s));          }
 inline char *newstringbuf(const char *s)        { return newstring(s, MAXSTRLEN-1);       }
 
-#if defined(WIN32) && !defined(__GNUC__)
-#ifdef _DEBUG
-//#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-inline void *__cdecl operator new(size_t n, const char *fn, int l) { return ::operator new(n, 1, fn, l); }
-inline void __cdecl operator delete(void *p, const char *fn, int l) { ::operator delete(p, 1, fn, l); }
-#define new new(__FILE__,__LINE__)
-#endif 
-#endif
-
 const int islittleendian = 1;
 #ifdef SDL_BYTEORDER
 #define endianswap16 SDL_Swap16
@@ -903,12 +985,22 @@ template<class T> inline void bigswap(T *buf, int len) { if(*(const uchar *)&isl
 
 struct stream
 {
+#ifdef WIN32
+#ifdef __GNUC__
+    typedef off64_t offset;
+#else
+    typedef __int64 offset;
+#endif
+#else
+    typedef off_t offset;
+#endif
+    
     virtual ~stream() {}
     virtual void close() = 0;
     virtual bool end() = 0;
-    virtual long tell() { return -1; }
-    virtual bool seek(long offset, int whence = SEEK_SET) { return false; }
-    virtual long size();
+    virtual offset tell() { return -1; }
+    virtual bool seek(offset pos, int whence = SEEK_SET) { return false; }
+    virtual offset size();
     virtual int read(void *buf, int len) { return 0; }
     virtual int write(const void *buf, int len) { return 0; }
     virtual int getchar() { uchar c; return read(&c, 1) == 1 ? c : -1; }
@@ -939,8 +1031,8 @@ extern const char *parentdir(const char *directory);
 extern bool fileexists(const char *path, const char *mode);
 extern bool createdir(const char *path);
 extern size_t fixpackagedir(char *dir);
-extern void sethomedir(const char *dir);
-extern void addpackagedir(const char *dir);
+extern const char *sethomedir(const char *dir);
+extern const char *addpackagedir(const char *dir);
 extern const char *findfile(const char *filename, const char *mode);
 extern stream *openrawfile(const char *filename, const char *mode);
 extern stream *openzipfile(const char *filename, const char *mode);
@@ -948,7 +1040,7 @@ extern stream *openfile(const char *filename, const char *mode);
 extern stream *opentempfile(const char *filename, const char *mode);
 extern stream *opengzfile(const char *filename, const char *mode, stream *file = NULL, int level = Z_BEST_COMPRESSION);
 extern char *loadfile(const char *fn, int *size);
-extern bool listdir(const char *dir, const char *ext, vector<char *> &files);
+extern bool listdir(const char *dir, bool rel, const char *ext, vector<char *> &files);
 extern int listfiles(const char *dir, const char *ext, vector<char *> &files);
 extern int listzipfiles(const char *dir, const char *ext, vector<char *> &files);
 extern void seedMT(uint seed);

@@ -1,6 +1,3 @@
-#ifndef __IENGINE_H__
-#define __IENGINE_H__
-
 // the interface the game uses to access the engine
 
 extern int curtime;                     // current frame time
@@ -31,14 +28,18 @@ enum // cube empty-space materials
     MAT_GAMECLIP = 3 << MATF_CLIP_SHIFT,  // game specific clip material
 
     MAT_DEATH    = 1 << MATF_FLAG_SHIFT,  // force player suicide
-    MAT_EDIT     = 4 << MATF_FLAG_SHIFT   // edit-only surfaces
+    MAT_ALPHA    = 4 << MATF_FLAG_SHIFT   // alpha blended
 };
 
+#define isliquid(mat) ((mat)==MAT_WATER || (mat)==MAT_LAVA)
+#define isclipped(mat) ((mat)==MAT_GLASS)
+#define isdeadly(mat) ((mat)==MAT_LAVA)
+
 extern void lightent(extentity &e, float height = 8.0f);
-extern void lightreaching(const vec &target, vec &color, vec &dir, extentity *e = 0, float ambient = 0.4f);
+extern void lightreaching(const vec &target, vec &color, vec &dir, bool fast = false, extentity *e = 0, float ambient = 0.4f);
 extern entity *brightestlight(const vec &target, const vec &dir);
 
-enum { RAY_BB = 1, RAY_POLY = 3, RAY_ALPHAPOLY = 7, RAY_ENTS = 9, RAY_CLIPMAT = 16, RAY_SKIPFIRST = 32, RAY_EDITMAT = 64, RAY_SHADOW = 128, RAY_PASS = 256 };
+enum { RAY_BB = 1, RAY_POLY = 3, RAY_ALPHAPOLY = 7, RAY_ENTS = 9, RAY_CLIPMAT = 16, RAY_SKIPFIRST = 32, RAY_EDITMAT = 64, RAY_SHADOW = 128, RAY_PASS = 256, RAY_SKIPSKY = 512 };
 
 extern float raycube   (const vec &o, const vec &ray,     float radius = 0, int mode = RAY_CLIPMAT, int size = 0, extentity *t = 0);
 extern float raycubepos(const vec &o, const vec &ray, vec &hit, float radius = 0, int mode = RAY_CLIPMAT, int size = 0);
@@ -48,7 +49,7 @@ extern bool  raycubelos(const vec &o, const vec &dest, vec &hitpos);
 extern int thirdperson;
 extern bool isthirdperson();
 
-extern void settexture(const char *name, int clamp = 0);
+extern bool settexture(const char *name, int clamp = 0);
 
 // octaedit
 
@@ -71,6 +72,8 @@ extern editinfo *localedit;
 
 extern bool editmode;
 
+extern bool packeditinfo(editinfo *e, int &inlen, uchar *&outbuf, int &outlen);
+extern bool unpackeditinfo(editinfo *&e, const uchar *inbuf, int inlen, int outlen);
 extern void freeeditinfo(editinfo *&e);
 extern void pruneundos(int maxremain = 0);
 extern bool noedit(bool view = false, bool msg = true);
@@ -87,23 +90,32 @@ extern void mpdelcube(selinfo &sel, bool local);
 extern void mpremip(bool local);
 
 // command
-extern int variable(const char *name, int min, int cur, int max, int *storage, void (*fun)(), int flags);
-extern float fvariable(const char *name, float min, float cur, float max, float *storage, void (*fun)(), int flags);
-extern char *svariable(const char *name, const char *cur, char **storage, void (*fun)(), int flags);
+extern int variable(const char *name, int min, int cur, int max, int *storage, identfun fun, int flags);
+extern float fvariable(const char *name, float min, float cur, float max, float *storage, identfun fun, int flags);
+extern char *svariable(const char *name, const char *cur, char **storage, identfun fun, int flags);
 extern void setvar(const char *name, int i, bool dofunc = true, bool doclamp = true);
 extern void setfvar(const char *name, float f, bool dofunc = true, bool doclamp = true);
 extern void setsvar(const char *name, const char *str, bool dofunc = true);
+extern void setvarchecked(ident *id, int val);
+extern void setfvarchecked(ident *id, float val);
+extern void setsvarchecked(ident *id, const char *val);
 extern void touchvar(const char *name);
 extern int getvar(const char *name);
 extern int getvarmin(const char *name);
 extern int getvarmax(const char *name);
 extern bool identexists(const char *name);
 extern ident *getident(const char *name);
-extern bool addcommand(const char *name, void (*fun)(), const char *narg);
-extern int execute(const char *p);
+extern ident *newident(const char *name, int flags = 0);
+extern bool addcommand(const char *name, identfun fun, const char *narg);
+extern uint *compilecode(const char *p);
+extern void executeret(const uint *code, tagval &result);
+extern void executeret(const char *p, tagval &result);
 extern char *executeret(const char *p);
+extern int execute(const uint *code);
+extern int execute(const char *p);
 extern bool execfile(const char *cfgfile, bool msg = true);
 extern void alias(const char *name, const char *action);
+extern void alias(const char *name, tagval &v);
 extern const char *getalias(const char *name);
 
 // console
@@ -120,6 +132,12 @@ enum
 
 extern void conoutf(const char *s, ...);
 extern void conoutf(int type, const char *s, ...);
+extern void conoutfv(int type, const char *fmt, va_list args);
+
+extern void setlogfile(const char *fname);
+extern void closelogfile();
+extern void logoutfv(const char *fmt, va_list args);
+extern void logoutf(const char *fmt, ...);
 
 // menus
 extern vec menuinfrontofplayer();
@@ -129,6 +147,18 @@ extern int cleargui(int n = 0);
 
 // octa
 extern int lookupmaterial(const vec &o);
+
+static inline bool insideworld(const vec &o)
+{
+	extern int worldsize;
+    return o.x>=0 && o.x<worldsize && o.y>=0 && o.y<worldsize && o.z>=0 && o.z<worldsize;
+}
+
+static inline bool insideworld(const ivec &o)
+{
+	extern int worldsize;
+    return uint(o.x)<uint(worldsize) && uint(o.y)<uint(worldsize) && uint(o.z)<uint(worldsize);
+}
 
 // world
 extern bool emptymap(int factor, bool force, const char *mname = "", bool usecfg = true);
@@ -170,10 +200,11 @@ enum
 };
 
 extern void adddynlight(const vec &o, float radius, const vec &color, int fade = 0, int peak = 0, int flags = 0, float initradius = 0, const vec &initcolor = vec(0, 0, 0), physent *owner = NULL);
-extern void dynlightreaching(const vec &target, vec &color, vec &dir);
+extern void dynlightreaching(const vec &target, vec &color, vec &dir, bool hud = false);
 extern void removetrackeddynlights(physent *owner = NULL);
 
 // rendergl
+extern physent *camera1;
 extern vec worldpos, camdir, camright, camup;
 
 extern void disablezoom();
@@ -182,6 +213,9 @@ extern vec calcavatarpos(const vec &pos, float dist);
 
 extern void damageblend(int n);
 extern void damagecompass(int n, const vec &loc);
+
+extern vec minimapcenter, minimapradius, minimapscale;
+extern void bindminimap();
 
 // renderparticles
 enum
@@ -193,9 +227,11 @@ enum
     PART_FLAME,
     PART_FIREBALL1, PART_FIREBALL2, PART_FIREBALL3,
     PART_STREAK, PART_LIGHTNING,
-    PART_EXPLOSION, PART_EXPLOSION_NO_GLARE,
+    PART_EXPLOSION, PART_EXPLOSION_BLUE,
     PART_SPARK, PART_EDIT,
     PART_MUZZLE_FLASH1, PART_MUZZLE_FLASH2, PART_MUZZLE_FLASH3,
+    PART_HUD_ICON,
+    PART_HUD_ICON_GREY,
     PART_TEXT,
     PART_METER, PART_METER_VS,
     PART_LENS_FLARE
@@ -203,10 +239,12 @@ enum
 
 extern bool canaddparticles();
 extern void regular_particle_splash(int type, int num, int fade, const vec &p, int color = 0xFFFFFF, float size = 1.0f, int radius = 150, int gravity = 2, int delay = 0);
+extern void regular_particle_flame(int type, const vec &p, float radius, float height, int color, int density = 3, float scale = 2.0f, float speed = 200.0f, float fade = 600.0f, int gravity = -15);
 extern void particle_splash(int type, int num, int fade, const vec &p, int color = 0xFFFFFF, float size = 1.0f, int radius = 150, int gravity = 2);
 extern void particle_trail(int type, int fade, const vec &from, const vec &to, int color = 0xFFFFFF, float size = 1.0f, int gravity = 20);
 extern void particle_text(const vec &s, const char *t, int type, int fade = 2000, int color = 0xFFFFFF, float size = 2.0f, int gravity = 0);
 extern void particle_textcopy(const vec &s, const char *t, int type, int fade = 2000, int color = 0xFFFFFF, float size = 2.0f, int gravity = 0);
+extern void particle_icon(const vec &s, int ix, int iy, int type, int fade = 2000, int color = 0xFFFFFF, float size = 2.0f, int gravity = 0);
 extern void particle_meter(const vec &s, float val, int type, int fade = 1, int color = 0xFFFFFF, int color2 = 0xFFFFF, float size = 2.0f);
 extern void particle_flare(const vec &p, const vec &dest, int fade, int type, int color = 0xFFFFFF, float size = 0.28f, physent *owner = NULL);
 extern void particle_fireball(const vec &dest, float max, int type, int fade = -1, int color = 0xFFFFFF, float size = 4.0f);
@@ -227,6 +265,7 @@ extern bool load_world(const char *mname, const char *cname = NULL);
 extern bool save_world(const char *mname, bool nolms = false);
 extern void getmapfilenames(const char *fname, const char *cname, char *pakname, char *mapname, char *cfgname);
 extern uint getmapcrc();
+extern bool loadents(const char *fname, vector<entity> &ents, uint *crc = NULL);
 
 // physics
 extern void moveplayer(physent *pl, int moveres, bool local);
@@ -251,14 +290,14 @@ extern bool entinmap(dynent *d, bool avoidplayers = false);
 extern void findplayerspawn(dynent *d, int forceent = -1, int tag = 0);
 
 // sound
-extern int playsound(int n, const vec *loc = NULL, extentity *ent = NULL, int loops = 0, int fade = 0, int chanid = -1, int radius = 0);
-extern int playsoundname(const char *s, const vec *loc = NULL, int vol = 0, int loops = 0, int fade = 0, int chanid = -1, int radius = 0);
+extern int playsound(int n, const vec *loc = NULL, extentity *ent = NULL, int loops = 0, int fade = 0, int chanid = -1, int radius = 0, int expire = -1);
+extern int playsoundname(const char *s, const vec *loc = NULL, int vol = 0, int loops = 0, int fade = 0, int chanid = -1, int radius = 0, int expire = -1);
 extern bool stopsound(int n, int chanid, int fade = 0);
 extern void stopsounds();
 extern void initsound();
 
 // rendermodel
-enum { MDL_CULL_VFC = 1<<0, MDL_CULL_DIST = 1<<1, MDL_CULL_OCCLUDED = 1<<2, MDL_CULL_QUERY = 1<<3, MDL_SHADOW = 1<<4, MDL_DYNSHADOW = 1<<5, MDL_LIGHT = 1<<6, MDL_DYNLIGHT = 1<<7, MDL_FULLBRIGHT = 1<<8, MDL_NORENDER = 1<<9, MDL_GHOST = 1<<10 };
+enum { MDL_CULL_VFC = 1<<0, MDL_CULL_DIST = 1<<1, MDL_CULL_OCCLUDED = 1<<2, MDL_CULL_QUERY = 1<<3, MDL_SHADOW = 1<<4, MDL_DYNSHADOW = 1<<5, MDL_LIGHT = 1<<6, MDL_DYNLIGHT = 1<<7, MDL_FULLBRIGHT = 1<<8, MDL_NORENDER = 1<<9, MDL_LIGHT_FAST = 1<<10, MDL_HUD = 1<<11, MDL_GHOST = 1<<12 };
 
 struct model;
 struct modelattach
@@ -311,10 +350,10 @@ enum { DISC_NONE = 0, DISC_EOP, DISC_CN, DISC_KICK, DISC_TAGT, DISC_IPBAN, DISC_
 
 inline const char * disconnect_reason(int code)
 {
-    static const char * reasons[] = { 
-        "normal", "end of packet", "client num", 
-        "kicked/banned", "tag type", "ip is banned", 
-        "server is in private mode", "server FULL (maxclients)", 
+    static const char * reasons[] = {
+        "normal", "end of packet", "client num",
+        "kicked/banned", "tag type", "ip is banned",
+        "server is in private mode", "server FULL (maxclients)",
         "connection timed out", "overflow" };
     if(code < 0) return "";
     return reasons[code % (sizeof(reasons)/sizeof(char *))];
@@ -378,6 +417,7 @@ extern bool checkchallenge(const char *answerstr, void *correct);
 
 // 3dgui
 struct Texture;
+struct VSlot;
 
 enum { G3D_DOWN = 1, G3D_UP = 2, G3D_PRESSED = 4, G3D_ROLLOVER = 8, G3D_DRAGGED = 16 };
 
@@ -402,22 +442,27 @@ struct g3d_gui
         defvformatstring(str, icon, fmt);
         return button(str, color, icon);
     }
+    virtual int title(const char *text, int color, const char *icon = NULL) = 0;
+    int titlef(const char *fmt, int color, const char *icon = NULL, ...)
+    {
+        defvformatstring(str, icon, fmt);
+        return title(str, color, icon);
+    }
     virtual void background(int color, int parentw = 0, int parenth = 0) = 0;
 
-    virtual void pushlist() {}
+    virtual void pushlist(int align = -1) {}
     virtual void poplist() {}
 
     virtual void allowautotab(bool on) = 0;
     virtual bool shouldtab() { return false; }
 	virtual void tab(const char *name = NULL, int color = 0) = 0;
-    virtual int title(const char *text, int color, const char *icon = NULL) = 0;
     virtual int image(Texture *t, float scale, bool overlaid = false) = 0;
-    virtual int texture(Texture *t, float scale, int rotate = 0, int xoff = 0, int yoff = 0, Texture *glowtex = NULL, const vec &glowcolor = vec(1, 1, 1), Texture *layertex = NULL) = 0;
+    virtual int texture(VSlot &vslot, float scale, bool overlaid = true) = 0;
     virtual void slider(int &val, int vmin, int vmax, int color, char *label = NULL) = 0;
     virtual void separator() = 0;
 	virtual void progress(float percent) = 0;
-	virtual void strut(int size) = 0;
-    virtual void space(int size) = 0;
+	virtual void strut(float size) = 0;
+    virtual void space(float size) = 0;
     virtual char *keyfield(const char *name, int color, int length, int height = 0, const char *initval = NULL, int initmode = EDITORFOCUSED) = 0;
     virtual char *field(const char *name, int color, int length, int height = 0, const char *initval = NULL, int initmode = EDITORFOCUSED) = 0;
     virtual void textbox(const char *text, int width, int height, int color = 0xFFFFFF) = 0;
@@ -447,4 +492,3 @@ extern void g3d_cursorpos(float &x, float &y);
 extern void g3d_resetcursor();
 extern void g3d_limitscale(float scale);
 
-#endif

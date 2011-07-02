@@ -373,6 +373,7 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "reserved_slots", server::reservedslots);
     bind_wo_var(L, T, "reserved_slots_password", server::slotpass);
     bind_ro_var(L, T, "reserved_slots_occupied", server::reservedslots_use);
+    bind_var(L, T, "ctf_teamkill_penalty", server::ctftkpenalty);
     bind_ro_var(L, T, "reloaded", reloaded);
     bind_prop<__uid_t>(L, T, "UID", getuid, NULL);
     bind_var(L, T, "spectator_delay", server::spectator_delay);

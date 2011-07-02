@@ -119,14 +119,18 @@ bool linecylinderintersect(const vec &from, const vec &to, const vec &start, con
         else dist = 0;
         return true;
     }
-    float b = dd*mn - nd*md,
-          discrim = b*b - a*c;
-    if(discrim < 0) return false;
-    dist = (-b - sqrtf(discrim)) / a;
+    else if(c > 0)
+    {
+        float b = dd*mn - nd*md,
+              discrim = b*b - a*c;
+        if(discrim < 0) return false;
+        dist = (-b - sqrtf(discrim)) / a;
+    }
+    else dist = 0;
     float offset = md + dist*nd;
     if(offset < 0)
     {
-        if(nd < 0) return false;
+        if(nd <= 0) return false;
         dist = -md / nd;
         if(k + dist*(2*mn + dist*nn) > 0) return false;
     }

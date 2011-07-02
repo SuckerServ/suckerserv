@@ -101,7 +101,9 @@ target_link_libraries(lua_modules
 
 SET(GAME_SERVER_SOURCES
     engine/server.cpp
+    engine/worldio.cpp
     fpsgame/server.cpp
+    fpsgame/entities.cpp
     hopmod/startup.cpp
     hopmod/scheduler.cpp
     hopmod/lua.cpp

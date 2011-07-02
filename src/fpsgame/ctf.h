@@ -4,6 +4,8 @@
 #define ctfflagteam(i) (i==1 ? "good" : (i==2 ? "evil" : NULL))
 
 #ifdef SERVMODE
+bool ctftkpenalty = true;
+
 struct ctfservmode : servmode
 #else
 struct ctfclientmode : clientmode
@@ -74,7 +76,7 @@ struct ctfclientmode : clientmode
         entitylight light;
 #endif
     };
-    vector<holdspawn> holdspawns; 
+    vector<holdspawn> holdspawns;
     vector<flag> flags;
     int scores[2];
 
@@ -224,7 +226,54 @@ struct ctfclientmode : clientmode
         notgotflags = !empty;
     }
 
-    void dropflag(clientinfo *ci)
+    void cleanup()
+    {
+        reset(false);
+    }
+
+    void setupholdspawns()
+    {
+        if(!m_hold || holdspawns.empty()) return;
+        while(flags.length() < HOLDFLAGS)
+        {
+            int i = flags.length();
+            if(!addflag(i, vec(0, 0, 0), 0, 0)) break;
+            flag &f = flags[i];
+            spawnflag(i);
+            sendf(-1, 1, "ri6", N_RESETFLAG, i, ++f.version, f.spawnindex, 0, 0);
+            event_resetflag(event_listeners(), boost::make_tuple(ctfflagteam(f.team)));
+        }
+    }
+
+    void setup()
+    {
+        reset(false);
+        if(notgotitems || ments.empty()) return;
+        if(m_hold) 
+        {
+            loopv(ments)
+            {   
+                entity &e = ments[i];
+                if(e.type != BASE) continue;
+                if(!addholdspawn(e.o)) break;
+            }
+            setupholdspawns();
+        }
+        else loopv(ments)
+        {
+            entity &e = ments[i];
+            if(e.type != FLAG || e.attr2 < 1 || e.attr2 > 2) continue;
+            if(!addflag(flags.length(), e.o, e.attr2, m_protect ? lastmillis : 0)) break;
+        }
+        notgotflags = false;
+    }
+
+    void newmap()
+    {
+        reset(true);
+    }
+
+    void dropflag(clientinfo *ci, clientinfo *dropper = NULL)
     {
         if(notgotflags) return;
         loopv(flags) if(flags[i].owner==ci->clientnum)
@@ -240,8 +289,8 @@ struct ctfclientmode : clientmode
             {
                 ivec o(vec(ci->state.o).mul(DMF));
                 sendf(-1, 1, "ri7", N_DROPFLAG, ci->clientnum, i, ++f.version, o.x, o.y, o.z);
+                dropflag(i, o.tovec().div(DMF), lastmillis, dropper ? dropper->clientnum : ci->clientnum);
                 event_dropflag(event_listeners(), boost::make_tuple(ci->clientnum, ctfflagteam(f.team)));
-                dropflag(i, o.tovec().div(DMF), lastmillis, ci->clientnum);
             }
         }
     }
@@ -254,7 +303,7 @@ struct ctfclientmode : clientmode
 
     void died(clientinfo *ci, clientinfo *actor)
     {
-        dropflag(ci);
+        dropflag(ci, ctftkpenalty && actor && actor != ci && isteam(actor->team, ci->team) ? actor : NULL);
         loopv(flags) if(flags[i].dropper == ci->clientnum) flags[i].dropper = -1;
     }
 
@@ -282,7 +331,6 @@ struct ctfclientmode : clientmode
 
     void scoreflag(clientinfo *ci, int goal, int relay = -1)
     {
-        //int flagIndex = relay >= 0 ? relay : goal;
         returnflag(relay >= 0 ? relay : goal, m_protect ? lastmillis : 0);
         ci->state.flags++;
         int team = ctfteamflag(ci->team), score = addscore(team, 1);
@@ -387,39 +435,21 @@ struct ctfclientmode : clientmode
             vec o;
             loopk(3) o[k] = max(getint(p)/DMF, 0.0f);
             if(p.overread()) break;
-            if(commit && notgotflags) 
+            if(commit && notgotflags)
             {
                 if(m_hold) addholdspawn(o);
                 else addflag(i, o, team, m_protect ? lastmillis : 0);
             }
         }
-        if(commit && notgotflags) 
+        if(commit && notgotflags)
         {
-            if(m_hold)
-            {
-                if(holdspawns.length()) while(flags.length() < HOLDFLAGS) 
-                {
-                    int i = flags.length();
-                    if(!addflag(i, vec(0, 0, 0), 0, 0)) break; 
-                    flag &f = flags[i];
-                    spawnflag(i);
-                    sendf(-1, 1, "ri6", N_RESETFLAG, i, ++f.version, f.spawnindex, 0, 0);
-                    event_resetflag(event_listeners(), boost::make_tuple(ctfflagteam(f.team)));
-                }
-            }
+            if(m_hold) setupholdspawns();
             notgotflags = false;
         }
     }
 };
 #else
     static const int RESPAWNSECS = 5;
-
-    float radarscale;
-
-    ctfclientmode() : radarscale(0)
-    {
-        CCOMMAND(dropflag, "", (ctfclientmode *self), { self->trydropflag(); });
-    }
 
     void preload()
     {
@@ -431,49 +461,17 @@ struct ctfclientmode : clientmode
         }
     }
 
-    float calcradarscale()
-    {
-        //return radarscale<=0 || radarscale>maxradarscale ? maxradarscale : max(radarscale, float(minradarscale));
-        return clamp(max(minimapradius.x, minimapradius.y)/3, float(minradarscale), float(maxradarscale));
-    }
-
-    void drawminimap(fpsent *d, float x, float y, float s)
-    {
-        vec pos = vec(d->o).sub(minimapcenter).mul(minimapscale).add(0.5f), dir;
-        vecfromyawpitch(d->yaw, 0, 1, 0, dir);
-        float scale = calcradarscale();
-        glBegin(GL_TRIANGLE_FAN);
-        loopi(16+1)
-        {
-            vec tc = vec(dir).rotate_around_z(i/16.0f*2*M_PI);
-            glTexCoord2f(pos.x + tc.x*scale*minimapscale.x, pos.y + tc.y*scale*minimapscale.y);
-            vec v = vec(0, -1, 0).rotate_around_z(i/16.0f*2*M_PI);
-            glVertex2f(x + 0.5f*s*(1.0f + v.x), y + 0.5f*s*(1.0f + v.y));
-        }
-        glEnd();
-    }
-
-    void drawradar(float x, float y, float s)
-    {
-        glBegin(GL_TRIANGLE_FAN);
-        glTexCoord2f(0.0f, 0.0f); glVertex2f(x,   y);
-        glTexCoord2f(1.0f, 0.0f); glVertex2f(x+s, y);
-        glTexCoord2f(1.0f, 1.0f); glVertex2f(x+s, y+s);
-        glTexCoord2f(0.0f, 1.0f); glVertex2f(x,   y+s);
-        glEnd();
-    }
-
     void drawblip(fpsent *d, float x, float y, float s, const vec &pos, bool flagblip)
     {
         float scale = calcradarscale();
-        vec dir = pos;
-        dir.sub(d->o).div(scale);
+        vec dir = d->o;
+        dir.sub(pos).div(scale);
         float size = flagblip ? 0.1f : 0.05f,
               xoffset = flagblip ? -2*(3/32.0f)*size : -size,
               yoffset = flagblip ? -2*(1 - 3/32.0f)*size : -size,
               dist = dir.magnitude2(), maxdist = 1 - 0.05f - 0.05f;
         if(dist >= maxdist) dir.mul(maxdist/dist);
-        dir.rotate_around_z(-d->yaw*RAD);
+        dir.rotate_around_z(-camera1->yaw*RAD);
         drawradar(x + s*0.5f*(1.0f + dir.x + xoffset), y + s*0.5f*(1.0f + dir.y + yoffset), size*s);
     }
 
@@ -489,7 +487,7 @@ struct ctfclientmode : clientmode
 
     int clipconsole(int w, int h)
     {
-        return w*6/40;
+        return (h*(1 + 1 + 10))/(4*10);
     }
 
     void drawhud(fpsent *d, int w, int h)
@@ -506,18 +504,19 @@ struct ctfclientmode : clientmode
                     glScalef(2, 2, 1);
                     draw_textf("%d", (x + HICON_SIZE + HICON_SPACE)/2, HICON_TEXTY/2, max(HOLDSECS - (lastmillis - flags[i].owntime)/1000, 0));
                     glPopMatrix();
-                } 
+                }
                 break;
             }
         }
 
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         int s = 1800/4, x = 1800*w/h - s - s/10, y = s/10;
-        glColor3f(1, 1, 1);
-        glDisable(GL_BLEND);
+        glColor4f(1, 1, 1, minimapalpha);
+        if(minimapalpha >= 1) glDisable(GL_BLEND);
         bindminimap();
         drawminimap(d, x, y, s);
-        glEnable(GL_BLEND);
+        if(minimapalpha >= 1) glEnable(GL_BLEND);
+        glColor3f(1, 1, 1);
         float margin = 0.04f, roffset = s*margin, rsize = s + 2*roffset;
         settexture("packages/hud/radar.png", 3);
         drawradar(x - roffset, y - roffset, rsize);
@@ -532,9 +531,7 @@ struct ctfclientmode : clientmode
         if(m_hold)
         {
             settexture("packages/hud/blip_neutral.png", 3);
-            glBegin(GL_QUADS);
             loopv(holdspawns) drawblip(d, x, y, s, holdspawns[i].o, false);
-            glEnd();
         }
         loopv(flags)
         {
@@ -618,11 +615,10 @@ struct ctfclientmode : clientmode
 
             if(m_protect && canaddparticles() && f.owner && insidebase(f, f.owner->feetpos()))
             {
-                vec pos(f.owner->o.x, f.owner->o.y, f.owner->o.z + (f.owner->aboveeye - f.owner->eyeheight)/2);
-                particle_flare(f.spawnloc, pos, 0, PART_LIGHTNING, strcmp(f.owner->team, player1->team) ? 0xFF2222 : 0x2222FF, 0.28f);
+                particle_flare(pos, f.spawnloc, 0, PART_LIGHTNING, strcmp(f.owner->team, player1->team) ? 0xFF2222 : 0x2222FF, 1.0f);
                 if(!flags.inrange(f.owner->lastbase))
                 {
-                    particle_fireball(pos, 4.8f, PART_EXPLOSION_NO_GLARE, 250, strcmp(f.owner->team, player1->team) ? 0x802020 : 0x2020FF, 4.8f);
+                    particle_fireball(pos, 4.8f, PART_EXPLOSION, 250, strcmp(f.owner->team, player1->team) ? 0x802020 : 0x2020FF, 4.8f);
                     particle_splash(PART_SPARK, 50, 250, pos, strcmp(f.owner->team, player1->team) ? 0x802020 : 0x2020FF, 0.24f);
                 }
                 f.owner->lastbase = i;
@@ -635,8 +631,9 @@ struct ctfclientmode : clientmode
             flag &f = flags[d->lastbase];
             if(f.owner == d && insidebase(f, d->feetpos())) continue;
             d->lastbase = -1;
-            vec pos(d->o.x, d->o.y, d->o.z + (d->aboveeye - d->eyeheight)/2);
-            particle_fireball(pos, 4.8f, PART_EXPLOSION_NO_GLARE, 250, strcmp(d->team, player1->team) ? 0x802020 : 0x2020FF, 4.8f);
+            float angle;
+            vec pos = interpflagpos(f, angle);
+            particle_fireball(pos, 4.8f, PART_EXPLOSION, 250, strcmp(d->team, player1->team) ? 0x802020 : 0x2020FF, 4.8f);
             particle_splash(PART_SPARK, 50, 250, pos, strcmp(d->team, player1->team) ? 0x802020 : 0x2020FF, 0.24f);
         }
     }
@@ -653,44 +650,22 @@ struct ctfclientmode : clientmode
                 if(e->type!=BASE) continue;
                 if(!addholdspawn(e->o)) continue;
                 holdspawns.last().light = e->light;
-                radarents.add(e); 
+                radarents.add(e);
             }
             if(holdspawns.length()) while(flags.length() < HOLDFLAGS) addflag(flags.length(), vec(0, 0, 0), 0, -1000);
         }
         else
-        { 
+        {
             loopv(entities::ents)
             {
                 extentity *e = entities::ents[i];
-                switch(e->type)
-                {
-#if 0
-                    case PLAYERSTART:
-                        if(e->attr2<1 || e->attr2>2) continue;
-                        break;
-#endif
-                    case FLAG:
-                    {
-                        if(e->attr2<1 || e->attr2>2) continue;
-                        int index = flags.length();
-                        if(!addflag(index, e->o, e->attr2, m_protect ? 0 : -1000)) continue;
-                        flags[index].spawnangle = e->attr1;
-                        flags[index].light = e->light;
-                        break;
-                    }
-                    default:
-                        continue;
-                }
-                radarents.add(e);
+                if(e->type!=FLAG) continue;
+                if(e->attr2<1 || e->attr2>2) continue;
+                int index = flags.length();
+                if(!addflag(index, e->o, e->attr2, m_protect ? 0 : -1000)) continue;
+                flags[index].spawnangle = e->attr1;
+                flags[index].light = e->light;
             }
-        }
-        radarscale = 0;
-        if(radarents.length())
-        {
-            vec center(0, 0, 0);
-            loopv(radarents) center.add(radarents[i]->o);
-            center.div(radarents.length());
-            loopv(radarents) radarscale = max(radarscale, 2*center.dist(radarents[i]->o));
         }
     }
 
@@ -813,7 +788,7 @@ struct ctfclientmode : clientmode
             flagexplosion(i, team, toexp);
         }
         if(from.x >= 0 && to.x >= 0)
-            particle_flare(fromexp, toexp, 600, PART_LIGHTNING, !team ? 0xFFFFFF : (team==ctfteamflag(player1->team) ? 0x2222FF : 0xFF2222), 0.28f);
+            particle_flare(fromexp, toexp, 600, PART_LIGHTNING, !team ? 0xFFC0A0 : (team==ctfteamflag(player1->team) ? 0x2222FF : 0xFF2222), 1.0f);
     }
 
     void returnflag(fpsent *d, int i, int version)
@@ -849,7 +824,7 @@ struct ctfclientmode : clientmode
         if(shouldeffect) flageffect(i, m_hold ? 0 : team, interpflagpos(f), f.spawnloc);
         f.interptime = 0;
         returnflag(i, m_protect ? 0 : -1000);
-        if(shouldeffect) 
+        if(shouldeffect)
         {
             conoutf(CON_GAMEINFO, "%s flag reset", m_hold ? "the" : (f.team==ctfteamflag(player1->team) ? "your" : "the enemy"));
             playsound(S_FLAGRESET);
@@ -865,7 +840,7 @@ struct ctfclientmode : clientmode
             f.version = goalversion;
             f.spawnindex = goalspawn;
             if(m_hold) spawnflag(f);
-            if(relay >= 0) 
+            if(relay >= 0)
             {
                 flags[relay].version = relayversion;
                 flageffect(goal, team, f.spawnloc, flags[relay].spawnloc);
@@ -966,7 +941,7 @@ struct ctfclientmode : clientmode
                     if(dist >= sdist) continue;
                     swap(e, flagspawns[k]);
                     dist = sdist;
-                } 
+                }
                 if(numflagspawns < int(sizeof(flagspawns)/sizeof(flagspawns[0]))) flagspawns[numflagspawns++] = e;
             }
             loopk(numflagspawns) spawns.add(flagspawns[k]);
@@ -1027,6 +1002,12 @@ struct ctfclientmode : clientmode
                 }
             }
 	    }
+	    if(b.type == ai::AI_S_INTEREST && b.targtype == ai::AI_T_NODE) return true; // we already did this..
+		if(randomnode(d, b, ai::SIGHTMIN, 1e16f))
+		{
+            d->ai->switchstate(b, ai::AI_S_INTEREST, ai::AI_T_NODE, d->ai->route[0]);
+            return true;
+		}
 		return false;
 	}
 
@@ -1037,11 +1018,7 @@ struct ctfclientmode : clientmode
         loopv(flags)
         {
             flag &g = flags[i];
-            if(g.owner == d)
-            {
-                aihomerun(d, b);
-                return true;
-            }
+            if(g.owner == d) return aihomerun(d, b);
             else if(g.team == ctfteamflag(d->team) && ((g.owner && g.team != ctfteamflag(g.owner->team)) || g.droptime))
                 takenflags.add(i);
         }
@@ -1133,11 +1110,7 @@ struct ctfclientmode : clientmode
         loopv(flags)
         {
             flag &g = flags[i];
-            if(g.owner == d)
-            {
-                aihomerun(d, b);
-                return true;
-            }
+            if(g.owner == d) return aihomerun(d, b);
         }
 		if(flags.inrange(b.target))
 		{
@@ -1204,6 +1177,10 @@ struct ctfclientmode : clientmode
 		return false;
 	}
 };
+
+extern ctfclientmode ctfmode;
+ICOMMAND(dropflag, "", (), { ctfmode.trydropflag(); });
+
 #endif
 
 #elif SERVMODE

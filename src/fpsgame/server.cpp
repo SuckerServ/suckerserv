@@ -32,6 +32,7 @@ namespace game
             if(!server::serveroption(args[i]))
                 printf("unknown command-line option: %s", args[i]);
     }
+    const char *gameident() { return "fps"; }
 }
 
 extern ENetAddress masteraddress;
@@ -538,6 +539,7 @@ namespace server
     };
 
     #define MAXDEMOS 5
+    #define MAXDEMOSIZE (16*1024*1024)
     vector<demofile> demos;
 
     bool demonextmatch = false;
@@ -584,7 +586,9 @@ namespace server
         virtual void changeteam(clientinfo *ci, const char *oldteam, const char *newteam) {}
         virtual void initclient(clientinfo *ci, packetbuf &p, bool connecting) {}
         virtual void update() {}
-        virtual void reset(bool empty) {}
+        virtual void cleanup() {}
+        virtual void setup() {}
+        virtual void newmap() {}
         virtual void intermission() {}
         virtual bool hidefrags() { return false; }
         virtual int getteamscore(const char *team) { return 0; }
@@ -593,56 +597,7 @@ namespace server
         virtual bool setteamscore(const char *, int){ return false; }
     };
 
-    #define SERVMODE 1
-    #include "capture.h"
-    #include "ctf.h"
-
-    captureservmode capturemode;
-    ctfservmode ctfmode;
-    servmode *smode = NULL;
-    
-    bool canspawnitem(int type) { return !m_noitems && (type>=I_SHELLS && type<=I_QUAD && (!m_noammo || type<I_SHELLS || type>I_CARTRIDGES)); }
-    
-    int numclients(int exclude, bool nospec, bool noai);
-    
-    int spawntime(int type)
-    {
-        if(m_classicsp) return INT_MAX;
-        int np = numclients(-1, true, false);
-        np = np<3 ? 4 : (np>4 ? 2 : 3);         // spawn times are dependent on number of players
-        int sec = 0;
-        switch(type)
-        {
-            case I_SHELLS:
-            case I_BULLETS:
-            case I_ROCKETS:
-            case I_ROUNDS:
-            case I_GRENADES:
-            case I_CARTRIDGES: sec = np*4; break;
-            case I_HEALTH: sec = np*5; break;
-            case I_GREENARMOUR:
-            case I_YELLOWARMOUR: sec = 20; break;
-            case I_BOOST:
-            case I_QUAD: sec = 40+rnd(40); break;
-        }
-        return sec*1000;
-    }
-    
-    bool delayspawn(int type)
-    {
-        switch(type)
-        {
-            case I_GREENARMOUR:
-            case I_YELLOWARMOUR:
-                return !m_classicsp;
-            case I_BOOST:
-            case I_QUAD:
-                return true;
-            default:
-                return false;
-        }
-    }
-    
+    vector<entity> ments;
     vector<server_entity> sents;
     int sents_type_index[MAXENTTYPES];
     vector<savedscore> scores;
@@ -691,7 +646,8 @@ namespace server
 
     void resetitems() 
     { 
-        sents.shrink(0);
+        ments.setsize(0);
+        sents.setsize(0);
         //cps.reset(); 
     }
 
@@ -726,10 +682,14 @@ namespace server
         signal_shutdown.connect(cleanup_fpsgame);
     }
     
-    int numclients(int exclude = -1, bool nospec = true, bool noai = true)
+    int numclients(int exclude = -1, bool nospec = true, bool noai = true, bool priv = false)
     {
         int n = 0;
-        loopv(clients) if(i!=exclude && (!nospec || clients[i]->state.state!=CS_SPECTATOR) && (!noai || clients[i]->state.aitype == AI_NONE)) n++;
+        loopv(clients) 
+        {
+            clientinfo *ci = clients[i];
+            if(ci->clientnum!=exclude && (!nospec || ci->state.state!=CS_SPECTATOR || (priv && (ci->privilege || ci->local))) && (!noai || ci->state.aitype == AI_NONE)) n++;
+        }
         return n;
     }
     
@@ -751,9 +711,58 @@ namespace server
         return cname[cidx];
     }
 
+    #define SERVMODE 1
+    #include "capture.h"
+    #include "ctf.h"
+
+    captureservmode capturemode;
+    ctfservmode ctfmode;
+    servmode *smode = NULL;
+    
+    bool canspawnitem(int type) { return !m_noitems && (type>=I_SHELLS && type<=I_QUAD && (!m_noammo || type<I_SHELLS || type>I_CARTRIDGES)); }
+
+
+    int spawntime(int type)
+    {
+        if(m_classicsp) return INT_MAX;
+        int np = numclients(-1, true, false);
+        np = np<3 ? 4 : (np>4 ? 2 : 3);         // spawn times are dependent on number of players
+        int sec = 0;
+        switch(type)
+        {
+            case I_SHELLS:
+            case I_BULLETS:
+            case I_ROCKETS:
+            case I_ROUNDS:
+            case I_GRENADES:
+            case I_CARTRIDGES: sec = np*4; break;
+            case I_HEALTH: sec = np*5; break;
+            case I_GREENARMOUR:
+            case I_YELLOWARMOUR: sec = 20; break;
+            case I_BOOST:
+            case I_QUAD: sec = 40+rnd(40); break;
+        }
+        return sec*1000;
+    }
+    
+    bool delayspawn(int type)
+    {
+        switch(type)
+        {
+            case I_GREENARMOUR:
+            case I_YELLOWARMOUR:
+                return !m_classicsp;
+            case I_BOOST:
+            case I_QUAD:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     bool pickup(int i, int sender)         // server side item pickup, acknowledge first client that gets it
     {
-        if(gamemillis>=gamelimit || !sents.inrange(i) || !sents[i].spawned) return false;
+        if((m_timed && gamemillis>=gamelimit) || !sents.inrange(i) || !sents[i].spawned) return false;
         clientinfo *ci = getinfo(sender);
         if(!ci || (!ci->local && !ci->state.canpickup(sents[i].type))) return false;
         sents[i].spawned = false;
@@ -891,7 +900,7 @@ namespace server
 
         if(!demotmp) return;
 
-        int len = demotmp->size();
+        int len = (int)min(demotmp->size(), stream::offset(MAXDEMOSIZE));
         if(demos.length()>=MAXDEMOS)
         {
             delete[] demos[0].data;
@@ -1436,7 +1445,7 @@ namespace server
 
     int welcomepacket(packetbuf &p, clientinfo *ci)
     {
-        int hasmap = (m_edit && (clients.length()>1 || (ci && ci->local))) || (smapname[0] && (gamemillis<gamelimit || (ci && ci->state.state==CS_SPECTATOR) || numclients(ci && ci->local ? ci->clientnum : -1)));
+        int hasmap = (m_edit && (clients.length()>1 || (ci && ci->local))) || (smapname[0] && (!m_timed || gamemillis<gamelimit || (ci && ci->state.state==CS_SPECTATOR && !ci->privilege && !ci->local) || numclients(ci ? ci->clientnum : -1, true, true, true)));
         putint(p, N_WELCOME);
         putint(p, hasmap);
         if(hasmap)
@@ -1560,6 +1569,23 @@ namespace server
         sendpacket(-1, 1, p.finalize(), ci->clientnum);
     }
 
+    void loaditems()
+    {
+        resetitems();
+        notgotitems = true;
+        if(m_edit || !loadents(smapname, ments))
+            return;
+        loopv(ments) if(canspawnitem(ments[i].type))
+        {
+            server_entity se = { NOTUSED, 0, false };
+            while(sents.length()<=i) sents.add(se);
+            sents[i].type = ments[i].type;
+            if(m_mp(gamemode) && delayspawn(sents[i].type)) sents[i].spawntime = spawntime(sents[i].type);
+            else sents[i].spawned = true;
+        }
+        notgotitems = false;
+    }
+
     void changemap(const char *s, int mode,int mins = -1)
     {
         calc_player_ranks();
@@ -1567,7 +1593,7 @@ namespace server
         
         stopdemo();
         pausegame(false);
-        if(smode) smode->reset(false);
+        if(smode) smode->cleanup();
         aiman::clearai();
         
         mapreload = false;
@@ -1577,8 +1603,7 @@ namespace server
         interm = 0;
         nextexceeded = 0;
         copystring(smapname, s);
-        resetitems();
-        notgotitems = true;
+        loaditems();
         scores.shrink(0);
         loopv(clients)
         {
@@ -1593,7 +1618,6 @@ namespace server
         if(m_capture) smode = &capturemode;
         else if(m_ctf) smode = &ctfmode;
         else smode = NULL;
-        if(smode) smode->reset(false);
 
         if(m_timed && smapname[0]) sendf(-1, 1, "ri2", N_TIMEUP, gamemillis < gamelimit && !interm ? max((gamelimit - gamemillis)/1000, 1) : 0);
         loopv(clients)
@@ -1615,6 +1639,8 @@ namespace server
             demonextmatch = false;
             setupdemorecord();
         }
+        
+        if(smode) smode->setup();
         
         event_mapchange(event_listeners(), boost::make_tuple(smapname, modename(gamemode,"unknown")));
         
@@ -1685,7 +1711,7 @@ namespace server
     {
         clientinfo *ci = getinfo(sender);
         if(!ci || (ci->state.state==CS_SPECTATOR && !ci->privilege && !ci->local) || (!ci->local && !m_mp(reqmode))) return;
-        strncpy(ci->mapvote, map, 50);
+        strncpy(ci->mapvote, map, 64);
         ci->modevote = reqmode;
         if(!ci->mapvote[0]) return;
         if(ci->local || mapreload || (ci->privilege && mastermode>=MM_VETO))
@@ -2046,14 +2072,10 @@ namespace server
     { 
         int crc, matches; 
 
+        crcinfo() {}
         crcinfo(int crc, int matches) : crc(crc), matches(matches) {}
 
-        static int compare(const crcinfo *x, const crcinfo *y)
-        {
-            if(x->matches > y->matches) return -1;
-            if(x->matches < y->matches) return 1;
-            return 0;
-        }
+        static bool compare(const crcinfo &x, const crcinfo &y) { return x.matches > y.matches; }
     };
 
     void sendservinfo(clientinfo *ci)
@@ -2241,7 +2263,7 @@ namespace server
         loopv(clients)
         {
             clientinfo &e = *clients[i];
-            if(e.clientnum != ci->clientnum && e.needclipboard >= ci->lastclipboard) 
+            if(e.clientnum != ci->clientnum && e.needclipboard - ci->lastclipboard >= 0)
             {
                 if(!flushed) { flushserver(true); flushed = true; }
                 sendpacket(e.clientnum, 1, ci->clipboard);
@@ -2267,6 +2289,7 @@ namespace server
             spinfo->state.respawn();
             spinfo->state.lasttimeplayed = lastmillis;
             aiman::addclient(spinfo);
+            sendf(-1, 1, "ri", N_MAPRELOAD);
         }
         sendf(-1, 1, "ri3", N_SPECTATOR, spinfo->clientnum, val);
         
@@ -2314,7 +2337,7 @@ namespace server
                 clients.add(ci);
 
                 ci->connected = true;
-                ci->needclipboard = totalmillis;
+                ci->needclipboard = totalmillis ? totalmillis : 1;
                 bool restoredscore = restorescore(ci);
                 bool was_playing = restoredscore && ci->state.state != CS_SPECTATOR && ci->state.disconnecttime > mastermode_mtime;
                 
@@ -2328,7 +2351,7 @@ namespace server
                 if(currentmaster>=0) masterupdate = true; //FIXME send N_CURRENTMASTER packet directly to client
                 ci->state.lasttimeplayed = lastmillis;
 
-                const char *worst = m_teammode ? chooseworstteam(text, ci) : NULL;
+                const char *worst = m_teammode ? chooseworstteam(NULL, ci) : NULL;
                 copystring(ci->team, worst ? worst : "good", MAXTEAMLEN+1);
                 
                 if(clients.length() == 1 && mapreload) selectnextgame();
@@ -2910,6 +2933,7 @@ namespace server
                 //spinfo->allow_self_unspec = self && spinfo->state.state!=CS_SPECTATOR && val;
                 spinfo->allow_self_unspec = self && val;
                 setspectator(spinfo, val);
+                if(!val && mapreload && !spinfo->privilege && !spinfo->local) sendf(spectator, 1, "ri", N_MAPRELOAD);
                 break;
             }
 
@@ -2983,7 +3007,7 @@ namespace server
                     sendf(sender, 1, "ris", N_SERVMSG, "server sending map...");
                     if((ci->getmap = sendfile(sender, 2, mapdata, "ri", N_SENDMAP)))
                         ci->getmap->freeCallback = freegetmap;
-                    ci->needclipboard = totalmillis;
+                    ci->needclipboard = totalmillis ? totalmillis : 1;
                 }
                 break;
 
@@ -2997,7 +3021,7 @@ namespace server
                     smapname[0] = '\0';
                     resetitems();
                     notgotitems = false;
-                    if(smode) smode->reset(true);
+                    if(smode) smode->newmap();
                 }
                 QUEUE_MSG;
                 break;
@@ -3069,7 +3093,7 @@ namespace server
             case N_COPY:
                 if (!m_edit) { disconnect_client(sender, DISC_TAGT); break; }
                 ci->cleanclipboard();
-                ci->lastclipboard = totalmillis;
+                ci->lastclipboard = totalmillis ? totalmillis : 1;
                 goto genericmsg;
 
             case N_PASTE:

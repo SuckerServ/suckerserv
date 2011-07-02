@@ -1,19 +1,14 @@
-#ifndef __IGAME_H__
-#define __IGAME_H__
-
 // the interface the engine uses to run the gameplay module
 
 namespace entities
 {
-    extern void editent(int i);
+    extern void editent(int i, bool local);
     extern const char *entnameinfo(entity &e);
     extern const char *entname(int i);
     extern int extraentinfosize();
     extern void writeent(entity &e, char *buf);
-    extern void readent(entity &e, char *buf);
+    extern void readent(entity &e, char *buf, int ver);
     extern float dropheight(entity &e);
-    extern void rumble(const extentity &e);
-    extern void trigger(extentity &e);
     extern void fixentity(extentity &e);
     extern void entradius(extentity &e, bool color);
     extern bool mayattach(extentity &e);
@@ -24,8 +19,6 @@ namespace entities
     extern void clearents();
     extern vector<extentity *> &getents();
     extern const char *entmodel(const entity &e);
-    extern void resettriggers();
-    extern void checktriggers();
     extern void animatemapmodel(const extentity &e, int &anim, int &basetime);
 }
 
@@ -44,11 +37,11 @@ namespace game
     extern void toserver(char *text);
     extern void changemap(const char *name);
     extern void forceedit(const char *name);
-    extern int numchannels();
     extern bool ispaused();
 
     extern const char *gameident();
     extern const char *savedconfig();
+    extern const char *restoreconfig();
     extern const char *defaultconfig();
     extern const char *autoexec();
     extern const char *savedservers();
@@ -57,6 +50,7 @@ namespace game
     extern void updateworld();
     extern void initclient();
     extern void physicstrigger(physent *d, bool local, int floorlevel, int waterlevel, int material = 0);
+    extern void bounced(physent *d, const vec &surface);
     extern void edittrigger(const selinfo &sel, int op, int arg1 = 0, int arg2 = 0, int arg3 = 0);
     extern void vartrigger(ident *id);
     extern void dynentcollide(physent *d, physent *o, const vec &dir);
@@ -67,7 +61,7 @@ namespace game
     extern void newmap(int size);
     extern void startmap(const char *name);
     extern void preload();
-    extern float abovegameplayhud();
+    extern float abovegameplayhud(int w, int h);
     extern void gameplayhud(int w, int h);
     extern bool canjump();
     extern bool allowmove(physent *d);
@@ -88,10 +82,11 @@ namespace game
     extern bool collidecamera();
     extern void adddynlights();
     extern void particletrack(physent *owner, vec &o, vec &d);
-    extern void dynlighttrack(physent *owner, vec &o);
+    extern void dynlighttrack(physent *owner, vec &o, vec &hud);
     extern bool serverinfostartcolumn(g3d_gui *g, int i);
     extern void serverinfoendcolumn(g3d_gui *g, int i);
     extern bool serverinfoentry(g3d_gui *g, int i, const char *name, int port, const char *desc, const char *map, int ping, const vector<int> &attr, int np);
+    extern bool needminimap();
 } 
  
 namespace server
@@ -119,9 +114,8 @@ namespace server
     extern const char *defaultmaster();
     extern int masterport();
     extern void processmasterinput(const char *cmd, int cmdlen, const char *args);
+    extern bool ispaused();
     extern void started();
     extern void shutdown();
-    extern bool ispaused();
 }
 
-#endif

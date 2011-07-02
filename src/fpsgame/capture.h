@@ -250,7 +250,6 @@ struct captureclientmode : clientmode
 
     captureclientmode() : captures(0)
     {
-        CCOMMAND(repammo, "", (captureclientmode *self), self->replenishammo());
     }
 
     void respawned(fpsent *d)
@@ -408,12 +407,6 @@ struct captureclientmode : clientmode
         }
     }
 
-    float calcradarscale()
-    {
-        //return radarscale<=0 || radarscale>maxradarscale ? maxradarscale : max(radarscale, float(minradarscale));
-        return clamp(max(minimapradius.x, minimapradius.y)/3, float(minradarscale), float(maxradarscale));
-    }
-
     void drawblips(fpsent *d, float blipsize, int fw, int fh, int type, bool skipenemy = false)
     {
         float scale = calcradarscale();
@@ -467,41 +460,16 @@ struct captureclientmode : clientmode
         return (h*(1 + 1 + 10))/(4*10);
     }
 
-    void drawminimap(fpsent *d, float x, float y, float s)
-    {
-        vec pos = vec(d->o).sub(minimapcenter).mul(minimapscale).add(0.5f), dir;
-        vecfromyawpitch(camera1->yaw, 0, 1, 0, dir);
-        float scale = calcradarscale();
-        glBegin(GL_TRIANGLE_FAN);
-        loopi(16)
-        {
-            vec tc = vec(dir).rotate_around_z(i/16.0f*2*M_PI);
-            glTexCoord2f(pos.x + tc.x*scale*minimapscale.x, pos.y + tc.y*scale*minimapscale.y);
-            vec v = vec(0, -1, 0).rotate_around_z(i/16.0f*2*M_PI);
-            glVertex2f(x + 0.5f*s*(1.0f + v.x), y + 0.5f*s*(1.0f + v.y));
-        }
-        glEnd();
-    }
-
-    void drawradar(float x, float y, float s)
-    {
-        glBegin(GL_TRIANGLE_STRIP);
-        glTexCoord2f(0.0f, 0.0f); glVertex2f(x,   y);
-        glTexCoord2f(1.0f, 0.0f); glVertex2f(x+s, y);
-        glTexCoord2f(0.0f, 1.0f); glVertex2f(x,   y+s);
-        glTexCoord2f(1.0f, 1.0f); glVertex2f(x+s, y+s);
-        glEnd();
-    }
-
     void drawhud(fpsent *d, int w, int h)
     {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         int s = 1800/4, x = 1800*w/h - s - s/10, y = s/10;
-        glColor3f(1, 1, 1);
-        glDisable(GL_BLEND);
+        glColor4f(1, 1, 1, minimapalpha);
+        if(minimapalpha >= 1) glDisable(GL_BLEND);
         bindminimap();
         drawminimap(d, x, y, s);
-        glEnable(GL_BLEND);
+        if(minimapalpha >= 1) glEnable(GL_BLEND);
+        glColor3f(1, 1, 1);
         float margin = 0.04f, roffset = s*margin, rsize = s + 2*roffset;
         settexture("packages/hud/radar.png", 3);
         drawradar(x - roffset, y - roffset, rsize);
@@ -788,6 +756,9 @@ struct captureclientmode : clientmode
 	}
 };
 
+extern captureclientmode capturemode;
+ICOMMAND(repammo, "", (), capturemode.replenishammo());
+
 #else
     bool notgotbases;
 
@@ -797,6 +768,32 @@ struct captureclientmode : clientmode
     {
         resetbases();
         notgotbases = !empty;
+    }
+
+    void cleanup()
+    {
+        reset(false);
+    }
+
+    void setup()
+    {
+        reset(false);
+        if(notgotitems || ments.empty()) return;
+        loopv(ments)
+        {
+            entity &e = ments[i];
+            if(e.type != BASE) continue;
+            int ammotype = e.attr1;
+            addbase(ammotype>=GUN_SG && ammotype<=GUN_PISTOL ? ammotype : min(ammotype, 0), e.o); 
+        }
+        notgotbases = false;
+        sendbases();
+        loopv(clients) if(clients[i]->state.state==CS_ALIVE) entergame(clients[i]);
+    }
+
+    void newmap()
+    {
+        reset(true);
     }
 
     void stealbase(int n, const char *team)

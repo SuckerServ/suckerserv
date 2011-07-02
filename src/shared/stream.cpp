@@ -2,7 +2,9 @@
 
 ///////////////////////// file system ///////////////////////
 
-#ifndef WIN32
+#ifdef WIN32
+#include <shlobj.h>
+#else
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -28,8 +30,12 @@ char *makerelpath(const char *dir, const char *file, const char *prefix, const c
         }
     }
     if(cmd) concatstring(tmp, cmd);
-    defformatstring(pname)("%s/%s", dir, file);
-    concatstring(tmp, pname);
+    if(dir)
+    {
+        defformatstring(pname)("%s/%s", dir, file);
+        concatstring(tmp, pname);
+    }
+    else concatstring(tmp, file);
     return tmp;
 }
 
@@ -131,18 +137,41 @@ size_t fixpackagedir(char *dir)
     return len;
 }
 
-void sethomedir(const char *dir)
+bool subhomedir(char *dst, int len, const char *src)
 {
-    string pdir;
-    copystring(pdir, dir);
-    if(fixpackagedir(pdir) > 0) copystring(homedir, pdir);
+	const char *sub = strstr(src, "$HOME");
+	if(sub && sub-src < len)
+	{
+#ifdef WIN32
+		char home[MAX_PATH+1];
+		home[0] = '\0';
+		if(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, 0, home) != S_OK || !home[0]) return false;
+#else
+		const char *home = getenv("HOME");
+		if(!home || !home[0]) return false;
+#endif
+		dst[sub-src] = '\0';
+		concatstring(dst, home);
+		concatstring(dst, sub+strlen("$HOME"));
+	}
+	return true;
 }
 
-void addpackagedir(const char *dir)
+const char *sethomedir(const char *dir)
 {
     string pdir;
     copystring(pdir, dir);
-    if(fixpackagedir(pdir) > 0) packagedirs.add(newstring(pdir));
+	if(!subhomedir(pdir, sizeof(pdir), dir) || !fixpackagedir(pdir)) return NULL;
+    copystring(homedir, pdir);
+	return homedir;
+}
+
+const char *addpackagedir(const char *dir)
+{
+    string pdir;
+    copystring(pdir, dir);
+    if(!subhomedir(pdir, sizeof(pdir), dir) || !fixpackagedir(pdir)) return NULL;
+	return packagedirs.add(newstring(pdir));
 }
 
 const char *findfile(const char *filename, const char *mode)
@@ -176,24 +205,27 @@ const char *findfile(const char *filename, const char *mode)
     return filename;
 }
 
-bool listdir(const char *dir, const char *ext, vector<char *> &files)
+bool listdir(const char *dir, bool rel, const char *ext, vector<char *> &files)
 {
     int extsize = ext ? (int)strlen(ext)+1 : 0;
-    #if defined(WIN32)
-    defformatstring(pathname)("%s\\*.%s", dir, ext ? ext : "*");
+    string dirname;
+    copystring(dirname, dir);
+    path(dirname);
+    #ifdef WIN32
+	defformatstring(pathname)(rel ? ".\\%s\\*.%s" : "%s\\*.%s", dirname, ext ? ext : "*");
     WIN32_FIND_DATA FindFileData;
-    HANDLE Find = FindFirstFile(path(pathname), &FindFileData);
+    HANDLE Find = FindFirstFile(pathname, &FindFileData);
     if(Find != INVALID_HANDLE_VALUE)
     {
         do {
             files.add(newstring(FindFileData.cFileName, (int)strlen(FindFileData.cFileName) - extsize));
         } while(FindNextFile(Find, &FindFileData));
+        FindClose(Find);
         return true;
     }
     #else
-    string pathname;
-    copystring(pathname, dir);
-    DIR *d = opendir(path(pathname));
+    defformatstring(pathname)(rel ? "./%s" : "%s", dirname);
+    DIR *d = opendir(pathname);
     if(d)
     {
         struct dirent *de;
@@ -217,17 +249,17 @@ bool listdir(const char *dir, const char *ext, vector<char *> &files)
 int listfiles(const char *dir, const char *ext, vector<char *> &files)
 {
     int dirs = 0;
-    if(listdir(dir, ext, files)) dirs++;
+    if(listdir(dir, true, ext, files)) dirs++;
     string s;
     if(homedir[0])
     {
         formatstring(s)("%s%s", homedir, dir);
-        if(listdir(s, ext, files)) dirs++;
+        if(listdir(s, false, ext, files)) dirs++;
     }
     loopv(packagedirs)
     {
         formatstring(s)("%s%s", packagedirs[i], dir);
-        if(listdir(s, ext, files)) dirs++;
+        if(listdir(s, false, ext, files)) dirs++;
     }
 #ifndef STANDALONE
     dirs += listzipfiles(dir, ext, files);
@@ -236,10 +268,10 @@ int listfiles(const char *dir, const char *ext, vector<char *> &files)
 }
 
 #ifndef STANDALONE
-static int rwopsseek(SDL_RWops *rw, int offset, int whence)
+static int rwopsseek(SDL_RWops *rw, int pos, int whence)
 {
     stream *f = (stream *)rw->hidden.unknown.data1;
-    if((!offset && whence==SEEK_CUR) || f->seek(offset, whence)) return f->tell();
+    if((!pos && whence==SEEK_CUR) || f->seek(pos, whence)) return (int)f->tell();
     return -1;
 }
 
@@ -273,9 +305,9 @@ SDL_RWops *stream::rwops()
 }
 #endif
 
-long stream::size()
+stream::offset stream::size()
 {
-    long pos = tell(), endpos;
+    offset pos = tell(), endpos;
     if(pos < 0 || !seek(0, SEEK_END)) return -1;
     endpos = tell();
     return pos == endpos || seek(pos, SEEK_SET) ? endpos : -1;
@@ -323,10 +355,33 @@ struct filestream : stream
     }
 
     bool end() { return feof(file)!=0; }
-    long tell() { return ftell(file); }
-    bool seek(long offset, int whence) { return fseek(file, offset, whence) >= 0; }
-    int read(void *buf, int len) { return fread(buf, 1, len, file); }
-    int write(const void *buf, int len) { return fwrite(buf, 1, len, file); }
+    offset tell() 
+    { 
+#ifdef WIN32
+#ifdef __GNUC__
+        return ftello64(file);
+#else
+        return _ftelli64(file);       
+#endif
+#else
+        return ftello(file); 
+#endif
+    }
+    bool seek(offset pos, int whence) 
+    { 
+#ifdef WIN32
+#ifdef __GNUC__
+        return fseeko64(file, pos, whence) >= 0;
+#else
+        return _fseeki64(file, pos, whence) >= 0;
+#endif
+#else
+        return fseeko(file, pos, whence) >= 0;
+#endif
+    }
+
+    int read(void *buf, int len) { return (int)fread(buf, 1, len, file); }
+    int write(const void *buf, int len) { return (int)fwrite(buf, 1, len, file); }
     int getchar() { return fgetc(file); }
     bool putchar(int c) { return fputc(c, file)!=EOF; }
     bool getline(char *str, int len) { return fgets(str, len, file)!=NULL; }
@@ -438,7 +493,7 @@ struct gzstream : stream
         if(flags & F_NAME) while(readbyte(512));
         if(flags & F_COMMENT) while(readbyte(512));
         if(flags & F_CRC) skipbytes(2);
-        headersize = file->tell() - zfile.avail_in;
+        headersize = int(file->tell() - zfile.avail_in);
         return zfile.avail_in > 0 || !file->end();
     }
 
@@ -532,16 +587,22 @@ struct gzstream : stream
     }
 
     bool end() { return !reading && !writing; }
-    long tell() { return reading ? zfile.total_out : (writing ? zfile.total_in : -1); }
+    offset tell() { return reading ? zfile.total_out : (writing ? zfile.total_in : -1); }
 
-    bool seek(long offset, int whence)
+    bool seek(offset pos, int whence)
     {
-        if(writing || !reading || whence == SEEK_END) return false;
+        if(writing || !reading) return false;
 
-        if(whence == SEEK_CUR) offset += zfile.total_out;
+        if(whence == SEEK_END)
+        {
+            uchar skip[512];
+            while(read(skip, sizeof(skip)) == sizeof(skip));
+            return !pos;
+        }
+        else if(whence == SEEK_CUR) pos += zfile.total_out;
 
-        if(offset >= (int)zfile.total_out) offset -= zfile.total_out;
-        else if(offset < 0 || !file->seek(headersize, SEEK_SET)) return false;
+        if(pos >= (offset)zfile.total_out) pos -= zfile.total_out;
+        else if(pos < 0 || !file->seek(headersize, SEEK_SET)) return false;
         else
         {
             if(zfile.next_in && zfile.total_in <= uint(zfile.next_in - buf))
@@ -559,11 +620,11 @@ struct gzstream : stream
         }
 
         uchar skip[512];
-        while(offset > 0)
+        while(pos > 0)
         {
-            int skipped = min(offset, (long)sizeof(skip));
+            int skipped = (int)min(pos, (offset)sizeof(skip));
             if(read(skip, skipped) != skipped) { stopreading(); return false; }
-            offset -= skipped;
+            pos -= skipped;
         }
 
         return true;
@@ -657,8 +718,8 @@ char *loadfile(const char *fn, int *size)
 {
     stream *f = openfile(fn, "rb");
     if(!f) return NULL;
-    int len = f->size();
-    if(len<=0) { delete f; return NULL; }
+    int len = (int)f->size();
+    if(len <= 0) { delete f; return NULL; }
     char *buf = new char[len+1];
     if(!buf) { delete f; return NULL; }
     buf[len] = 0;

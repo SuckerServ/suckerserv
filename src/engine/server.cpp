@@ -329,8 +329,8 @@ ENetPacket *sendfile(int cn, int chan, stream *file, const char *format, ...)
     }
     else if(!clients.inrange(cn)) return NULL;
 
-    int len = file->size();
-    if(len <= 0) return NULL;
+    int len = (int)min(file->size(), stream::offset(INT_MAX));
+    if(len <= 0 || len > 16<<20) return NULL;
 
     packetbuf p(MAXTRANS+len, ENET_PACKET_FLAG_RELIABLE);
     va_list args;
@@ -839,6 +839,7 @@ int main(int argc, char* argv[])
 {
     restart_program = false;
      
+    
     if(enet_initialize()<0) fatal("Unable to initialise enet");
     atexit(enet_deinitialize);
     enet_time_set(0);

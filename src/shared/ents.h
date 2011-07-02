@@ -2,8 +2,6 @@
 // the gamecode extends these types to add game specific functionality
 
 // ET_*: the only static entity types dictated by the engine... rest are gamecode dependent
-#ifndef _ENTS_H_
-#define _ENTS_H_
 
 enum { ET_EMPTY=0, ET_LIGHT, ET_MAPMODEL, ET_PLAYERSTART, ET_ENVMAP, ET_PARTICLES, ET_SOUND, ET_SPOTLIGHT, ET_GAMESPECIFIC };
 
@@ -74,7 +72,7 @@ struct physent                                  // base entity type, can be affe
 
     bool blocked;                               // used by physics to signal ai
 
-    physent() : o(0, 0, 0), deltapos(0, 0, 0), newpos(0, 0, 0), yaw(270), pitch(0), roll(0), maxspeed(100), 
+    physent() : o(0, 0, 0), deltapos(0, 0, 0), newpos(0, 0, 0), yaw(0), pitch(0), roll(0), maxspeed(100), 
                radius(4.1f), eyeheight(14), aboveeye(1), xradius(4.1f), yradius(4.1f), zmargin(0),
                state(CS_ALIVE), editstate(CS_ALIVE), type(ENT_PLAYER),
                collidetype(COLLIDE_ELLIPSE),
@@ -118,6 +116,20 @@ enum
     NUMANIMS
 };
 
+static const char * const animnames[] =
+{
+    "dead", "dying", "idle",
+    "forward", "backward", "left", "right",
+    "hold 1", "hold 2", "hold 3", "hold 4", "hold 5", "hold 6", "hold 7",
+    "attack 1", "attack 2", "attack 3", "attack 4", "attack 5", "attack 6", "attack 7",
+    "pain",
+    "jump", "sink", "swim",
+    "edit", "lag", "taunt", "win", "lose",
+    "gun idle", "gun shoot",
+    "vwep idle", "vwep shoot", "shield", "powerup",
+    "mapmodel", "trigger"
+};
+
 #define ANIM_ALL         0x7F
 #define ANIM_INDEX       0x7F
 #define ANIM_LOOP        (1<<7)
@@ -133,7 +145,8 @@ enum
 #define ANIM_NORENDER    (1<<26)
 #define ANIM_RAGDOLL     (1<<27)
 #define ANIM_SETSPEED    (1<<28)
-#define ANIM_GHOST       (1<<29)
+#define ANIM_NOPITCH     (1<<29)
+#define ANIM_GHOST       (1<<30)
 #define ANIM_FLAGS       (0x1FF<<22)
 
 struct animinfo // description of a character's animation
@@ -200,4 +213,4 @@ struct dynent : physent                         // animated characters, or chara
     vec abovehead() { return vec(o).add(vec(0, 0, aboveeye+4)); }
 };
 
-#endif
+
