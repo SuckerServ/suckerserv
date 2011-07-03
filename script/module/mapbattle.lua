@@ -1,6 +1,6 @@
 --[[
     Vote for map at intermission 
-    By piernov -- Original script from hopmod-extentions, thanks to killme_nl
+    By piernov -- Original script from alphaserv, thanks to killme_nl
 ]]
 
 local mapbattle = { mode = {} }
