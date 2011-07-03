@@ -78,7 +78,7 @@ server.interval(interval_time, function()
         	
         	    if ((con_time - last_time) >= inactive_time) and (not death_only or (p:status_code() == server.DEAD))
         	    then
-	    		p:msg("Server moved you to spectators, because you seem to be inactive - type '/spectator 0' to rejoin the game.")
+	    		p:msg(server.inactivitylimit_message)
 			p:spec()
 			server.log("Server moved " .. p:name() .. " to spectator, because of inactivity.")
 		    end

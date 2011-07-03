@@ -96,7 +96,7 @@ local function check_name(cn)
             	    
             	    server.player_rename(cn, "unnamed", true)
             	    
-            	    server.player_msg(cn, "Server has renamed you to 'unnamed'.")
+            	    server.player_msg(cn, server.clantag_rename_message)
         	end)
     	    end
 	end
