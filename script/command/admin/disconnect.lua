@@ -3,6 +3,8 @@ Force disconnecting someone from the server (without kicking or banning him)
 By LoveForever (C) 2011
 ]]--
 
+local usage = "#disconnect <cn>"
+
 return function(cn, tcn, ...)
 
 	if not tcn then

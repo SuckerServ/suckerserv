@@ -6,6 +6,7 @@
 
 ]]
 
+local usage = "#permban <cn>|name"
 
 return function(cn,cn_ban)
 

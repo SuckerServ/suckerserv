@@ -4,6 +4,7 @@
 
 ]]
 
+local usage = "#motd <text>"
 
 return function(cn,text)
 

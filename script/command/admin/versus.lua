@@ -3,6 +3,8 @@
 -- (c) 2009 Thomas
 -- #versus cn1 cn2 mode map
 
+local usage = "#versus <cn1> <cn2> <mode> <map>"
+
 local running = false
 
 local player1_cn = nil

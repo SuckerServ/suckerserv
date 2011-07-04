@@ -4,6 +4,7 @@
 
 ]]
 
+local usage = "#giveadmin <cn>"
 
 return function(cn, target)
 

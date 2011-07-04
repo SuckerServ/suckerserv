@@ -4,6 +4,8 @@
 
 ]]
 
+local usage = "#unban <ip>"
+
 return function(cn, ip)
     if not net.ipmask(ip) then return; end
     if server.ip_vars(ip).ban_time then
