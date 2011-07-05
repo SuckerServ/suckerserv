@@ -212,7 +212,7 @@ server.event_handler("text", function(cn, msg)
     if server.player_isbot(cn) then return end
 	
     -- Hide player commands
-    if string.match(msg, "^#.*") then 
+    if string.match(msg, "[#!@]") then 
         return 
     end
 	
