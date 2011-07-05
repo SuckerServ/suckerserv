@@ -33,14 +33,14 @@ local function fuller_team()
 
     local sizes = server.team_sizes()
     
-    return _if((sizes.good > sizes.evil), "good", "evil")
+    return _if(((sizes.good or 0) > (sizes.evil or 0)), "good", "evil")
 end
 
 local function team_diff()
 
     local sizes = server.team_sizes()
     
-    return (math.abs(sizes.good - sizes.evil))
+    return (math.abs((sizes.good or 0) - (sizes.evil or 0)))
 end
 
 local function is_unbalanced()
