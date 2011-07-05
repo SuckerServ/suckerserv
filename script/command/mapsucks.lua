@@ -10,7 +10,7 @@ local lower_time = server.mapsucks_lower_time
 local mapsucks = {}
 
 server.event_handler("text", function(cn, text)
-	    if (string.match(text, "SUCKS") or string.match(text, "sucks"))
+	    if (string.match(text, "SUCKS") or string.match(text, "sucks")) and not (string.match(text, "[^#.*]"))
 		then 
 		server.player_msg(cn, string.format(server.mapsucks_analysetext_message))
 	    end
