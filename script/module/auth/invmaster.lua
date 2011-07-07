@@ -37,6 +37,7 @@ server.event_handler("connect", function(cn)
 			    
 			    server.player_msg(cn, string.format(server.invmaster_activation_message))
 			    server.log(user_id .. " playing as " .. server.player_name(cn) .. "(" .. cn .. ") used auth to claim invmaster.")
+			    admin_log(user_id .. " playing as " .. server.player_name(cn) .. "(" .. cn .. ") used auth to claim invmaster.")
 			end)
 		    end
 		end
