@@ -318,14 +318,16 @@ server.event_handler("scoreflag", function(cn)
 end)
 
 server.event_handler("failedconnect", function(ip, reason)
-		sendmsg(string.format(irc_color_red("Ip: %s couldn't connect bacause of reason: %s"), ip, reason))
+    if reason == "normal" then reason = "client-side failure" end
+    sendmsg(string.format(irc_color_blue("%s ")..irc_color_green("unable to connect: ")..irc_color_blue("%s"),ip, reason))
 end)
 
-server.event_handler("reloadhopmod", function()
-		sendmsg(string.format(irc_color_red("RELOAD: Reloading hopmod")))
-end)
-
-
+-- Reload message
+if server.reloaded then
+    sendmsg(irc_color_red("reloaded server scripts"))
+else
+    sendmsg(irc_color_red("server started"))
+end
 
 -- Auth Listener for masterauth events
 auth.listener("", function(cn, user_id, domain, status)
