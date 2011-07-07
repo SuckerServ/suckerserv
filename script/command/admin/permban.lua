@@ -29,6 +29,7 @@ return function(cn,cn_ban)
 
 	pb_file:write("permban " .. server.player_ip(cn_ban) .. "\n")
 	server.kick(cn_ban, -1, "server", red("permbanned"))
+	admin_log(string.format("PERMBAN: Player %s addes a ban on IP: %s.", server.displayname(cn), server.player_ip(cn_ban)))
 
 	pb_file:flush()
 	pb_file:close()

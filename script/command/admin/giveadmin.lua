@@ -20,6 +20,7 @@ return function(cn, target)
 
 	server.unsetmaster()
 	server.player_msg(target, string.format(server.giveadmin_message, server.player_displayname(cn)))
+	admin_log(string.format("GIVEADMIN: %s gave admin to %s", server.player_displayname(cn), server.player_displayname(target)))
 	server.setadmin(target)
 
 end

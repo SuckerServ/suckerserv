@@ -3,6 +3,7 @@ local _ = require "underscore"
 local is_authserver = (server.is_authserver or 0) == 1
 
 local filename = "server"
+local admin = "admin"
 
 if is_authserver then
     filename = "authserver"
@@ -17,6 +18,16 @@ function server.log(msg)
     logfile:write("\n")
     logfile:flush()
 end
+
+local logfile = io.open("log/" .. admin .. ".log","a+")
+
+function admin_log(msg)
+    logfile:write(os.date("[%a %d %b %X] ",os.time()))
+    logfile:write(msg)
+    logfile:write("\n")
+    logfile:flush()
+end
+
 
 server.event_handler("shutdown", _.curry(logfile.close, logfile))
 
