@@ -322,13 +322,6 @@ server.event_handler("failedconnect", function(ip, reason)
     sendmsg(string.format(irc_color_blue("%s ")..irc_color_green("unable to connect: ")..irc_color_blue("%s"),ip, reason))
 end)
 
--- Reload message
-if server.reloaded then
-    sendmsg(irc_color_red("reloaded server scripts"))
-else
-    sendmsg(irc_color_red("server started"))
-end
-
 -- Auth Listener for masterauth events
 auth.listener("", function(cn, user_id, domain, status)
     if status ~= auth.request_status.SUCCESS then return end
