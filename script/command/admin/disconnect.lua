@@ -18,5 +18,5 @@ return function(cn, tcn, ...)
 				return
 		end
 	end
-	server.disconnect(tcn, 10, "disconnect by a admin")
+	server.disconnect(tcn, 10, "disconnect by an admin")
 end
