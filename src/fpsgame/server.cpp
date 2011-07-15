@@ -2445,7 +2445,8 @@ namespace server
             {
                 int sound = getint(p);
 
-                if (sound != S_JUMP && sound != S_LAND && sound != S_NOAMMO)
+                if (sound != S_JUMP && sound != S_LAND && sound != S_NOAMMO 
+                   && (m_capture && sound != S_ITEMAMMO))
                 {
                     event_kick_request(event_listeners(), boost::make_tuple(-1, "server", 14400, sender, ""));
                     break;
