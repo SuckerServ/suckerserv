@@ -29,9 +29,9 @@ server.event_handler("frag", function(target, actor)
 		    local actor_id = server.player_sessionid(actor)
 			local x, y, z = server.player_pos(actor)
 			local last_pos = last_positions[actor_id] or {x = x, y = y, z = z}
+			local countdown = server.camping_penalty_timeout 
 			server.msg(string.format(server.camping_penalty_announce_message, server.player_displayname(actor)))
 			server.spec(actor)
-				 local countdown = 11
                  server.interval(1000, function()
                          countdown = countdown - 1
                          server.player_msg(actor, string.format(server.camping_penalty_countdown_message, countdown))
