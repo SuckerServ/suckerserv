@@ -33,7 +33,7 @@ server.event_handler("text", function(cn, text)
     local command = player_commands[command_name]
     
     if not command then
-        server.player_msg(cn, red("Command not found."))
+        server.player_msg(cn, server.cmd_notfound)
         return -1
     end
     
@@ -42,12 +42,12 @@ server.event_handler("text", function(cn, text)
     local privilege = server.player_priv_code(cn)
     
     if not (command.enabled == true) or not command._function then
-        server.player_msg(cn, red("Command disabled."))
+        server.player_msg(cn, server.cmd_disabled)
         return -1
     end
     
     if (command.require_admin == true and privilege < server.PRIV_ADMIN) or (command.require_master == true and privilege < server.PRIV_MASTER) then
-        server.player_msg(cn, red("Permission denied."))
+        server.player_msg(cn, server.cmd_permdenied)
         return -1
     end
     
@@ -56,7 +56,7 @@ server.event_handler("text", function(cn, text)
     if pcallret == false then
         local message = success  -- success value is the error message returned by pcall
         server.log_error(string.format("The #%s player command failed with error: %s", command_name, message))
-        server.player_msg(cn, red("Internal error"))
+        server.player_msg(cn, server.cmd_internalerr)
     end
     
     if success == false then
@@ -231,7 +231,7 @@ function admincmd(...)
     local cn = arg[2]
     
     if tonumber(server.player_priv_code(cn)) < tonumber(server.PRIV_ADMIN) then
-        server.player_msg(cn, red("Permission denied."))
+        server.player_msg(cn, server.cmd_permdenied)
         return
     end
     
@@ -246,7 +246,7 @@ function mastercmd(...)
     local cn = arg[2]
     
     if tonumber(server.player_priv_code(cn)) < tonumber(server.PRIV_MASTER) then
-        server.player_msg(cn, red("Permission denied."))
+        server.player_msg(cn, server.cmd_permdenied)
         return
     end
     
