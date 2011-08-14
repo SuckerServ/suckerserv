@@ -25,6 +25,7 @@ function initWebAdmin(){
     server.ready(function(){
         
         installWidget("#chat-shell",    createChatShell,       server);
+        installWidget("#adchat-shell",    createChatShell,       server);
         installWidget("#command-links", createCommandLinks,    server);
         installWidget("#command-shell", createCommandShell,    server);
         installWidget("#gameinfo",      createGameinfoView,    server);
@@ -418,7 +419,7 @@ function createPlayerControlLinks(client){
     kick.href="#";
     kick.title="Kick";
     kick.onclick = function(){
-        var yes = confirm("You are you sure you want to kick " + client.name + "(" + client.cn + ")");
+        var yes = confirm("WARNING: You are you sure you want to kick " + client.name + "(" + client.cn + ")");
         if(yes){
             client.kick(1440);
         }
@@ -471,6 +472,7 @@ function SpectatorsTable(parent){
         {label:"CN",        key:"cn"},
         {label:"IP Addr",   key:"ip"},
         {label:"Name",      key:"name"},
+        {label:"Ping",          key:"ping"},
         {label:"", cellFunction: createPlayerControlLinks, className:"player-control-links"}
     ]);
     table.attachTo(parent);
@@ -714,14 +716,14 @@ function createCommandLinks(parent, server){
     }
     
     var serverCommands = [
-        {label:"Save Current Configuration", _function:saveCurrentConfiguration},
-        {label:"Update", _function:reload},
-        {label:"Restart", _function:restart},
-        {label:"Shutdown", _function:shutdown}
+        {label:"Save Config", _function:saveCurrentConfiguration},
+        {label:"Update server", _function:reload},
+        {label:"Restart server", _function:restart},
+        {label:"Shutdown server", _function:shutdown}
     ];
     
     function changeMotd(){
-        var msg = prompt("Change the Message of the Day");
+        var msg = prompt("Change the MoTD");
         if(!msg) return;
         server.executeCommand(server.makeCommand("motd", msgv));
     }
