@@ -84,7 +84,7 @@ local function getLoginFormHtml(attributes)
     local html = [[
 <html>
     <head>
-        <title>Hopmod Gameserver Admin Login</title>
+        <title>suckerServ Gameserver Admin Login</title>
         <link rel="stylesheet" type="text/css" href="/static/presentation/screen.css" />
         <script type="text/javascript">
             window.onload=function(){document.forms.login.username.focus();}
@@ -92,12 +92,12 @@ local function getLoginFormHtml(attributes)
     </head>
     <body>
         <div id="loginpage">
-        <h1>%s - <span id="app-title">Cube 2 Server Control Panel</span></h2>
+        <h1>%s - <span id="app-title">SuckerServ Control Panel</span></h2><br />
         <form method="post" id="login-form" name="login" action="?return=%s">
             %s
             <p><label for="username">Username</label><input type="text" name="username" id="username" value="%s" /></p>
-            <p><label for="password">Password</label><input type="password" name="password" id="password" /></p>
-            <p><span class="label-space">&nbsp;</span><input type="submit" value="Login" /></p>
+            <p><label for="password">Password</label><input type="password" name="password" id="password" /></p><br /><br />
+            <p><span class="label-space">&nbsp;</span><input type="submit" value="LOGIN" /></p>
         </form>
         </div>
     </body>
@@ -143,6 +143,7 @@ http_server_root["login"] = http_server.resource({
             end
             
             server.log(string.format("Successful web admin login by %s@%s", params.username, request:client_ip()))
+	    server.msg(string.format("\f3>>> \f2Successful web admin login \f7by \f4%s\f2@\f4%s", params.username, request:client_ip()))
             
             local sessionId = generateSessionKey()
             

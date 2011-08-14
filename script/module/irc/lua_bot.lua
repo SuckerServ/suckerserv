@@ -357,7 +357,7 @@ end)
 
 server.event_handler("shutdown", function() irc:toChannel("\0034HALT\003    Server shutting down"); end)
 
-server.event_handler("reloadhopmod", function() irc:toChannel("\0034RELOAD\003    Reloading hopmod...\n") end)
+server.event_handler("reloadhopmod", function() irc:toChannel("\0034RELOAD\003    Reloading SuckerServ...\n") end)
 
 irc:toChannel("\00312START\003    Server started")
 
@@ -376,7 +376,7 @@ end
 -- Command list
 irc.commands = {
     ['kick']        = function(cn, reason) server.kick(cn, 0, irc.command_nick, reason) end,
-    ['version']     = function() irc:toChannel("HopBot v.l01 support #hopmod@irc.gamesurge.net") end,
+    ['version']     = function() irc:toChannel("SuckerBot v.l01 support #suckerserv@irc.gamesurge.net") end,
     ['spec']        = server.spec,
     ['unspec']      = server.unspec,
     ['mute']        = server.mute,
