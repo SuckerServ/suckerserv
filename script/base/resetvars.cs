@@ -1,14 +1,14 @@
 # Declarations and default values for the Core Configuration Variables
 
-global motd "Running Hopmod"
+global motd "Running SuckerServ"
 
 global show_country_message 1
 
 global geoip_db_file "share/GeoIP.dat"
 
 global allow_mapvote 1
-global mapvote_disallow_unknown_map 0
-global mapvote_disallow_excluded_map 0
+global mapvote_disallow_unknown_map 1
+global mapvote_disallow_excluded_map 1
 
 global allowed_gamemodes [
     "ffa"
@@ -64,11 +64,11 @@ global server_admin_password ""
 
 global web_admins []
 
-global mute_triggers [nigger nigga negro kike faggot motherfucker jude wichser kanake polake kinderficker "scheiss auslaender"]
+global mute_triggers [nigger nigga negro kike faggot motherfucker jude wichser kanake polake kinderficker sheiss fick "fick dich" "scheiss auslaender"]
 
 global saveconf_vars [saveconf_vars servername motd maxclients admin_password master_password]
 
-global command_prefixes "^^[#@!]"
+global command_prefixes "^^[#@!.]"
 
 global admin_password ""
 global master_password ""
