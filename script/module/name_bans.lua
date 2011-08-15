@@ -20,6 +20,7 @@ end
 
 server.event_handler("connecting", function(cn, ip, name)
 	if is_banned_name(name) then
+		server.player_msg(cn, server.pm_nameban)
 		return -1
 	end
 end)
