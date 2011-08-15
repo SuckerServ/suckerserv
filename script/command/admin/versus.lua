@@ -150,6 +150,14 @@ return function(cn, player1, player2, mode, map)
        return 
     end
     
+    mode = mode or server.gamemode    
+    
+    if not server.parse_mode(mode) then
+        return false, server.unrecognized_gamemode_message
+    else
+        mode = server.parse_mode(mode)
+    end
+    
     running = true
     gamecount = 0
     player1_cn = tonumber(player1)
