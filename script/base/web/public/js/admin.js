@@ -25,7 +25,6 @@ function initWebAdmin(){
     server.ready(function(){
         
         installWidget("#chat-shell",    createChatShell,       server);
-        installWidget("#adchat-shell",    createChatShell,       server);
         installWidget("#command-links", createCommandLinks,    server);
         installWidget("#command-shell", createCommandShell,    server);
         installWidget("#gameinfo",      createGameinfoView,    server);
