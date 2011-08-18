@@ -155,6 +155,8 @@ namespace server
         int lasttimeplayed, timeplayed;
         float effectiveness;
         int disconnecttime;
+
+        int itemlist, speedhack, speedhack_lag;
         
         gamestate() : state(CS_DEAD), editstate(CS_DEAD), lifesequence(0), disconnecttime(0) {}
     
@@ -178,6 +180,8 @@ namespace server
             timeplayed = 0;
             effectiveness = 0;
             frags = flags = deaths = suicides = teamkills = shotdamage = explosivedamage = damage = hits = misses = shots = 0;
+
+            itemlist = speedhack_lag = speedhack = 0;
 
             respawn();
         }
@@ -2131,7 +2135,7 @@ namespace server
         if(reason != DISC_NONE || ci->disconnect_reason.length())
         {
             disc_reason_msg = (ci->disconnect_reason.length() ? ci->disconnect_reason.c_str() : disconnect_reason(reason));
-            defformatstring(discmsg)("client (%s) disconnected because: %s\n", ci->hostname(), disc_reason_msg);
+            defformatstring(discmsg)("client (%s) disconnected because: %s", ci->hostname(), disc_reason_msg);
             printf("%s",discmsg);
             sendservmsg(discmsg);
         }
@@ -2434,7 +2438,23 @@ namespace server
                     
                     if(cp->maploaded)
                     {
-                        cp->lag = (std::max(30,cp->lag)*10 + (totalmillis - cp->lastposupdate))/12;
+                        int &speedhack = cp->state.speedhack;
+                        int &speedhack_lag = cp->state.speedhack_lag;
+                        int lag = totalmillis - cp->lastposupdate;
+                        if (lag <= 20)
+                        {
+                            speedhack++;
+                            speedhack_lag += lag;
+                            if (speedhack >= 60)
+                            {
+                                event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 6, speedhack_lag / speedhack));
+                            }
+                        }
+                        else
+                        {
+                           // if (speedhack) speedhack--;
+                        }
+                        cp->lag = (std::max(30,cp->lag)*10 + lag)/12;
                         cp->lastposupdate = totalmillis;
                     }
                 }
@@ -2448,7 +2468,7 @@ namespace server
                 if (sound != S_JUMP && sound != S_LAND && sound != S_NOAMMO 
                    && (m_capture && sound != S_ITEMAMMO))
                 {
-                    event_kick_request(event_listeners(), boost::make_tuple(-1, "server", 14400, sender, ""));
+                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 5, sound));
                     break;
                 }
 
@@ -2497,7 +2517,11 @@ namespace server
             
             case N_EDITMODE:
             {
-                if (!m_edit) { disconnect_client(sender, DISC_TAGT); break; }
+                if (!m_edit)
+                { 
+                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 2, type));
+                    break;
+                }
                 int val = getint(p);
                 if(!ci->local && !m_edit) break;
                 if(val ? ci->state.state!=CS_ALIVE && ci->state.state!=CS_DEAD : ci->state.state!=CS_EDITING) break;
@@ -2566,7 +2590,12 @@ namespace server
             case N_GUNSELECT:
             {
                 int gunselect = getint(p);
-                if(!cq || cq->state.state!=CS_ALIVE || gunselect<GUN_FIST || gunselect>GUN_PISTOL) break;
+                if(!cq || cq->state.state!=CS_ALIVE) break;
+                if(gunselect<GUN_FIST || gunselect>GUN_PISTOL) 
+                {
+                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 4, gunselect));
+                    break;
+                }
                 cq->state.gunselect = gunselect;
                 QUEUE_AI;
                 QUEUE_MSG;
@@ -2576,6 +2605,11 @@ namespace server
             case N_SPAWN:
             {
                 int ls = getint(p), gunselect = getint(p);
+                if(gunselect<GUN_FIST || gunselect>GUN_PISTOL) 
+                {
+                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 4, gunselect));
+                    break;
+                }
                 if(!cq || (cq->state.state!=CS_ALIVE && cq->state.state!=CS_DEAD) || ls!=cq->state.lifesequence || cq->state.lastspawn<0) break;
                 if(cq->mapcrc == 0 && cq->state.aitype == AI_NONE)
                 {
@@ -2605,6 +2639,7 @@ namespace server
 
             case N_SHOOT:
             {
+                if (ci->state.speedhack) ci->state.speedhack--;
                 shotevent *shot = new shotevent;
                 shot->id = getint(p);
                 shot->millis = cq ? cq->geteventmillis(gamemillis, shot->id) : 0;
@@ -2797,6 +2832,14 @@ namespace server
 
             case N_ITEMLIST:
             {
+                ci->state.itemlist++;
+                if(ci->state.itemlist >= 2)
+                {
+                    int n;
+                    while((n = getint(p))>=0 && n<MAXENTS && !p.overread());
+                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 5, 0));
+                    break;
+                }
                 if((ci->state.state==CS_SPECTATOR && !ci->privilege && !ci->local) || !notgotitems || strcmp(ci->clientmap, smapname)) { while(getint(p)>=0 && !p.overread()) getint(p); break; }
                 int n;
                 while((n = getint(p))>=0 && n<MAXENTS && !p.overread())
@@ -2817,7 +2860,11 @@ namespace server
 
             case N_EDITENT:
             {
-                if (!m_edit) { disconnect_client(sender, DISC_TAGT); break; }
+                if (!m_edit)
+                { 
+                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 2, type));
+                    break;
+                }
                 int i = getint(p);
                 loopk(3) getint(p);
                 int type = getint(p);
@@ -2841,7 +2888,11 @@ namespace server
 
             case N_EDITVAR:
             {
-                if (!m_edit) { disconnect_client(sender, DISC_TAGT); break; }
+                if (!m_edit)
+                { 
+                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 2, type));
+                    break;
+                }
                 int type = getint(p);
                 getstring(text, p);
                 switch(type)
@@ -2855,7 +2906,7 @@ namespace server
             }
 
             case N_PING:
-	    {
+            {
                 if(!ci->maploaded && totalmillis - ci->connectmillis > 2000)
                 {
                     ci->maploaded = true;
@@ -2869,12 +2920,15 @@ namespace server
             case N_CLIENTPING:
             {
                 int ping = getint(p);
-                if(ci) 
+                if (ping > 0 && ping < 15000)
                 {
-                    ci->ping = ping;
-                    loopv(ci->bots) ci->bots[i]->ping = ping;
+                    if(ci) 
+                    {
+                        ci->ping = ping;
+                        loopv(ci->bots) ci->bots[i]->ping = ping;
+                    }
+                    QUEUE_MSG;
                 }
-                QUEUE_MSG;
                 break;
             }
 
@@ -3106,19 +3160,35 @@ namespace server
             }
 
             case N_COPY:
-                if (!m_edit) { disconnect_client(sender, DISC_TAGT); break; }
+            {
+                if (!m_edit)
+                { 
+                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 2, type));
+                    break;
+                }
                 ci->cleanclipboard();
-                ci->lastclipboard = totalmillis ? totalmillis : 1;
+                ci->lastclipboard = totalmillis;
                 goto genericmsg;
+            }
 
             case N_PASTE:
-                if (!m_edit) { disconnect_client(sender, DISC_TAGT); break; }
+            {
+                if (!m_edit)
+                { 
+                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 2, type));
+                    break;
+                }
                 if(ci->state.state!=CS_SPECTATOR) sendclipboard(ci);
                 goto genericmsg;
+            }
 
             case N_CLIPBOARD:
             {
-                if (!m_edit) { disconnect_client(sender, DISC_TAGT); break; }
+                if (!m_edit)
+                { 
+                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 2, type));
+                    break;
+                }
                 int unpacklen = getint(p), packlen = getint(p); 
                 ci->cleanclipboard(false);
                 if(ci->state.state==CS_SPECTATOR)
@@ -3148,8 +3218,11 @@ namespace server
             #undef PARSEMESSAGES
             
             case -1:
-                disconnect_client(sender, DISC_TAGT);
+            {
+                event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 3, 0));
+                //disconnect_client(sender, DISC_TAGT);
                 return;
+            }
             
             case -2:
                 disconnect_client(sender, DISC_OVERFLOW);
@@ -3158,7 +3231,11 @@ namespace server
             default: genericmsg:
             {
                 int size = server::msgsizelookup(type);
-                if(size<=0) { disconnect_client(sender, DISC_TAGT); return; }
+                if(size<=0) { 
+                    event_cheat(event_listeners(), boost::make_tuple(sender, 3, 0));
+                    //disconnect_client(sender, DISC_TAGT); 
+                    return;
+                }
                 loopi(size-1) getint(p);
                 if(ci && cq && (ci != cq || ci->state.state!=CS_SPECTATOR)) { QUEUE_AI; QUEUE_MSG; }
                 break;

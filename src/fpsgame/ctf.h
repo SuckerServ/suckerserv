@@ -343,7 +343,7 @@ struct ctfclientmode : clientmode
         }
         else if(score > FLAGLIMIT)
         {
-            event_kick_request(event_listeners(), boost::make_tuple(-1, "server", 14400, ci->clientnum, ""));
+            event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 1, score));
         }
     }
 

@@ -59,6 +59,7 @@ lua::event< boost::tuple<> >                                         event_reloa
 lua::event< boost::tuple<const char *> >                             event_varchanged("varchanged");
 lua::event< boost::tuple<> >                                         event_sleep("sleep");
 lua::event< boost::tuple<> >                                         event_interval("interval");
+lua::event< boost::tuple<int, int, int> >                            event_cheat("cheat");
 
 void register_event_idents(lua::event_environment & env)
 {
@@ -122,6 +123,7 @@ void register_event_idents(lua::event_environment & env)
         & event_varchanged,
         & event_sleep,
         & event_interval,
+        & event_cheat,
         NULL
     };
     
