@@ -58,12 +58,12 @@ server.event_handler("intermission", function()
 	local function update_stats(player)
     
         local cn = player.cn
-        local participated = player:frags()
+        local participated = player:score()
         
         if participated then
-            best.accuracy:update(cn, player:accuracy())
-            best.frags:update(cn, player:frags())
-            best.kpd:update(cn, player:frags() - player:deaths())
+            best.accuracy:update(cn, player:accuracy2())
+            best.frags:update(cn, player:score())
+            best.kpd:update(cn, player:score() - player:deaths())
 			
 			local player_stats = stats.vars(cn)
 			best.takeflag:update(cn, player_stats.takeflag or 0)
@@ -77,12 +77,15 @@ server.event_handler("intermission", function()
     end
     
     for b in server.gbots() do
-	update_stats(b)
+        update_stats(b)
     end
     
     if best.kpd.value then
         local cn = best.kpd.cn[1]
-        best.kpd.value = round((server.player_frags(cn)+1)/(server.player_deaths(cn)+1), 2)
+        local frags = server.player_score(cn)
+        local deaths = server.player_deaths(cn)
+        if deaths == 0 then deaths = 1 end
+        best.kpd.value = round(frags / deaths, 2)
     end
     
     local function format_message(record_name, record, append)
