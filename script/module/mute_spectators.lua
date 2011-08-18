@@ -34,3 +34,8 @@ server.event_handler("mapchange", function()
 
     is_enabled = default_enabled
 end)
+
+return {unload = function()
+
+    server.unref("mute_spectators")
+end}
