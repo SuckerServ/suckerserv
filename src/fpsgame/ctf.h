@@ -337,7 +337,14 @@ struct ctfclientmode : clientmode
         if(m_hold) spawnflag(goal);
         sendf(-1, 1, "rii9", N_SCOREFLAG, ci->clientnum, relay, relay >= 0 ? ++flags[relay].version : -1, goal, ++flags[goal].version, flags[goal].spawnindex, team, score, ci->state.flags);
         event_scoreflag(event_listeners(), boost::make_tuple(ci->clientnum, ci->team, score));
-        if(score >= FLAGLIMIT) startintermission();
+        if(score == FLAGLIMIT)
+        {
+            startintermission();
+        }
+        else if(score > FLAGLIMIT)
+        {
+            event_kick_request(event_listeners(), boost::make_tuple(-1, "server", 14400, ci->clientnum, ""));
+        }
     }
 
     void takeflag(clientinfo *ci, int i, int version)
