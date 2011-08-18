@@ -119,7 +119,7 @@ local function send_command_error(cn, error_message)
         output_message = output_message .. "!"
     end
     
-    server.player_msg(cn, red(message))
+    server.player_msg(cn, red(output_message))
 end
 
 server.event_handler("text", function(cn, text)
