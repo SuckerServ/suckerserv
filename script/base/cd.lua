@@ -5,10 +5,10 @@
     
     TODO: 
     
-        Add Jumppad -> Check (check if jumppad exists)
-        Teleporter  -> Check if teleporter exists)
+        Add Jumppad -> check if jumppad exists
+        Teleporter  -> check if teleporter exists
         Getflag     -> distance / lag-check
-        Respawn     -> Check respawntime in ctf/capture etc
+        Respawn     -> check respawntime in ctf/capture etc
         
     COMMENTS:
     
