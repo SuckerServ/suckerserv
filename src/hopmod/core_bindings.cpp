@@ -79,6 +79,7 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "player_misses", server::player_misses);
     bind_function(L, T, "player_shots", server::player_shots);
     bind_function(L, T, "player_accuracy", server::player_accuracy);
+    bind_function(L, T, "player_accuracy2", server::player_accuracy2);
     bind_function(L, T, "player_timeplayed", server::player_timeplayed);
     bind_function(L, T, "player_win", server::player_win);
     bind_function(L, T, "player_slay", server::player_slay);

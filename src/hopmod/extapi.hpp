@@ -97,6 +97,7 @@ namespace server
     int player_misses(int);
     int player_shots(int);
     int player_accuracy(int);
+    int player_accuracy2(int);
     int player_connection_time(int);
     int player_timeplayed(int);
     int player_win(int);
