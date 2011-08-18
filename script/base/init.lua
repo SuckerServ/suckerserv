@@ -30,6 +30,7 @@ exec("base/setmaster.lua")
 exec("base/kickban.lua")
 exec("base/server_message.lua")
 exec("base/static_items.lua")
+exec("base/cd.lua")
 
 server.module("base/maprotation/init.lua")
 server.module("base/normalize")
