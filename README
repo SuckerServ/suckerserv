@@ -1,17 +1,16 @@
-* WARNING : This is *NOT* a stable release, it's even more unstable than the trunk, because all scripts and patchs are designed for trunk, and have been quickly 
-ported to v4, it's only for *TESTING*, so if you encounter some problems, please report all of these, and test if they are present in trunk or not *
-* Because authserver have been removed directly in HopMod-v4, if you want to install one, please choose the trunk version *
+* WARNING : This is *NOT* a stable release, so if you encounter some problems, please report all of these *
+* Because authserver has been removed directly in HopMod-v4, if you want to install one, please choose the trunk version either the MasterLua script *
 
-This server is based on HopMod
+This server is based on HopMod-v4
 
 == How to build SuckerServ ==
 
 http://piernov.org/dokuwiki/en:suckerserv:installation
 
-Be sure to install all Dependencies needed!!! (cmake, libgeoip-dev, libsqlite3-dev, zlib1g-dev, subversion, libmysqlclient-dev)
+Be sure to install all Dependencies needed!!! (cmake, libgeoip-dev, libsqlite3-dev, zlib1g-dev, libmysqlclient-dev)
 
 Compiling with the compile script:
-Make the script executeable and run it →
+Make the script executable and run it →
 
     chmod +x compile.sh
     ./compile.sh
@@ -21,4 +20,4 @@ Usage: ./compile.sh [--recompile] [--debug] — Build SuckerServ
           --debug       — Make a debug build
 
 
-For more informations: #suckerserv@irc.gamesurge.net
+For more informations, contact us at IRC: #suckerserv@irc.gamesurge.net
