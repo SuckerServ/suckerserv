@@ -45,8 +45,6 @@ function server.load_map_flags()
         end
         
     end
-    
-    server.msg("loaded flags!")
 	
     return is_hold
 	

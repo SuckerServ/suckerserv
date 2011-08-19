@@ -569,6 +569,34 @@ namespace server
         return ci;
     }
     
+    bool is_invisible(clientinfo *ci)
+    {
+        if (!ci) return false;
+        int lag = totalmillis - ci->lastposupdate;
+        if ((!ci->state.o.x && !ci->state.o.y && !ci->state.o.z) || lag >= 5000)
+        {
+            event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 9, lag));
+            return true;
+        }
+        return false;
+    }
+    
+    float distance(vec a, vec b)
+    {
+        int x = a.x - b.x, y = a.y - b.y, z = a.z - b.z;
+        return sqrt(x*x + y*y + z*z);
+    }
+    
+    bool is_invisible(int cn) 
+    {
+        return is_invisible(getinfo(cn));
+    }
+    
+    bool veq_equal(vec a, vec b)
+    {
+        return (int)a.x == (int)b.x && (int)a.y == (int)b.y && (int)a.z == (int)b.z;
+    }
+    
     struct servmode
     {
         virtual ~servmode() {}
@@ -1456,7 +1484,7 @@ namespace server
             putint(p, N_MAPCHANGE);
             sendstring(smapname, p);
             putint(p, gamemode);
-            putint(p, notgotitems ? 1 : 0);
+            putint(p, 1);//notgotitems ? 1 : 0
             if(!ci || (m_timed && smapname[0]))
             {
                 putint(p, N_TIMEUP);
@@ -2464,6 +2492,7 @@ namespace server
             case N_SOUND:
             {
                 int sound = getint(p);
+                if (sound == S_JUMP && is_invisible(sender)) break;
 
                 if (sound != S_JUMP && sound != S_LAND && sound != S_NOAMMO 
                    && (m_capture && sound != S_ITEMAMMO))
@@ -2658,6 +2687,11 @@ namespace server
                     hit.rays = getint(p);
                     loopk(3) hit.dir[k] = getint(p)/DNF;
                 }
+                if (is_invisible(sender))
+                {
+                    delete shot;
+                    break;
+                }
                 if(cq) 
                 {
                     cq->addevent(shot);
@@ -2685,6 +2719,11 @@ namespace server
                     hit.rays = getint(p);
                     loopk(3) hit.dir[k] = getint(p)/DNF;
                 }
+                if (is_invisible(sender))
+                {
+                    delete exp;
+                    break;
+                }
                 if(cq) cq->addevent(exp);
                 else delete exp;
                 break;
@@ -2694,7 +2733,7 @@ namespace server
             case N_ITEMPICKUP:
             {
                 int n = getint(p);
-                if(!cq) break;
+                if(!cq || is_invisible(sender)) break;
                 pickupevent *pickup = new pickupevent;
                 pickup->ent = n;
                 cq->addevent(pickup);
@@ -2834,15 +2873,33 @@ namespace server
             case N_ITEMLIST:
             {
                 ci->state.itemlist++;
+                int n;
+                
                 if(ci->state.itemlist >= 2)
                 {
-                    int n;
                     while((n = getint(p))>=0 && n<MAXENTS && !p.overread());
                     event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 5, 0));
                     break;
                 }
+                if (!notgotitems && gamemode != 0)
+                {
+                    bool modified = false;
+                    while((n = getint(p))>=0 && n<MAXENTS && !p.overread())
+                    {
+                        int item_type = getint(p);
+                        if (sents[n].type != item_type)
+                        {
+                            modified = true;
+                        }
+                    }  
+                    if (modified) 
+                    {
+                        event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 11, 0));
+                    }
+                    break;
+                }
+                
                 if((ci->state.state==CS_SPECTATOR && !ci->privilege && !ci->local) || !notgotitems || strcmp(ci->clientmap, smapname)) { while(getint(p)>=0 && !p.overread()) getint(p); break; }
-                int n;
                 while((n = getint(p))>=0 && n<MAXENTS && !p.overread())
                 {
                     server_entity se = { NOTUSED, 0, false };

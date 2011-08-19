@@ -4,10 +4,8 @@
     Copyright (C) 2011 Thomas
     
     TODO: 
-    
-        Add Jumppad -> check if jumppad exists
-        Teleporter  -> check if teleporter exists
-        Getflag     -> distance / lag-check
+
+        HOLD / CTF  -> check score distance
         
     COMMENTS:
     
@@ -53,42 +51,51 @@ end
 
 local type = { }
 
-type[1] = { kick, "flag-score-hack (flags: %i)" }
-type[2] = { kick, "edit-packet-in-non-edit-mode (type: %s)" }
-type[3] = { kick, "unknown packet (type: %i)" }
-type[4] = { kick, "unknown-weapon (unknown-gun: %i)" }
-type[5] = { kick, "sent itemlist twice" }
-type[6] = { nil,  "speed-hack (avg-lag: %i ms)" } 
-type[7] = { kick, "spawn-time-hack (spawntime: %i ms)" } 
-type[8] = { kick, "sent-unknown-sound (sound: %s)" } 
+type[1] = { kick,  "flag-score-hack (flags: %i)" }
+type[2] = { kick,  "edit-packet-in-non-edit-mode (type: %s)" }
+type[3] = { kick,  "unknown packet (type: %i)" }
+type[4] = { kick,  "unknown-weapon (unknown-gun: %i)" }
+type[5] = { nil,   "sent itemlist twice" }
+type[6] = { nil,   "speed-hack (avg-lag: %i ms)" } 
+type[7] = { kick,  "spawn-time-hack (spawntime: %i ms)" } 
+type[8] = { kick,  "sent-unknown-sound (sound: %s)" } 
+type[9] = { nil,   "invisible (invis-millis: %i)" } 
+type[10] = { nil,  "getflag (distance: %i)" } 
+type[11] = { kick, "modified-map-items" } 
+type[12] = { kick, "modified-map-flags" } 
+type[12] = { kick, "modified-capture-bases" } 
 
 local logged = { }
-local flag_millis = { }
 
 server.event_handler("connect", function(cn)
     logged[cn] = { }
-    flag_millis[cn] = nil
 end)
 
 server.event_handler("disconnect", function(cn)
     logged[cn] = nil
-    flag_millis[cn] = nil
 end)
 
 local function cheat(cn, cheat_type, info)
     if cheat_type > #type or cheat_type < 1 then return end
         
     local action = type[cheat_type][1]
-    local logmsg = string.format("CHEATER: %s IP: %s CHEAT: ", server.player_displayname(cn), server.player_ip(cn)) .. type[cheat_type][2]
-    
-    if logged[cn][cheat_type] == nil then
+    local logmsg = 
+        string.format("CHEATER: %s IP: %s LAG: %i GAMEMODE: %s MAP: %s CHEAT: ", 
+            server.player_displayname(cn), 
+            server.player_ip(cn),
+            server.player_real_lag(cn),
+            server.gamemode,
+            server.map
+        ) .. type[cheat_type][2]
+        
+    if logged[cn][cheat_type] == nil or cheat_type ~= 6 then
         if (cheat_type == 3 or cheat_type == 2) and info > 0 then
             info = network_type(info)
         end
         if cheat_type == 8 then
             info = sound_type(info)
         end
-        server.log(string.format(logmsg, info))
+        server.log(string.format(logmsg, info) .. _if(action==nil," (TESTING)", ""))
         logged[cn][cheat_type] = true
     end
     
@@ -101,7 +108,7 @@ server.event_handler("cheat", cheat)
 
 server.event_handler("spawn", function(cn)
     local gamemode = server.gamemode
-    
+
     if 
        not string.find(gamemode, "hold") 
        and not string.find(gamemode, "ctf")
@@ -110,13 +117,15 @@ server.event_handler("spawn", function(cn)
         return
     end
     
+    if server.player_connection_time(cn) == 0 then return end
+    
     local deathmillis = server.player_deathmillis(cn)
     
-    if deathmillis == 0 then return end
+    if deathmillis == 0 or server.gamemillis < 5000 then return end
     
     local spawntime = server.gamemillis - deathmillis
     
-    if spawntime < min_spawntime then
+    if spawntime > 0 and spawntime < min_spawntime then
         cheat(cn, 7, spawntime)
     end
 end)

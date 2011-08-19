@@ -350,6 +350,9 @@ struct ctfclientmode : clientmode
     void takeflag(clientinfo *ci, int i, int version)
     {
         if(notgotflags || !flags.inrange(i) || ci->state.state!=CS_ALIVE || !ci->team[0]) return;
+
+	if(is_invisible(ci)) return;
+
         flag &f = flags[i];
         if((m_hold ? f.spawnindex < 0 : !ctfflagteam(f.team)) || f.owner>=0 || f.version != version || (f.droptime && f.dropper == ci->clientnum)) return;
         int team = ctfteamflag(ci->team);
@@ -373,6 +376,13 @@ struct ctfclientmode : clientmode
         else
         {
             loopvj(flags) if(flags[j].owner==ci->clientnum) { scoreflag(ci, i, j); break; }
+        }
+        
+        float flag_dist = distance(f.droptime ? f.droploc : f.spawnloc, ci->state.o);
+        
+        if (flag_dist >= 250 && !m_hold)
+        {
+            event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 10, round(flag_dist)));
         }
     }
 
@@ -433,9 +443,44 @@ struct ctfclientmode : clientmode
         }
     }
 
-    void parseflags(ucharbuf &p, bool commit)
+    void parseflags(ucharbuf &p, bool commit, int sender=-1)
     {
         int numflags = getint(p);
+        
+        if (!notgotflags && sender > -1)
+        {
+            bool modified = false;
+            loopi(numflags)
+            {
+                int team = getint(p);
+                vec o;
+                loopk(3) o[k] = max(getint(p)/DMF, 0.0f);
+                if(p.overread()) break;
+                if(true)
+                {
+                    if(m_hold) 
+                    {
+                        if (!holdspawns.inrange(i) || !veq_equal(holdspawns[i].o, o))
+                        {
+                            modified = true;
+                        }
+                    }
+                    else 
+                    {
+                        if (!flags.inrange(i) || flags[i].team != team || !veq_equal(flags[i].spawnloc, o))
+                        {
+                            modified = true;
+                        }
+                    }
+                }
+            }
+            if (modified)
+            {
+                event_cheat(event_listeners(), boost::make_tuple(sender, 12, 0));
+            }           
+            return;
+        }
+        
         loopi(numflags)
         {
             int team = getint(p);
@@ -1206,7 +1251,7 @@ case N_TAKEFLAG:
 }
 
 case N_INITFLAGS:
-    if(smode==&ctfmode) ctfmode.parseflags(p, (ci->state.state!=CS_SPECTATOR || ci->privilege || ci->local) && !strcmp(ci->clientmap, smapname));
+    if(smode==&ctfmode) ctfmode.parseflags(p, (ci->state.state!=CS_SPECTATOR || ci->privilege || ci->local) && !strcmp(ci->clientmap, smapname), sender);
     break;
 
 #else
