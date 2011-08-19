@@ -294,3 +294,10 @@ server.event_handler("spawn", function(cn)
         cheat(cn, 7, spawntime, "")
     end
 end)
+
+server.event_handler("scoreflag", function(cn, _, __, timetrial)  
+    if timetrial > -1 and timetrial <= min_scoretime and is_known_map(server.map) then
+    return
+        cheat(cn, 15, timetrial, "")
+    end
+end)

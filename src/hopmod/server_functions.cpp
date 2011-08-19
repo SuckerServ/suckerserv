@@ -397,6 +397,12 @@ int player_clientmillis(int cn)
     return ci->clientmillis;
 }
 
+int player_timetrial(int cn)
+{ 
+    clientinfo * ci = get_ci(cn);
+    return ci->timetrial ? ci->timetrial : -1;
+}
+
 int player_privilege_code(int cn)
 {
     return get_ci(cn)->privilege;

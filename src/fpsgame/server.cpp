@@ -288,6 +288,7 @@ namespace server
         char *authkickreason;
 
         int clientmillis;
+        int timetrial;
 
         anticheat ac;
 
@@ -440,6 +441,7 @@ namespace server
             clientmillis = 0;
             last_lag = 0;
             spy = false;
+            timetrial = 0;
 
             aireinit = 0;
             using_reservedslot = false;
