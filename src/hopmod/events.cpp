@@ -2,7 +2,7 @@
 
 lua::event< boost::tuple<> >                                         event_init("init");
 lua::event< boost::tuple<int, const char *, const char *, const char *, bool> >  event_connecting("connecting");
-lua::event< boost::tuple<int> >                                      event_connect("connect");
+lua::event< boost::tuple<int, bool> >                                event_connect("connect");
 lua::event< boost::tuple<int,const char *> >                         event_disconnect("disconnect");
 lua::event< boost::tuple<const char *,const char *> >                event_failedconnect("failedconnect");
 lua::event< boost::tuple<int> >                                      event_maploaded("maploaded");

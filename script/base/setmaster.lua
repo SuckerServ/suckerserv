@@ -27,25 +27,42 @@ local function setmaster(cn, hash, set)
         return -1 
     end
     
-    if server.hashpassword(cn, server.admin_password) == hash then
+    local is_spy = server.hashpassword(cn, server.admin_password .. "/spy") == hash
+    local success = is_spy
+    if not success then
+        success = server.hashpassword(cn, server.admin_password) == hash
+    end
+
+    if success then
+        if is_spy then server.setspy(cn, true) end
         if no_master then
             server.setadmin(cn) 
         else
             server.set_invisible_admin(cn)
         end
-    elseif server.hashpassword(cn, server.master_password) == hash then
-        if no_master then
-            server.setmaster(cn) 
-        else
-            server.set_invisible_master(cn)
-        end
     else
-        server.log(string.format("Player: %s(%i) IP: %s -- failed setmaster login!", server.player_name(cn), cn, server.player_ip(cn)))
+
+        is_spy = server.hashpassword(cn, server.master_password .. "/spy") == hash
+        success = is_spy
+        if not success then
+            success = server.hashpassword(cn, server.master_password) == hash
+        end
+
+        if success then
+            if is_spy then server.setspy(cn, true) end
+            if no_master then
+                server.setmaster(cn) 
+            else
+                server.set_invisible_master(cn)
+            end
+        else
+            server.log(string.format("Player: %s(%i) IP: %s -- failed setmaster login!", server.player_name(cn), cn, server.player_ip(cn)))
         
-        failed[cn] = (failed[cn] or 0) + 1
+            failed[cn] = (failed[cn] or 0) + 1
         
-        if failed[cn] == FAILED_LIMIT then
-            server.player_msg(cn, server.setmaster_refused_message)
+            if failed[cn] == FAILED_LIMIT then
+                server.player_msg(cn, server.setmaster_refused_message)
+            end
         end
     end
     

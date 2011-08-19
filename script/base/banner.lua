@@ -21,7 +21,9 @@ local function sendServerBanner(cn)
     end)
 end
 
-local function onConnect(cn)
+local function onConnect(cn, is_spy)
+
+    if is_spy then return end
     
     local country = geoip.ip_to_country(server.player_ip(cn))
     

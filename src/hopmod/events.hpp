@@ -5,7 +5,7 @@
 
 extern lua::event< boost::tuple<> >                                         event_init;
 extern lua::event< boost::tuple<int, const char *, const char *, const char *, bool> >  event_connecting;
-extern lua::event< boost::tuple<int> >                                      event_connect;
+extern lua::event< boost::tuple<int, bool> >                                event_connect;
 extern lua::event< boost::tuple<int,const char *> >                         event_disconnect;
 extern lua::event< boost::tuple<const char *,const char *> >                event_failedconnect;
 extern lua::event< boost::tuple<int> >                                      event_maploaded;

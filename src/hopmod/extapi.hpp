@@ -98,6 +98,7 @@ namespace server
     int player_shots(int);
     int player_accuracy(int);
     int player_accuracy2(int);
+    bool player_is_spy(int cn);
     int player_clientmillis(int);
     int player_timetrial(int);
     int player_connection_time(int);
@@ -126,6 +127,7 @@ namespace server
     void set_player_privilege(int, int);
     void player_freeze(int);
     void player_unfreeze(int);
+    void set_spy(int, bool);
     
     void team_msg(const char *,const char *);
     std::vector<std::string> get_teams();

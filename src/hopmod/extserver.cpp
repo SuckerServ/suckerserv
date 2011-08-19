@@ -331,6 +331,12 @@ int player_accuracy2(int cn)
     return static_cast<int>(roundf(static_cast<float>(ci->state.damage*100/max(ci->state.shotdamage,1))));
 }
 
+bool player_is_spy(int cn)
+{
+    clientinfo * ci = get_ci(cn);
+    return ci->spy;
+}
+
 int player_clientmillis(int cn)
 {
     clientinfo * ci = get_ci(cn);
@@ -602,6 +608,8 @@ void unset_player_privilege(int cn)
 void set_player_privilege(int cn, int priv_code, bool public_priv = false)
 {
     clientinfo * player = get_ci(cn);
+
+    public_priv = !player->spy && public_priv;
     
     if(player->privilege == priv_code) return;
     if(priv_code == PRIV_NONE) unset_player_privilege(cn);
