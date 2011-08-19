@@ -2468,7 +2468,7 @@ namespace server
                 if (sound != S_JUMP && sound != S_LAND && sound != S_NOAMMO 
                    && (m_capture && sound != S_ITEMAMMO))
                 {
-                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 5, sound));
+                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 8, sound));
                     break;
                 }
 
