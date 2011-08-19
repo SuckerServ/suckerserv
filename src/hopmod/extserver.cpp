@@ -229,6 +229,12 @@ int player_lag(int cn)
     return get_ci(cn)->lag;
 }
 
+int player_deathmillis(int cn)
+{
+    clientinfo * ci = get_ci(cn);
+    return ci->state.lastdeath;
+}
+
 int player_frags(int cn)
 {
     clientinfo * ci = get_ci(cn);

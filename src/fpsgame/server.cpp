@@ -190,7 +190,6 @@ namespace server
         {
             fpsstate::respawn();
             o = vec(-1e10f, -1e10f, -1e10f);
-            lastdeath = 0;
             lastspawn = -1;
             lastshot = 0;
         }
@@ -1807,6 +1806,7 @@ namespace server
         ci->state.frags += smode ? smode->fragvalue(ci, ci) : -1;
         ci->state.deaths++;
         ci->state.suicides++;
+        ci->state.lastdeath = gamemillis;
         sendf(-1, 1, "ri4", N_DIED, ci->clientnum, ci->clientnum, gs.frags);
         ci->position.setsize(0);
         if(smode) smode->died(ci, NULL);
@@ -2627,6 +2627,7 @@ namespace server
                     sendstate(cq->state, cm->messages);
                 });
                 event_spawn(event_listeners(), boost::make_tuple(cq->clientnum));
+                cq->state.lastdeath = 0;
                 break;
             }
             
@@ -3219,7 +3220,7 @@ namespace server
             
             case -1:
             {
-                event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 3, 0));
+                event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 3, type));
                 //disconnect_client(sender, DISC_TAGT);
                 return;
             }
@@ -3232,7 +3233,7 @@ namespace server
             {
                 int size = server::msgsizelookup(type);
                 if(size<=0) { 
-                    event_cheat(event_listeners(), boost::make_tuple(sender, 3, 0));
+                    event_cheat(event_listeners(), boost::make_tuple(sender, 3, type));
                     //disconnect_client(sender, DISC_TAGT); 
                     return;
                 }

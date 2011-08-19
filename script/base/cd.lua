@@ -8,7 +8,6 @@
         Add Jumppad -> check if jumppad exists
         Teleporter  -> check if teleporter exists
         Getflag     -> distance / lag-check
-        Respawn     -> check respawntime in ctf/capture etc
         
     COMMENTS:
     
@@ -25,11 +24,12 @@ local function network_type(packet)
     if #network_packet_types >= packet then
         return network_packet_types[packet]
     end
-    return "unknown"
+    return string.format("unknown (%i)", packet)
 end
 
 local ban_time = 21600 -- 6 hrs
 local kick_msg = string.format(red("cheating - (bantime: %i minutes)"), round(ban_time / 60, 0))
+local min_spawntime = 4600
 
 local function kick(cn)
     server.kick(cn, ban_time, "CHEATER-DETECTION", kick_msg)
@@ -45,23 +45,22 @@ local type = { }
 type[1] = { kick, "flag-score-hack (flags: %i)" }
 type[2] = { kick, "edit-packet-in-non-edit-mode (type: %s)" }
 type[3] = { kick, "unknown packet (type: %i)" }
-type[4] = { kick, "unknown-weapon (unknown-gun: %s)" }
+type[4] = { kick, "unknown-weapon (unknown-gun: %i)" }
 type[5] = { kick, "sent itemlist twice" }
 type[6] = { nil,  "speed-hack (avg-lag: %i ms)" } 
+type[7] = { kick, "spawn-time-hack (spawntime: %i ms)" } 
 
 local logged = { }
 
-server.event_handler("connect", function (cn)
+server.event_handler("connect", function(cn)
     logged[cn] = { }
 end)
 
-server.event_handler("disconnect", function (cn)
+server.event_handler("disconnect", function(cn)
     logged[cn] = nil
 end)
 
-
-server.event_handler("cheat", function (cn, cheat_type, info)
-
+local function cheat(cn, cheat_type, info)
     if cheat_type > #type or cheat_type < 1 then return end
         
     local action = type[cheat_type][1]
@@ -78,5 +77,28 @@ server.event_handler("cheat", function (cn, cheat_type, info)
     if action ~= nil then
         action(cn)
     end
-            
+end
+
+server.event_handler("cheat", cheat)
+
+server.event_handler("spawn", function(cn)
+    local gamemode = server.gamemode
+    
+    if 
+       not string.find(gamemode, "hold") 
+       and not string.find(gamemode, "ctf")
+       and not gamemode == "capture" 
+    then 
+        return
+    end
+    
+    local deathmillis = server.player_deathmillis(cn)
+    
+    if deathmillis == 0 then return end
+    
+    local spawntime = server.gamemillis - deathmillis
+    
+    if spawntime < min_spawntime then
+        cheat(cn, 7, spawntime)
+    end
 end)

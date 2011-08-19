@@ -76,6 +76,7 @@ namespace server
     int player_ping(int);
     int player_ping_update(int);
     int player_lag(int);
+    int player_deathmillis(int);
     const char * player_ip(int);
     unsigned long player_iplong(int);
     const char * player_status(int);

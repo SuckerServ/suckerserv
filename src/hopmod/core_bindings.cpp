@@ -59,6 +59,7 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "player_ping", server::player_ping);
     bind_function(L, T, "player_ping_update", server::player_ping_update);
     bind_function(L, T, "player_lag", server::player_lag);
+    bind_function(L, T, "player_deathmillis", server::player_deathmillis);
     bind_function(L, T, "player_ip", server::player_ip);
     bind_function(L, T, "player_iplong", server::player_iplong);
     bind_function(L, T, "player_status", server::player_status);
