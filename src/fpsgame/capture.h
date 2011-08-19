@@ -508,7 +508,7 @@ struct captureservmode : servmode
     {
         int numbases = getint(p);
         
-        if (!notgotbases && sender > -1)
+        if (anti_cheat_enabled && !notgotbases && sender > -1)
         {
             bool modified = false;
             loopi(numbases)

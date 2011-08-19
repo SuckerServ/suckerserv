@@ -340,7 +340,7 @@ int player_clientmillis(int cn)
 int player_timetrial(int cn)
 { 
     clientinfo * ci = get_ci(cn);
-    return ci->timetrial ? ci->timetrial : -1;
+    return ci->timetrial >= 0 ? ci->timetrial : -1;
 }
 
 int player_privilege_code(int cn)

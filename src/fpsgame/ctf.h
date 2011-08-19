@@ -20,7 +20,7 @@ struct ctfservmode : servmode
         vec droploc, spawnloc;
         int team, droptime, owntime;
         int owner, dropper, invistime;
-        int tmillis;
+        int tmillis, drops;
 
         flag() { reset(); }
 
@@ -33,7 +33,8 @@ struct ctfservmode : servmode
             invistime = owntime = 0;
             team = 0;
             droptime = owntime = 0;
-            tmillis = 0;
+            tmillis = -1;
+            drops = 0;
         }
     };
 
@@ -90,7 +91,8 @@ struct ctfservmode : servmode
         f.dropper = dropper;
         f.owner = -1;
         f.invistime = 0;
-        f.tmillis = 0;
+        f.tmillis = -1;
+        f.drops++;
     }
 
     void returnflag(int i, int invistime = 0)
@@ -99,7 +101,8 @@ struct ctfservmode : servmode
         f.droptime = 0;
         f.owner = f.dropper = -1;
         f.invistime = invistime;
-        f.tmillis = 0;
+        f.tmillis = -1;
+        f.drops = 0;
     }
 
     int totalscore(int team)
@@ -213,7 +216,7 @@ struct ctfservmode : servmode
             {
                 ivec o(vec(ci->state.o).mul(DMF));
                 sendf(-1, 1, "ri7", N_DROPFLAG, ci->clientnum, i, ++f.version, o.x, o.y, o.z);
-                dropflag(i, o.tovec().div(DMF), lastmillis, dropper ? dropper->clientnum : ci->clientnum);
+                dropflag(i, ci->state.o, lastmillis, dropper ? dropper->clientnum : ci->clientnum);
                 event_dropflag(event_listeners(), boost::make_tuple(ci->clientnum, ctfflagteam(f.team)));
             }
         }
@@ -228,7 +231,11 @@ struct ctfservmode : servmode
     void died(clientinfo *ci, clientinfo *actor)
     {
         dropflag(ci, ctftkpenalty && actor && actor != ci && isteam(actor->team, ci->team) ? actor : NULL);
-        loopv(flags) if(flags[i].dropper == ci->clientnum) flags[i].dropper = -1;
+        loopv(flags) if(flags[i].dropper == ci->clientnum)
+        { 
+            flags[i].droploc = ci->state.o;
+            flags[i].dropper = -1;
+        }
     }
 
     bool canchangeteam(clientinfo *ci, const char *oldteam, const char *newteam)
@@ -256,7 +263,7 @@ struct ctfservmode : servmode
     void scoreflag(clientinfo *ci, int goal, int relay = -1)
     {
         int flagIndex = relay >= 0 ? relay : goal;
-int timetrial = flags[flagIndex].tmillis ? totalmillis - flags[flagIndex].tmillis : 0;
+        int timetrial = flags[flagIndex].tmillis > -1 ? totalmillis - flags[flagIndex].tmillis : -1;
 
         if (!ci->timetrial || timetrial < ci->timetrial) ci->timetrial = timetrial;
 
@@ -270,7 +277,7 @@ int timetrial = flags[flagIndex].tmillis ? totalmillis - flags[flagIndex].tmilli
         {
             startintermission();
         }
-        else if(score > FLAGLIMIT)
+        else if(anti_cheat_enabled && score > FLAGLIMIT)
         {
             cheat(ci->clientnum, 1, score);
         }
@@ -299,29 +306,47 @@ int timetrial = flags[flagIndex].tmillis ? totalmillis - flags[flagIndex].tmilli
             loopvj(flags) if(flags[j].owner==ci->clientnum) return;
             ownflag(i, ci->clientnum, lastmillis);
             sendf(-1, 1, "ri4", N_TAKEFLAG, ci->clientnum, i, ++f.version);
-            if (!flag_dropped) f.tmillis = totalmillis;
+            if (!f.drops) f.tmillis = totalmillis;
             event_takeflag(event_listeners(), boost::make_tuple(ci->clientnum, ctfflagteam(f.team)));
         }
         else if(m_protect)
         {
             if(!f.invistime) scoreflag(ci, i);
+            return;
         }
         else if(f.droptime)
         {
             returnflag(i);
             sendf(-1, 1, "ri4", N_RETURNFLAG, ci->clientnum, i, ++f.version);
             event_returnflag(event_listeners(), boost::make_tuple(ci->clientnum, ctfflagteam(f.team)));
+            return;
         }
         else
         {
             loopvj(flags) if(flags[j].owner==ci->clientnum) { scoreflag(ci, i, j); break; }
         }
         
-        float flag_dist = distance(flag_location, ci->state.o);
-        
-        if (flag_dist >= 250 && ci->clientnum < 128)
+        if (anti_cheat_enabled) 
         {
-            cheat(ci->clientnum, 10, (int)flag_dist);
+            float flag_dist = distance(flag_location, ci->state.o); 
+
+            if (flag_dist >= 250)
+            {
+                /*defformatstring(debug)("%s -> flag location (%.2f/%.2f/%.2f) / player location (%.2f/%.2f/%.2f) / distance: %.2f / dropped: %s / team flag: %s", 
+                    ci->name,
+                    flag_location.x, 
+                    flag_location.y, 
+                    flag_location.z,
+                    ci->state.o.x,
+                    ci->state.o.y,
+                    ci->state.o.z,
+                    flag_dist,
+                    flag_dropped ? "Yes" : "No",
+                    m_hold || m_protect || !strcmp(ci->team, ctfflagteam(f.team)) ? "Yes" : "No"
+                );
+                sendservmsg(debug);*/
+                cheat(ci->clientnum, 10, (int)flag_dist);
+            }
         }
     }
 
@@ -386,7 +411,7 @@ int timetrial = flags[flagIndex].tmillis ? totalmillis - flags[flagIndex].tmilli
     {
         int numflags = getint(p);
         
-        if (!notgotflags && sender > -1)
+        if (anti_cheat_enabled && !notgotflags && sender > -1)
         {
             bool modified = false;
             loopi(numflags)
