@@ -475,6 +475,7 @@ function SpectatorsTable(parent){
         {label:"CN",        key:"cn"},
         {label:"IP Addr",   key:"ip"},
         {label:"Name",      key:"name"},
+        {label:"Ping",      key:"ping"},
         {label:"", cellFunction: createPlayerControlLinks, className:"player-control-links"}
     ]);
     table.attachTo(parent);
