@@ -229,6 +229,11 @@ int player_lag(int cn)
     return get_ci(cn)->lag;
 }
 
+int player_real_lag(int cn)
+{
+    return totalmillis - get_ci(cn)->lastposupdate;
+}
+
 int player_deathmillis(int cn)
 {
     clientinfo * ci = get_ci(cn);
@@ -324,6 +329,12 @@ int player_accuracy2(int cn)
 {
     clientinfo * ci = get_ci(cn);
     return static_cast<int>(roundf(static_cast<float>(ci->state.damage*100/max(ci->state.shotdamage,1))));
+}
+
+int player_clientmillis(int cn)
+{
+    clientinfo * ci = get_ci(cn);
+    return ci->clientmillis;
 }
 
 int player_privilege_code(int cn)

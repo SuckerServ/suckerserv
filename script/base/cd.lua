@@ -46,7 +46,7 @@ end
 
 local function spec(cn, type)
     server.spec(cn)
-    server.player_msg(cn, red("PLEASE TURN OFF YOUR CHEATS."))
+    server.player_msg(cn, red("PLEASE TURN YOUR CHEATS OFF."))
 end
 
 local type = { }
@@ -55,8 +55,7 @@ type[1] = { kick,  "flag-score-hack (flags: %i)" }
 type[2] = { kick,  "edit-packet-in-non-edit-mode (type: %s)" }
 type[3] = { kick,  "unknown packet (type: %i)" }
 type[4] = { kick,  "unknown-weapon (unknown-gun: %i)" }
-type[5] = { nil,   "sent itemlist twice" }
-type[6] = { nil,   "speed-hack (avg-lag: %i ms)" } 
+type[6] = { nil,   "speed-hack (avg-speed: %ix)" } 
 type[7] = { kick,  "spawn-time-hack (spawntime: %i ms)" } 
 type[8] = { kick,  "sent-unknown-sound (sound: %s)" } 
 type[9] = { nil,   "invisible (invis-millis: %i)" } 
@@ -77,6 +76,8 @@ end)
 
 local function cheat(cn, cheat_type, info)
     if cheat_type > #type or cheat_type < 1 then return end
+    
+    if type[cheat_type][2] == nil then return end
         
     local action = type[cheat_type][1]
     local logmsg = 
@@ -106,16 +107,21 @@ end
 
 server.event_handler("cheat", cheat)
 
+local function gamemode_has_respawn_wait_time()
+    if server.gamemode == "ctf" then return true end
+    if server.gamemode == "insta ctf" then return true end
+    if server.gamemode == "effic ctf" then return true end
+    if server.gamemode == "capture" then return true end
+    if server.gamemode == "hold" then return true end
+    if server.gamemode == "insta hold" then return true end
+    if server.gamemode == "effic hold" then return true end
+    return false
+end
+
 server.event_handler("spawn", function(cn)
     local gamemode = server.gamemode
 
-    if 
-       not string.find(gamemode, "hold") 
-       and not string.find(gamemode, "ctf")
-       and not gamemode == "capture" 
-    then 
-        return
-    end
+    if not gamemode_has_respawn_wait_time() then return end
     
     if server.player_connection_time(cn) == 0 then return end
     

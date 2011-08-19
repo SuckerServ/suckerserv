@@ -48,8 +48,6 @@ namespace server
     extern bool allow_mm_private;
     extern bool allow_item[11];
 
-    extern bool ctftkpenalty;
-
     extern bool broadcast_mapmodified;
     extern timer::time_diff_t timer_alarm_threshold;
     
@@ -76,6 +74,7 @@ namespace server
     int player_ping(int);
     int player_ping_update(int);
     int player_lag(int);
+    int player_real_lag(int);
     int player_deathmillis(int);
     const char * player_ip(int);
     unsigned long player_iplong(int);
@@ -99,6 +98,7 @@ namespace server
     int player_shots(int);
     int player_accuracy(int);
     int player_accuracy2(int);
+    int player_clientmillis(int);
     int player_connection_time(int);
     int player_timeplayed(int);
     int player_win(int);

@@ -59,6 +59,7 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "player_ping", server::player_ping);
     bind_function(L, T, "player_ping_update", server::player_ping_update);
     bind_function(L, T, "player_lag", server::player_lag);
+    bind_function(L, T, "player_real_lag", server::player_real_lag);
     bind_function(L, T, "player_deathmillis", server::player_deathmillis);
     bind_function(L, T, "player_ip", server::player_ip);
     bind_function(L, T, "player_iplong", server::player_iplong);
@@ -81,6 +82,7 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "player_shots", server::player_shots);
     bind_function(L, T, "player_accuracy", server::player_accuracy);
     bind_function(L, T, "player_accuracy2", server::player_accuracy2);
+    bind_function(L, T, "player_clientmillis", server::player_clientmillis);
     bind_function(L, T, "player_timeplayed", server::player_timeplayed);
     bind_function(L, T, "player_win", server::player_win);
     bind_function(L, T, "player_slay", server::player_slay);
@@ -375,10 +377,10 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "reserved_slots", server::reservedslots);
     bind_wo_var(L, T, "reserved_slots_password", server::slotpass);
     bind_ro_var(L, T, "reserved_slots_occupied", server::reservedslots_use);
-    bind_var(L, T, "ctf_teamkill_penalty", server::ctftkpenalty);
     bind_ro_var(L, T, "reloaded", reloaded);
     bind_prop<__uid_t>(L, T, "UID", getuid, NULL);
     bind_var(L, T, "spectator_delay", server::spectator_delay);
+    bind_var(L, T, "ctf_teamkill_penalty", server::ctftkpenalty);
     
     bind_var(L, T, "flood_protect_text", server::sv_text_hit_length);
     bind_var(L, T, "flood_protect_sayteam", server::sv_sayteam_hit_length);

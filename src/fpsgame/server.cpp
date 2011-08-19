@@ -26,9 +26,6 @@ namespace game
     void parseoptions(vector<const char *> &args)
     {   
         loopv(args)
-#ifndef STANDALONE
-            if(!game::clientoption(args[i]))
-#endif
             if(!server::serveroption(args[i]))
                 printf("unknown command-line option: %s", args[i]);
     }
@@ -57,6 +54,8 @@ namespace server
         int     length;
     };
     vector<delayed_sendpacket> delayed_sendpackets;
+
+    bool ctftkpenalty = true;
     
     struct clientinfo;
     
@@ -155,8 +154,6 @@ namespace server
         int lasttimeplayed, timeplayed;
         float effectiveness;
         int disconnecttime;
-
-        int itemlist, speedhack, speedhack_lag;
         
         gamestate() : state(CS_DEAD), editstate(CS_DEAD), lifesequence(0), disconnecttime(0) {}
     
@@ -180,8 +177,6 @@ namespace server
             timeplayed = 0;
             effectiveness = 0;
             frags = flags = deaths = suicides = teamkills = shotdamage = explosivedamage = damage = hits = misses = shots = 0;
-
-            itemlist = speedhack_lag = speedhack = 0;
 
             respawn();
         }
@@ -277,6 +272,8 @@ namespace server
         bool warned, gameclip;
         ENetPacket *getdemo, *getmap, *clipboard;
         int lastclipboard, needclipboard;
+
+        int clientmillis, pingupdates, lastpingsnapshot, speedhack, speedhack_updates;
         
         freqlimit sv_text_hit;
         freqlimit sv_sayteam_hit;
@@ -288,7 +285,7 @@ namespace server
         freqlimit sv_newmap_hit;
         freqlimit sv_spec_hit;
         std::string disconnect_reason;
-        bool maploaded;
+        int maploaded;
         int rank;
         bool using_reservedslot;
         bool allow_self_unspec;
@@ -367,7 +364,7 @@ namespace server
             lastevent = 0;
             exceeded = 0;
             pushed = 0;
-            maploaded = false;
+            maploaded = 0;
             clientmap[0] = '\0';
             mapcrc = 0;
             warned = false;
@@ -402,6 +399,13 @@ namespace server
             lastpingupdate = 0;
             lastposupdate = 0;
             lag = 0;
+
+            lastpingsnapshot = 0;
+            speedhack = 0;
+            speedhack_updates = 0;
+            pingupdates = 0;
+            clientmillis = 0;
+
             aireinit = 0;
             using_reservedslot = false;
             needclipboard = 0;
@@ -596,6 +600,12 @@ namespace server
     {
         return (int)a.x == (int)b.x && (int)a.y == (int)b.y && (int)a.z == (int)b.z;
     }
+
+    uint mcrc = 0;
+    vector<entity> ments;
+    vector<server_entity> sents;
+    int sents_type_index[MAXENTTYPES];
+    vector<savedscore> scores;
     
     struct servmode
     {
@@ -625,13 +635,57 @@ namespace server
         virtual int getteamscore(const char *team) { return 0; }
         virtual void getteamscores(vector<teamscore> &scores) {}
         virtual bool extinfoteam(const char *team, ucharbuf &p) { return false; }
-        virtual bool setteamscore(const char *, int){ return false; }
     };
 
-    vector<entity> ments;
-    vector<server_entity> sents;
-    int sents_type_index[MAXENTTYPES];
-    vector<savedscore> scores;
+    #define SERVMODE 1
+    #include "capture.h"
+    #include "ctf.h"
+
+    captureservmode capturemode;
+    ctfservmode ctfmode;
+    servmode *smode = NULL;
+    
+    bool canspawnitem(int type) { return !m_noitems && (type>=I_SHELLS && type<=I_QUAD && (!m_noammo || type<I_SHELLS || type>I_CARTRIDGES)); }
+
+    int numclients(int exclude, bool nospec, bool noai);
+
+    int spawntime(int type)
+    {
+        if(m_classicsp) return INT_MAX;
+        int np = numclients(-1, true, false);
+        np = np<3 ? 4 : (np>4 ? 2 : 3);         // spawn times are dependent on number of players
+        int sec = 0;
+        switch(type)
+        {
+            case I_SHELLS:
+            case I_BULLETS:
+            case I_ROCKETS:
+            case I_ROUNDS:
+            case I_GRENADES:
+            case I_CARTRIDGES: sec = np*4; break;
+            case I_HEALTH: sec = np*5; break;
+            case I_GREENARMOUR:
+            case I_YELLOWARMOUR: sec = 20; break;
+            case I_BOOST:
+            case I_QUAD: sec = 40+rnd(40); break;
+        }
+        return sec*1000;
+    }
+    
+    bool delayspawn(int type)
+    {
+        switch(type)
+        {
+            case I_GREENARMOUR:
+            case I_YELLOWARMOUR:
+                return !m_classicsp;
+            case I_BOOST:
+            case I_QUAD:
+                return true;
+            default:
+                return false;
+        }
+    }
 
     int msgsizelookup(int msg)
     {
@@ -677,6 +731,7 @@ namespace server
 
     void resetitems() 
     { 
+        mcrc = 0;
         ments.setsize(0);
         sents.setsize(0);
         //cps.reset(); 
@@ -713,14 +768,10 @@ namespace server
         signal_shutdown.connect(cleanup_fpsgame);
     }
     
-    int numclients(int exclude = -1, bool nospec = true, bool noai = true, bool priv = false)
+    int numclients(int exclude = -1, bool nospec = true, bool noai = true)
     {
         int n = 0;
-        loopv(clients) 
-        {
-            clientinfo *ci = clients[i];
-            if(ci->clientnum!=exclude && (!nospec || ci->state.state!=CS_SPECTATOR || (priv && (ci->privilege || ci->local))) && (!noai || ci->state.aitype == AI_NONE)) n++;
-        }
+        loopv(clients) if(i!=exclude && (!nospec || clients[i]->state.state!=CS_SPECTATOR) && (!noai || clients[i]->state.aitype == AI_NONE)) n++;
         return n;
     }
     
@@ -740,55 +791,6 @@ namespace server
         cidx = (cidx+1)%3;
         formatstring(cname[cidx])(ci->state.aitype == AI_NONE ? "%s \fs\f5(%d)\fr" : "%s \fs\f5[%d]\fr", name, ci->clientnum);
         return cname[cidx];
-    }
-
-    #define SERVMODE 1
-    #include "capture.h"
-    #include "ctf.h"
-
-    captureservmode capturemode;
-    ctfservmode ctfmode;
-    servmode *smode = NULL;
-    
-    bool canspawnitem(int type) { return !m_noitems && (type>=I_SHELLS && type<=I_QUAD && (!m_noammo || type<I_SHELLS || type>I_CARTRIDGES)); }
-
-
-    int spawntime(int type)
-    {
-        if(m_classicsp) return INT_MAX;
-        int np = numclients(-1, true, false);
-        np = np<3 ? 4 : (np>4 ? 2 : 3);         // spawn times are dependent on number of players
-        int sec = 0;
-        switch(type)
-        {
-            case I_SHELLS:
-            case I_BULLETS:
-            case I_ROCKETS:
-            case I_ROUNDS:
-            case I_GRENADES:
-            case I_CARTRIDGES: sec = np*4; break;
-            case I_HEALTH: sec = np*5; break;
-            case I_GREENARMOUR:
-            case I_YELLOWARMOUR: sec = 20; break;
-            case I_BOOST:
-            case I_QUAD: sec = 40+rnd(40); break;
-        }
-        return sec*1000;
-    }
-    
-    bool delayspawn(int type)
-    {
-        switch(type)
-        {
-            case I_GREENARMOUR:
-            case I_YELLOWARMOUR:
-                return !m_classicsp;
-            case I_BOOST:
-            case I_QUAD:
-                return true;
-            default:
-                return false;
-        }
     }
 
     bool pickup(int i, int sender)         // server side item pickup, acknowledge first client that gets it
@@ -1476,7 +1478,7 @@ namespace server
 
     int welcomepacket(packetbuf &p, clientinfo *ci)
     {
-        int hasmap = (m_edit && (clients.length()>1 || (ci && ci->local))) || (smapname[0] && (!m_timed || gamemillis<gamelimit || (ci && ci->state.state==CS_SPECTATOR && !ci->privilege && !ci->local) || numclients(ci ? ci->clientnum : -1, true, true, true)));
+        int hasmap = (m_edit && (clients.length()>1 || (ci && ci->local))) || (smapname[0] && (gamemillis<gamelimit || (ci && ci->state.state==CS_SPECTATOR) || numclients(ci && ci->local ? ci->clientnum : -1)));
         putint(p, N_WELCOME);
         putint(p, hasmap);
         if(hasmap)
@@ -1484,7 +1486,7 @@ namespace server
             putint(p, N_MAPCHANGE);
             sendstring(smapname, p);
             putint(p, gamemode);
-            putint(p, 0);//notgotitems ? 1 : 0
+            putint(p, 1);//notgotitems ? 1 : 0
             if(!ci || (m_timed && smapname[0]))
             {
                 putint(p, N_TIMEUP);
@@ -1604,6 +1606,7 @@ namespace server
     {
         resetitems();
         notgotitems = true;
+    #if 0 // we have our own method in hopmod (static_item_functions.h / static_items.lua / map-info.lua)
         if(m_edit || !loadents(smapname, ments))
             return;
         loopv(ments) if(canspawnitem(ments[i].type))
@@ -1615,6 +1618,7 @@ namespace server
             else sents[i].spawned = true;
         }
         notgotitems = false;
+    #endif
     }
 
     void changemap(const char *s, int mode,int mins = -1)
@@ -2460,29 +2464,13 @@ namespace server
                     if(cp->state.state==CS_ALIVE && !cp->maploaded && cp->state.aitype == AI_NONE)
                     {
                         cp->lastposupdate = totalmillis - 30;
-                        cp->maploaded = true;
+                        cp->maploaded = gamemillis;
                         event_maploaded(event_listeners(), boost::make_tuple(cp->clientnum));
                     }
                     
-                    if(cp->maploaded)
+                    if(ci->maploaded)
                     {
-                        int &speedhack = cp->state.speedhack;
-                        int &speedhack_lag = cp->state.speedhack_lag;
-                        int lag = totalmillis - cp->lastposupdate;
-                        if (lag <= 20)
-                        {
-                            speedhack++;
-                            speedhack_lag += lag;
-                            if (speedhack >= 60)
-                            {
-                                event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 6, speedhack_lag / speedhack));
-                            }
-                        }
-                        else
-                        {
-                           // if (speedhack) speedhack--;
-                        }
-                        cp->lag = (std::max(30,cp->lag)*10 + lag)/12;
+                        cp->lag = (std::max(30,cp->lag)*10 + (totalmillis - cp->lastposupdate))/12;
                         cp->lastposupdate = totalmillis;
                     }
                 }
@@ -2669,7 +2657,6 @@ namespace server
 
             case N_SHOOT:
             {
-                if (ci->state.speedhack) ci->state.speedhack--;
                 shotevent *shot = new shotevent;
                 shot->id = getint(p);
                 shot->millis = cq ? cq->geteventmillis(gamemillis, shot->id) : 0;
@@ -2872,16 +2859,9 @@ namespace server
 
             case N_ITEMLIST:
             {
-                ci->state.itemlist++;
                 int n;
                 
-                if(ci->state.itemlist >= 2)
-                {
-                    while((n = getint(p))>=0 && n<MAXENTS && !p.overread());
-                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 5, 0));
-                    break;
-                }
-                if (!notgotitems && gamemode != 0)
+                if (!notgotitems && gamemode != 1)
                 {
                     bool modified = false;
                     while((n = getint(p))>=0 && n<MAXENTS && !p.overread())
@@ -2965,13 +2945,58 @@ namespace server
 
             case N_PING:
             {
+                int clientmillis = getint(p);
+
                 if(!ci->maploaded && totalmillis - ci->connectmillis > 2000)
                 {
-                    ci->maploaded = true;
+                    ci->maploaded = gamemillis;
                     event_maploaded(event_listeners(), boost::make_tuple(ci->clientnum));
                 }
-                if(ci) ci->lastpingupdate = totalmillis; 
-                sendf(sender, 1, "i2", N_PONG, getint(p));
+
+                if(ci) 
+                {
+                    ci->lastpingupdate = totalmillis; 
+                    ci->pingupdates++;
+                    
+                    if (gamemillis - ci->maploaded > 5000 && ci->pingupdates % 20 == 0)
+                    {
+                        if (ci->lastpingsnapshot) 
+                        {
+                            int snapsec = (totalmillis - ci->lastpingsnapshot) / 1000;
+                            if (snapsec)
+                            {
+                                int pingupdates = 20 / snapsec;
+                                if (pingupdates > 6) // 2x from real time
+                                {
+                                    ci->speedhack++;
+                                    ci->speedhack_updates += pingupdates;
+                                }
+                            }
+                            else // more than 20 updates / sec
+                            {
+                                ci->speedhack++;
+                                ci->speedhack_updates += 20; // well it might be more...
+                            }
+                            
+                            if (ci->speedhack >= 20) // trapped 20 times into the detection
+                            {
+                                int speed = (ci->speedhack_updates / ci->speedhack) / 4;
+                                if (speed >= 2)
+                                {
+                                    ci->speedhack = 0;
+                                    ci->speedhack_updates = 0;
+                                    
+                                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 6, speed));
+                                }
+                            }
+                        }
+                        ci->lastpingsnapshot = totalmillis;
+                    }
+                    
+                    ci->clientmillis = clientmillis;
+                }
+                
+                sendf(sender, 1, "i2", N_PONG, clientmillis);
                 break;
             }
 

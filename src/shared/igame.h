@@ -117,5 +117,6 @@ namespace server
     extern bool ispaused();
     extern void started();
     extern void shutdown();
+    extern bool ctftkpenalty;
 }
 
