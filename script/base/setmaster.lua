@@ -27,10 +27,13 @@ local function setmaster(cn, hash, set)
         return -1 
     end
     
-    local is_spy = server.hashpassword(cn, server.admin_password .. "/spy") == hash
-    local success = is_spy
-    if not success then
-        success = server.hashpassword(cn, server.admin_password) == hash
+
+    if server.admin_password ~= "" then 
+        local is_spy = server.hashpassword(cn, server.admin_password .. "/spy") == hash
+        local success = is_spy
+        if not success then
+            success = server.hashpassword(cn, server.admin_password) == hash
+        end
     end
 
     if success then
@@ -41,7 +44,7 @@ local function setmaster(cn, hash, set)
             server.set_invisible_admin(cn)
         end
     else
-
+        if server.master_password == "" then return end
         is_spy = server.hashpassword(cn, server.master_password .. "/spy") == hash
         success = is_spy
         if not success then
