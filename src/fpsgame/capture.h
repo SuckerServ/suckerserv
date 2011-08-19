@@ -524,7 +524,7 @@ struct captureservmode : servmode
             }
             if (modified)
             {
-                event_cheat(event_listeners(), boost::make_tuple(sender, 13, 0));
+                cheat(sender, 13, 0);
             }
             return;
         }

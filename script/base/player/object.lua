@@ -30,6 +30,7 @@ local methods = {
     shots           = function(obj) return server.player_shots(obj.cn) end,
     accuracy        = function(obj) return server.player_accuracy(obj.cn) end,
     accuracy2       = function(obj) return server.player_accuracy2(obj.cn) end,
+    timetrial       = function(obj) return server.player_timetrial(obj.cn) end,
     timeplayed      = function(obj) return server.player_timeplayed(obj.cn) end,
     win             = function(obj) return server.player_win(obj.cn) end,
     slay            = function(obj) return server.player_slay(obj.cn) end,

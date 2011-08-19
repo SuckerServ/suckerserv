@@ -274,6 +274,7 @@ namespace server
         int lastclipboard, needclipboard;
 
         int clientmillis, pingupdates, lastpingsnapshot, speedhack, speedhack_updates;
+        int timetrial;
         
         freqlimit sv_text_hit;
         freqlimit sv_sayteam_hit;
@@ -405,6 +406,7 @@ namespace server
             speedhack_updates = 0;
             pingupdates = 0;
             clientmillis = 0;
+            timetrial = 0;
 
             aireinit = 0;
             using_reservedslot = false;
@@ -572,14 +574,22 @@ namespace server
         if(!ci) luaL_error(get_lua_state(), "invalid cn");
         return ci;
     }
+
+    bool anti_cheat_enabled = true;
+
+    void cheat(int cn, int cheat, int info1, const char *info2="")
+    {
+        if (!anti_cheat_enabled) return;
+        event_cheat(event_listeners(), boost::make_tuple(cn, cheat, info1, info2));
+    }
     
     bool is_invisible(clientinfo *ci)
     {
-        if (!ci) return false;
+        if (!ci || ci->state.state == CS_SPECTATOR) return false;
         int lag = totalmillis - ci->lastposupdate;
         if (ci->state.o == vec(0, 0, 0) || lag >= 7500)
         {
-            event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 9, lag));
+            cheat(ci->clientnum, 9, lag);
             return true;
         }
         return false;
@@ -1791,6 +1801,14 @@ namespace server
         {
             return;
         }
+
+        float st_dist = distance(actor->state.o, target->state.o);
+        if ((int)st_dist > (guns[gun].range + 50/*tolerance*/))
+        {
+            defformatstring(cheatinfo)("GUN: %s GUN-RANGE: %i DISTANCE: %.2f", "%s", guns[gun].range, st_dist);
+            cheat(actor->clientnum, 14, gun, cheatinfo);
+            return;
+        }
          
         gamestate &ts = target->state;
         ts.dodamage(damage);
@@ -2486,7 +2504,7 @@ namespace server
                 if (sound != S_JUMP && sound != S_LAND && sound != S_NOAMMO 
                    && (m_capture && sound != S_ITEMAMMO))
                 {
-                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 8, sound));
+                    cheat(ci->clientnum, 8, sound);
                     break;
                 }
 
@@ -2537,7 +2555,7 @@ namespace server
             {
                 if (!m_edit)
                 { 
-                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 2, type));
+                    cheat(ci->clientnum, 2, type);
                     break;
                 }
                 int val = getint(p);
@@ -2611,7 +2629,7 @@ namespace server
                 if(!cq || cq->state.state!=CS_ALIVE) break;
                 if(gunselect<GUN_FIST || gunselect>GUN_PISTOL) 
                 {
-                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 4, gunselect));
+                    cheat(ci->clientnum, 4, gunselect);
                     break;
                 }
                 cq->state.gunselect = gunselect;
@@ -2625,7 +2643,7 @@ namespace server
                 int ls = getint(p), gunselect = getint(p);
                 if(gunselect<GUN_FIST || gunselect>GUN_PISTOL) 
                 {
-                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 4, gunselect));
+                    cheat(ci->clientnum, 4, gunselect);
                     break;
                 }
                 if(!cq || (cq->state.state!=CS_ALIVE && cq->state.state!=CS_DEAD) || ls!=cq->state.lifesequence || cq->state.lastspawn<0) break;
@@ -2876,7 +2894,7 @@ namespace server
                     }  
                     if (modified) 
                     {
-                        event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 11, 0));
+                        cheat(ci->clientnum, 11, 0);
                     }
                     break;
                 }
@@ -2902,7 +2920,7 @@ namespace server
             {
                 if (!m_edit)
                 { 
-                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 2, type));
+                    cheat(ci->clientnum, 2, type);
                     break;
                 }
                 int i = getint(p);
@@ -2930,7 +2948,7 @@ namespace server
             {
                 if (!m_edit)
                 { 
-                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 2, type));
+                    cheat(ci->clientnum, 2, type);
                     break;
                 }
                 int type = getint(p);
@@ -2988,7 +3006,7 @@ namespace server
                                     ci->speedhack = 0;
                                     ci->speedhack_updates = 0;
                                     
-                                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 6, speed));
+                                    cheat(ci->clientnum, 6, speed);
                                 }
                             }
                         }
@@ -3248,7 +3266,7 @@ namespace server
             {
                 if (!m_edit)
                 { 
-                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 2, type));
+                    cheat(ci->clientnum, 2, type);
                     break;
                 }
                 ci->cleanclipboard();
@@ -3260,7 +3278,7 @@ namespace server
             {
                 if (!m_edit)
                 { 
-                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 2, type));
+                    cheat(ci->clientnum, 2, type);
                     break;
                 }
                 if(ci->state.state!=CS_SPECTATOR) sendclipboard(ci);
@@ -3271,7 +3289,7 @@ namespace server
             {
                 if (!m_edit)
                 { 
-                    event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 2, type));
+                    cheat(ci->clientnum, 2, type);
                     break;
                 }
                 int unpacklen = getint(p), packlen = getint(p); 
@@ -3304,7 +3322,7 @@ namespace server
             
             case -1:
             {
-                event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 3, type));
+                cheat(ci->clientnum, 3, type);
                 //disconnect_client(sender, DISC_TAGT);
                 return;
             }
@@ -3317,7 +3335,7 @@ namespace server
             {
                 int size = server::msgsizelookup(type);
                 if(size<=0) { 
-                    event_cheat(event_listeners(), boost::make_tuple(sender, 3, type));
+                    cheat(sender, 3, type);
                     //disconnect_client(sender, DISC_TAGT); 
                     return;
                 }

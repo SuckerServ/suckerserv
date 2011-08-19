@@ -10,7 +10,7 @@ local stats = server.player_vars_table(server.player_id)
 
 local stats_record_class = {
     
-    update = function(object, cn, value)
+    update = function(object, cn, value, desc)
         
         if not object.value then
             object.value = value
@@ -18,7 +18,11 @@ local stats_record_class = {
             return
         end
         
-        if value < object.value then return end
+        if desc ~= nil then
+            if value > object.value then return end 
+        else
+            if value < object.value then return end
+        end
         
         if value == object.value then
             table.insert(object.cn, cn)
@@ -44,7 +48,8 @@ local best = {
     accuracy   = {},
     takeflag   = {},
     scoreflag  = {},
-    returnflag = {}
+    returnflag = {},
+    timetrial  = {}
 }
 
 for _, subobject in pairs(best) do
@@ -76,6 +81,12 @@ server.event_handler("intermission", function()
             best.takeflag:update(cn, player_stats.takeflag or 0)
             best.scoreflag:update(cn, player_stats.scoreflag or 0)
             best.returnflag:update(cn, player_stats.returnflag or 0)
+
+            local timetrial = player_stats.timetrial or 0
+            if timetrial > 0 then
+                best.timetrial:update(cn, timetrial, true)
+            end
+
         end
         
     end
@@ -116,7 +127,8 @@ server.event_handler("intermission", function()
         local flagstats_message = print_list(
             format_message("stolen", best.takeflag), 
             format_message("scored", best.scoreflag),
-            format_message("returned", best.returnflag))
+            format_message("returned", best.returnflag),
+            format_message("flagrun", best.timetrial, " sec."))
         
         if #flagstats_message > 0 then
             server.msg(yellow("Best flag stats, ") .. flagstats_message)
@@ -135,9 +147,14 @@ server.event_handler("takeflag", function(cn)
     player_stats.takeflag = (player_stats.takeflag or 0) + 1
 end)
 
-server.event_handler("scoreflag", function(cn)
+server.event_handler("scoreflag", function(cn, _, __, timetrial)
     local player_stats = stats.vars(cn)
     player_stats.scoreflag = (player_stats.scoreflag or 0) + 1
+    player_stats.timetrial = (player_stats.timetrial or 0)
+    if timetrial == 0 then return end
+    if player_stats.timetrial == 0 or player_stats.timetrial > timetrial then
+        player_stats.timetrial = timetrial
+    end
 end)
 
 server.event_handler("returnflag", function(cn)

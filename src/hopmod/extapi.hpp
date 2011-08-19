@@ -99,6 +99,7 @@ namespace server
     int player_accuracy(int);
     int player_accuracy2(int);
     int player_clientmillis(int);
+    int player_timetrial(int);
     int player_connection_time(int);
     int player_timeplayed(int);
     int player_win(int);

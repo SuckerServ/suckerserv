@@ -52,7 +52,7 @@ extern lua::event< boost::tuple<int,int> >                                  even
 extern lua::event< boost::tuple<const char *,const char *> >                event_votepassed;
 extern lua::event< boost::tuple<int, const char *> >                        event_takeflag;
 extern lua::event< boost::tuple<int, const char *> >                        event_dropflag;
-extern lua::event< boost::tuple<int, const char *, int> >                   event_scoreflag;
+extern lua::event< boost::tuple<int, const char *, int, int> >              event_scoreflag;
 extern lua::event< boost::tuple<int, const char *> >                        event_returnflag;
 extern lua::event< boost::tuple<const char *> >                             event_resetflag;
 extern lua::event< boost::tuple<const char *, int> >                        event_scoreupdate;
@@ -63,7 +63,7 @@ extern lua::event< boost::tuple<> >                                         even
 extern lua::event< boost::tuple<const char *> >                             event_varchanged;
 extern lua::event< boost::tuple<> >                                         event_sleep;
 extern lua::event< boost::tuple<> >                                         event_interval;
-extern lua::event< boost::tuple<int, int, int> >                            event_cheat;
+extern lua::event< boost::tuple<int, int, int, const char *> >              event_cheat;
 
 void register_event_idents(lua::event_environment &);
 

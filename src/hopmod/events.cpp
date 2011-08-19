@@ -48,7 +48,7 @@ lua::event< boost::tuple<int,int> >                                  event_endre
 lua::event< boost::tuple<const char *,const char *> >                event_votepassed("votepassed");
 lua::event< boost::tuple<int, const char *> >                        event_takeflag("takeflag");
 lua::event< boost::tuple<int, const char *> >                        event_dropflag("dropflag");
-lua::event< boost::tuple<int, const char *, int> >                   event_scoreflag("scoreflag");
+lua::event< boost::tuple<int, const char *, int, int> >              event_scoreflag("scoreflag");
 lua::event< boost::tuple<int, const char *> >                        event_returnflag("returnflag");
 lua::event< boost::tuple<const char *> >                             event_resetflag("resetflag");
 lua::event< boost::tuple<const char *, int> >                        event_scoreupdate("scoreupdate");
@@ -59,7 +59,7 @@ lua::event< boost::tuple<> >                                         event_reloa
 lua::event< boost::tuple<const char *> >                             event_varchanged("varchanged");
 lua::event< boost::tuple<> >                                         event_sleep("sleep");
 lua::event< boost::tuple<> >                                         event_interval("interval");
-lua::event< boost::tuple<int, int, int> >                            event_cheat("cheat");
+lua::event< boost::tuple<int, int, int, const char *> >              event_cheat("cheat");
 
 void register_event_idents(lua::event_environment & env)
 {

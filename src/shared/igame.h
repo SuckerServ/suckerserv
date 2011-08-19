@@ -1,3 +1,6 @@
+#ifndef __IGAME_H__
+#define __IGAME_H__
+
 // the interface the engine uses to run the gameplay module
 
 namespace entities
@@ -120,3 +123,4 @@ namespace server
     extern bool ctftkpenalty;
 }
 
+#endif

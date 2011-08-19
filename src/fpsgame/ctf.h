@@ -20,6 +20,7 @@ struct ctfservmode : servmode
         vec droploc, spawnloc;
         int team, droptime, owntime;
         int owner, dropper, invistime;
+        int tmillis;
 
         flag() { reset(); }
 
@@ -32,6 +33,7 @@ struct ctfservmode : servmode
             invistime = owntime = 0;
             team = 0;
             droptime = owntime = 0;
+            tmillis = 0;
         }
     };
 
@@ -88,6 +90,7 @@ struct ctfservmode : servmode
         f.dropper = dropper;
         f.owner = -1;
         f.invistime = 0;
+        f.tmillis = 0;
     }
 
     void returnflag(int i, int invistime = 0)
@@ -96,6 +99,7 @@ struct ctfservmode : servmode
         f.droptime = 0;
         f.owner = f.dropper = -1;
         f.invistime = invistime;
+        f.tmillis = 0;
     }
 
     int totalscore(int team)
@@ -251,19 +255,24 @@ struct ctfservmode : servmode
 
     void scoreflag(clientinfo *ci, int goal, int relay = -1)
     {
+        int flagIndex = relay >= 0 ? relay : goal;
+int timetrial = flags[flagIndex].tmillis ? totalmillis - flags[flagIndex].tmillis : 0;
+
+        if (!ci->timetrial || timetrial < ci->timetrial) ci->timetrial = timetrial;
+
         returnflag(relay >= 0 ? relay : goal, m_protect ? lastmillis : 0);
         ci->state.flags++;
         int team = ctfteamflag(ci->team), score = addscore(team, 1);
         if(m_hold) spawnflag(goal);
         sendf(-1, 1, "rii9", N_SCOREFLAG, ci->clientnum, relay, relay >= 0 ? ++flags[relay].version : -1, goal, ++flags[goal].version, flags[goal].spawnindex, team, score, ci->state.flags);
-        event_scoreflag(event_listeners(), boost::make_tuple(ci->clientnum, ci->team, score));
+        event_scoreflag(event_listeners(), boost::make_tuple(ci->clientnum, ci->team, score, timetrial));
         if(score == FLAGLIMIT)
         {
             startintermission();
         }
         else if(score > FLAGLIMIT)
         {
-            event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 1, score));
+            cheat(ci->clientnum, 1, score);
         }
     }
 
@@ -277,9 +286,11 @@ struct ctfservmode : servmode
 
         vec flag_location = vec(0, 0, 0);
 
-        if (m_ctf) flag_location = f.dropper > -1 ? f.droploc : f.spawnloc;
+        bool flag_dropped = f.dropper > -1;
+
+        if (m_ctf) flag_location = flag_dropped ? f.droploc : f.spawnloc;
         if ((m_hold || m_protect) && holdspawns.inrange(f.spawnindex))
-            flag_location = f.dropper > -1 ? f.droploc : holdspawns[f.spawnindex].o;
+            flag_location = flag_dropped ? f.droploc : holdspawns[f.spawnindex].o;
 
         if((m_hold ? f.spawnindex < 0 : !ctfflagteam(f.team)) || f.owner>=0 || f.version != version || (f.droptime && f.dropper == ci->clientnum)) return;
         int team = ctfteamflag(ci->team);
@@ -288,6 +299,7 @@ struct ctfservmode : servmode
             loopvj(flags) if(flags[j].owner==ci->clientnum) return;
             ownflag(i, ci->clientnum, lastmillis);
             sendf(-1, 1, "ri4", N_TAKEFLAG, ci->clientnum, i, ++f.version);
+            if (!flag_dropped) f.tmillis = totalmillis;
             event_takeflag(event_listeners(), boost::make_tuple(ci->clientnum, ctfflagteam(f.team)));
         }
         else if(m_protect)
@@ -307,9 +319,9 @@ struct ctfservmode : servmode
         
         float flag_dist = distance(flag_location, ci->state.o);
         
-        if (flag_dist >= 250)
+        if (flag_dist >= 250 && ci->clientnum < 128)
         {
-            event_cheat(event_listeners(), boost::make_tuple(ci->clientnum, 10, (int)flag_dist));
+            cheat(ci->clientnum, 10, (int)flag_dist);
         }
     }
 
@@ -403,7 +415,7 @@ struct ctfservmode : servmode
             }
             if (modified)
             {
-                event_cheat(event_listeners(), boost::make_tuple(sender, 12, 0));
+                cheat(sender, 12, 0);
             }           
             return;
         }
