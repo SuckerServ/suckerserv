@@ -589,6 +589,8 @@ namespace server
         return ci;
     }
 
+    bool spec_slots = false;
+
     bool anti_cheat_enabled = true;
     bool anti_cheat_add_log_to_demo = true;
 
@@ -674,8 +676,6 @@ namespace server
         clientinfo *ci = getinfo(cn);
         if(!ci || ci->spy == val) return;
 
-        ci->spy = val;
-        
         if (val)
         {
             if (ci->connected)
@@ -686,9 +686,11 @@ namespace server
             }
             defformatstring(admin_info)(RED "ADMIN-INFO: %s joined spy-mode.", ci->name);
             loopv(clients) if (clients[i] != ci && clients[i]->privilege >= PRIV_ADMIN) clients[i]->sendprivtext(admin_info);
+            ci->spy = true;
         }
         else
         {
+            ci->spy = false;
             sendf(-1, 1, "ri2s2i", N_INITCLIENT, ci->clientnum, ci->name, ci->team, ci->playermodel);
             event_connect(event_listeners(), boost::make_tuple(ci->clientnum, ci->spy));
             ci->connectmillis = totalmillis;
@@ -704,6 +706,13 @@ namespace server
     {   
         int n = 0;
         loopv(clients) if (clients[i]->spy) n++;
+        return n;
+    }
+
+    int spec_count()
+    {
+        int n = 0;
+        loopv(clients) if (clients[i]->state.state == CS_SPECTATOR) n++;
         return n;
     }
 
@@ -2369,8 +2378,10 @@ namespace server
         }
 
         int spy_count_ = spy_count();
+        int maxclients_ = maxclients;
+        if (spec_slots) maxclients_ += spec_count();
         if (ci->spy) spy_count_++; // allow connect as "spy" when server is full
-        if (clientcount >= maxclients + spy_count_) return DISC_MAXCLIENTS;
+        if (clientcount >= maxclients_ + spy_count_) return DISC_MAXCLIENTS;
         
         if(serverpass[0])
         {
@@ -3565,13 +3576,15 @@ namespace server
         }
         
         int clients = numclients(-1, false, true);
+        int maxclients_ = maxclients;
+        if (spec_slots) maxclients_ += spec_count();
         
         putint(p, clients);
         putint(p, 5);                   // number of attrs following
         putint(p, PROTOCOL_VERSION);    // a // generic attributes, passed back below
         putint(p, gamemode);            // b
         putint(p, max((gamelimit - gamemillis)/1000, 0));
-        putint(p, (clients <= maxclients ? maxclients : clients));
+        putint(p, (clients <= maxclients_ ? maxclients_ : clients));
         putint(p, serverpass[0] ? MM_PASSWORD : (!m_mp(gamemode) ? MM_PRIVATE : (mastermode || display_open ? mastermode : MM_AUTH) ));
         sendstring(smapname, p);
         sendstring(serverdesc, p);

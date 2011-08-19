@@ -121,6 +121,7 @@ namespace server
     extern void started();
     extern void shutdown();
     extern bool ctftkpenalty;
+    extern bool spec_slots;
 }
 
 #endif
