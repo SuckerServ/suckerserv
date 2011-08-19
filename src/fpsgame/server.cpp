@@ -592,7 +592,7 @@ namespace server
         return is_invisible(getinfo(cn));
     }
     
-    bool veq_equal(vec a, vec b)
+    bool vec_equal(vec a, vec b)
     {
         return (int)a.x == (int)b.x && (int)a.y == (int)b.y && (int)a.z == (int)b.z;
     }
@@ -1484,7 +1484,7 @@ namespace server
             putint(p, N_MAPCHANGE);
             sendstring(smapname, p);
             putint(p, gamemode);
-            putint(p, 1);//notgotitems ? 1 : 0
+            putint(p, 0);//notgotitems ? 1 : 0
             if(!ci || (m_timed && smapname[0]))
             {
                 putint(p, N_TIMEUP);

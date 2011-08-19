@@ -460,14 +460,14 @@ struct ctfclientmode : clientmode
                 {
                     if(m_hold) 
                     {
-                        if (!holdspawns.inrange(i) || !veq_equal(holdspawns[i].o, o))
+                        if (!holdspawns.inrange(i) || !vec_equal(holdspawns[i].o, o))
                         {
                             modified = true;
                         }
                     }
                     else 
                     {
-                        if (!flags.inrange(i) || flags[i].team != team || !veq_equal(flags[i].spawnloc, o))
+                        if (!flags.inrange(i) || flags[i].team != team || !vec_equal(flags[i].spawnloc, o))
                         {
                             modified = true;
                         }

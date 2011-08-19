@@ -63,7 +63,7 @@ type[9] = { nil,   "invisible (invis-millis: %i)" }
 type[10] = { nil,  "getflag (distance: %i)" } 
 type[11] = { kick, "modified-map-items" } 
 type[12] = { kick, "modified-map-flags" } 
-type[12] = { kick, "modified-capture-bases" } 
+type[13] = { kick, "modified-capture-bases" } 
 
 local logged = { }
 
