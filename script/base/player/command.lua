@@ -112,14 +112,14 @@ end
 
 local function send_command_error(cn, error_message)
   
-    local output_message = "Command error"
+    local output_message = server.command_error_message
     if error_message then
         output_message = output_message .. ": " .. error_message .. "."
     else
         output_message = output_message .. "!"
     end
     
-    server.player_msg(cn, red(output_message))
+    server.player_msg(cn, output_message)
 end
 
 server.event_handler("text", function(cn, text)
@@ -144,8 +144,8 @@ server.event_handler("text", function(cn, text)
     local arguments, error_message = cubescript.library.parse_array(text, command_env, true)
     
     if not arguments then
-        server.player_msg(cn, red("Command syntax error: " .. error_message))
-        return -1   
+        server.player_msg(cn, server.command_syntax_message .. error_message)
+        return -1
     end
     
     local command_name = arguments[1]
@@ -153,21 +153,21 @@ server.event_handler("text", function(cn, text)
     local command = player_commands[command_name]
     
     if not command then
-        server.player_msg(cn, red("Command not found."))
+        server.player_msg(cn, server.command_not_found_message)
         return -1
     end
     
     arguments[1] = cn
     
     if not (command.enabled == true) or not command.run then
-        server.player_msg(cn, red("Command disabled."))
+        server.player_msg(cn, server.command_disabled_message)
         return -1
     end
     
     local privilege = server.player_priv_code(cn)
     
     if privilege < command.permission then
-        server.player_msg(cn, red("Permission denied."))
+        server.player_msg(cn, server.command_permission_denied_message)
         return -1
     end
     
@@ -179,7 +179,7 @@ server.event_handler("text", function(cn, text)
             message = message[1]
         end
         server.log_error(string.format("The #%s player command failed with error: %s", command_name, message))
-        server.player_msg(cn, red("Internal error"))
+        server.player_msg(cn, server.command_internal_error_message)
     end
     
     if success == false then
