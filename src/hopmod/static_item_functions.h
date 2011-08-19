@@ -15,14 +15,10 @@ void add_item(int n, int v) // normal items
     notgotitems = false;
 }
 
-
-void add_flag(int num, int team, int y) // ctf flags
+void add_flag(int num, int team, int x, int y, int z) // ctf flags & hold flags
 {
     if ((!m_hold && !m_ctf && !m_protect) || gamemillis) return;
-    vec o;
-    o[0] = max(0/DMF, 0.0f); // unused
-    o[1] = max(y/DMF, 0.0f);
-    o[2] = max(0/DMF, 0.0f); // unused
+    vec o = vec(x, y, z);
     if(m_hold) ctfmode.addholdspawn(o);
     else ctfmode.addflag(num, o, team, m_protect ? lastmillis : 0);
     ctfmode.notgotflags = false;
@@ -38,6 +34,7 @@ void prepare_hold_mode()
         ctfservmode::flag &f = ctfmode.flags[i];
         ctfmode.spawnflag(i);
         sendf(-1, 1, "ri6", N_RESETFLAG, i, ++f.version, f.spawnindex, 0, 0);
+        event_resetflag(event_listeners(), boost::make_tuple(ctfflagteam(f.team)));
     }
 }
 
@@ -45,12 +42,7 @@ void add_base(int type, int x, int y, int z) // capture bases
 {
     if (!m_capture || gamemillis) return;
     int ammotype = type;
-    vec o;
-    o[0] = max(x/DMF, 0.0f);
-    o[1] = max(y/DMF, 0.0f);
-    o[2] = max(z/DMF, 0.0f);
-		
-    capturemode.addbase(ammotype>=GUN_SG && ammotype<=GUN_PISTOL ? ammotype : min(ammotype, 0), o);
+    capturemode.addbase(ammotype>=GUN_SG && ammotype<=GUN_PISTOL ? ammotype : min(ammotype, 0), vec(x, y, z));
     capturemode.notgotbases = false;
 }
 
