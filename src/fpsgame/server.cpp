@@ -712,7 +712,7 @@ namespace server
     int spec_count()
     {
         int n = 0;
-        loopv(clients) if (clients[i]->state.state == CS_SPECTATOR) n++;
+        loopv(clients) if (clients[i]->state.state == CS_SPECTATOR && !clients[i]->spy) n++;
         return n;
     }
 
