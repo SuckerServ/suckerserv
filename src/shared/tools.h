@@ -1012,8 +1012,12 @@ struct stream
 #else
     typedef __int64 offset;
 #endif
-#else
+#endif
+
+#if __x86_64__
     typedef off_t offset;
+#else
+    typedef long offset;
 #endif
     
     virtual ~stream() {}
