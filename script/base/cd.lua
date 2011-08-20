@@ -10,7 +10,7 @@
     COMMENTS:
     
         LOGS WITH (TESTING) ARE !!_NOT_!! 100% secure proofs
-                       
+    
 --]]
 
 local ban_time = 21600 -- 6 hrs
@@ -49,10 +49,20 @@ local function gun_type(gun)
     if #gun_types >= gun then
         return gun_types[gun]
     end
-    return string.format("unknown (%i)", sound)
+    return string.format("unknown (%i)", gun)
 end
 
+local function is_known_map(map)
+    return supported_maps[map] ~= nil
+end
 
+local function admin_msg(msg)
+    for i, cn in ipairs(server.clients()) do
+        if server.player_priv_code(cn) >= 2 then
+            server.player_msg(cn, msg)
+        end
+    end
+end
 
 local function kick(cn, _)
     server.kick(cn, ban_time, "CHEATER-DETECTION", kick_msg)
@@ -77,17 +87,17 @@ type[1] = { kick,  "flag-score-hack (flags: %i)" }
 type[2] = { kick,  "edit-packet-in-non-edit-mode (type: %s)" }
 type[3] = { kick,  "unknown packet (type: %i)" }
 type[4] = { kick,  "unknown-weapon (unknown-gun: %s)" }
-type[6] = { nil,   "speed-hack-ping (avg-speed: %.2fx)" } 
+--type[6] = { nil,   "speed-hack-ping (avg-speed: %.2fx)" } 
 type[7] = { kick,  "spawn-time-hack (spawntime: %i ms)" } 
 type[8] = { kick,  "sent-unknown-sound (sound: %s)" } 
 type[9] = { nil,   "invisible (invis-millis: %i)" } 
-type[10] = { nil,  "getflag (distance: %i)" } 
+--type[10] = { nil,  "getflag (distance: %i)" } 
 type[11] = { kick, "modified-map-items" } 
 type[12] = { kick, "modified-map-flags" } 
 type[13] = { kick, "modified-capture-bases" } 
 type[14] = { gun,  "shoot-out-of-gun-distance-range", true } 
-type[15] = { kick, "scored-in-less-than-3-seconds (%i ms)" } 
-type[16] = { nil,  "speed-hack-pos (avg-speed: %.2fx)" } 
+type[15] = { kick, "scored-in-less-than-" .. round(min_scoretime / 1000, 1) .. "-seconds (%i ms)" } 
+type[16] = { kick, "speed-hack-pos (avg-speed: %.2fx)" } 
 
 local logged = { }
 
@@ -102,13 +112,18 @@ end)
 local function cheat(cn, cheat_type, info, info_str)
     if cheat_type > #type or cheat_type < 1 then return end
     
+    if cheat_type >= 11 and cheat_type <= 13 and not is_known_map(server.map) then
+        return
+    end
+
     if type[cheat_type][2] == nil then return end
         
     local action = type[cheat_type][1]
     local logmsg = 
-        string.format("CHEATER: %s IP: %s LAG: %i GAMEMODE: %s MAP: %s CHEAT: ", 
+        string.format("CHEATER: %s IP: %s PING: %i LAG: %i GAMEMODE: %s MAP: %s CHEAT: ", 
             server.player_displayname(cn), 
             server.player_ip(cn),
+            server.player_ping(cn),
             server.player_real_lag(cn),
             server.gamemode,
             server.map
@@ -119,13 +134,20 @@ local function cheat(cn, cheat_type, info, info_str)
         if (cheat_type == 3 or cheat_type == 2) and info > 0 then info = network_type(info) end
         if cheat_type == 4 then info = gun_type(info) end
         if cheat_type == 8 then info = sound_type(info) end
-		if cheat_type == 14 then info_str = string.format(info_str, gun_type(info)) end
+        if cheat_type == 14 then info_str = string.format(info_str, gun_type(info)) end
         if cheat_type == 6 or cheat_type == 16 then info = info / 1000 end
 
-		if info_str ~= "" then info_str = " (INFO: " .. info_str .. ")" end
-		
-        server.log(string.format(logmsg, info) .. info_str .. _if(action==nil," (TESTING)", ""))
+        if info_str ~= "" then info_str = " (INFO: " .. info_str .. ")" end
+        
+        local testing = action == nil
+        local log = string.format(logmsg, info) .. info_str .. _if(testing, " (TESTING)", "")
+        
+        server.log(log)
         logged[cn][cheat_type] = true
+        
+        if not testing then
+            admin_msg(log)
+        end
         
     end
     
@@ -156,7 +178,7 @@ server.event_handler("spawn", function(cn)
 
     if not gamemode_has_respawn_wait_time() then return end
     
-    if server.player_connection_time(cn) == 0 then return end
+    if server.player_connection_time(cn) <= 6 then return end
     
     local deathmillis = server.player_deathmillis(cn)
     
@@ -164,15 +186,14 @@ server.event_handler("spawn", function(cn)
     
     local spawntime = server.gamemillis - deathmillis
     
-    if spawntime > 0 and spawntime < min_spawntime then
+    if spawntime >= 0 and spawntime < min_spawntime then
         cheat(cn, 7, spawntime, "")
     end
 end)
 
 
 server.event_handler("scoreflag", function(cn, _, __, timetrial)
-    if timetrial > - 1 and timetrial <= 3000 then
-        server.msg("cheat")
+    if timetrial > -1 and timetrial <= min_scoretime and is_known_map(server.map) then
         cheat(cn, 15, timetrial, "")
     end
 end)
