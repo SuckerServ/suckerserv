@@ -1916,7 +1916,9 @@ namespace server
         }
 
         float st_dist = distance(actor->state.o, target->state.o);
-        if ((int)st_dist > (guns[gun].range + 50/*tolerance*/))
+        if ((int)st_dist > (guns[gun].range + 50/*tolerance*/) &&
+            actor->lag <= 35 && target->lag <= 35 &&
+            actor->last_lag <= 35 && target->last_lag <= 35)
         {
             defformatstring(cheatinfo)("GUN: %s GUN-RANGE: %i DISTANCE: %.2f", "%s", guns[gun].range, st_dist);
             cheat(actor->clientnum, 14, gun, cheatinfo);
