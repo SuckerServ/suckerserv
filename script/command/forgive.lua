@@ -49,8 +49,8 @@ return function(cn)
     for _,actor_teamkilled in pairs(teamkills[actor_id]["teamkilled"]) do
         if cn_id == actor_teamkilled then
             server.player_forgive_tk(actor_cn)
-            table.remove(teamkills[cn_id]["teamkilled_by"], actor_id)
-            table.remove(teamkills[actor_id]["teamkilled"], cn_id)
+            teamkills[cn_id]["teamkilled_by"][table_size(teamkills[cn_id]["teamkilled_by"])] = nil
+            teamkills[actor_id]["teamkilled"][table_size(teamkills[actor_id]["teamkilled"])] = nil
             server.player_msg(actor_cn, string.format(server.forgive_actor_forgiven_message, server.player_displayname(cn)))
             server.player_msg(cn, string.format(server.forgive_target_forgiven_message, server.player_displayname(actor_cn)))
             return
