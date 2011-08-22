@@ -41,6 +41,7 @@ namespace server
         int type;
         int spawntime;
         char spawned;
+        int lastpickup;
     };
 
     static const int DEATHMILLIS = 300;
@@ -251,7 +252,9 @@ namespace server
     };
     
     extern int gamemillis, nextexceeded;
-    
+
+    #include "anticheat.h"
+
     struct clientinfo
     {
         int clientnum, ownernum, connectmillis, specmillis, sessionid, overflow, playerid;
@@ -274,12 +277,12 @@ namespace server
         ENetPacket *getdemo, *getmap, *clipboard;
         int lastclipboard, needclipboard;
 
-        int clientmillis, pingupdates, lastpingsnapshot, speedhack, speedhack_updates;
-        int speedhack2, speedhack2_dist, speedhack2_lastreset, timetrial, lastpingupdates;
-        float speedhack2_lastdist;
+        int clientmillis;
+        int timetrial;
 
+        anticheat ac;
 
-        bool was_falling, spy;
+        bool spy;
         int last_lag;
         
         freqlimit sv_text_hit;
@@ -407,19 +410,11 @@ namespace server
             lastposupdate = 0;
             lag = 0;
 
-            lastpingsnapshot = 0;
-            speedhack = 0;
-            speedhack_updates = 0;
-            speedhack2 = 0;
-            speedhack2_dist = 0;
-            speedhack2_lastdist = 0;
-            speedhack2_lastreset = totalmillis;
-            pingupdates = 0;
-            lastpingupdates = 0;
+            ac.reset();
+
             clientmillis = 0;
             timetrial = 0;
             last_lag = 0;
-            was_falling = false;
             spy = false;
 
             aireinit = 0;
@@ -591,83 +586,17 @@ namespace server
 
     bool spec_slots = false;
 
-    bool anti_cheat_enabled = true;
-    bool anti_cheat_add_log_to_demo = true;
+    uint mcrc = 0;
+    vector<entity> ments;
+    vector<server_entity> sents;
+    int jmpds[MAXENTTYPES];
+    int tps[MAXENTTYPES];
+    int sents_type_index[MAXENTTYPES];
+    vector<savedscore> scores;
 
-    void cheat(int cn, int cheat, int info1, const char *info2="")
-    {
-        if (!anti_cheat_enabled) return;
-        
-        if (anti_cheat_add_log_to_demo && demorecord)
-        {
-            clientinfo *ci = getinfo(cn);
-            if (ci)
-            {
-                char cheatinfo_demo[MAXTRANS];
-                sprintf(cheatinfo_demo, 
-                   "\f3CHEAT DETECTED \f1-> \f3NAME: \f1%s \f3IP: \f1%s \f3TYPE: \f1%i \f3INFO1: \f1%i \f3INFO2: \f3%s",
-                    ci->name,
-                    ci->hostname(),
-                    cheat,
-                    info1,
-                    info2
-                );
-                const char *cheatinfo_demo_cc = cheatinfo_demo;
-                vector<uchar> demoinfo;
-                putint(demoinfo, N_SETTEAM);
-                putint(demoinfo, 2048); // fake CN so the normal client ignores the packet
-                while(*cheatinfo_demo_cc) putint(demoinfo, *cheatinfo_demo_cc++);
-                putint(demoinfo, 0);
-                putint(demoinfo, -1);
-                recordpacket(1, demoinfo.getbuf(), demoinfo.length());
-                /*
-                 * I am using N_SETTEAM cause I don't want "normal" clients to display such messages.
-                 * To see the messages, you need to change the N_SETTEAM case in client.cpp a little bit:
-                 *
-                 * if (wn == 2048 && reason == -1)
-                 * {
-                 *     conoutf(text);
-                 *     break;
-                 * }
-                 */
-            }
-        }
-        
-        event_cheat(event_listeners(), boost::make_tuple(cn, cheat, info1, info2));
-
-    }
-    
-    bool is_invisible(clientinfo *ci)
-    {
-        if (!anti_cheat_enabled || !ci || ci->state.state != CS_ALIVE) 
-            return false;
-         
-        int lag = totalmillis - ci->lastposupdate;
-        if (lag == totalmillis) lag = -1;
-        if (ci->state.o == vec(0, 0, 0) || lag >= 7500 || lag == -1)
-        {
-            cheat(ci->clientnum, 9, lag);
-            return true;
-        }
-        return false;
-    }
-    
-    float distance(vec a, vec b)
-    {
-        int x = a.x - b.x, y = a.y - b.y, z = a.z - b.z;
-        return sqrt(x*x + y*y + z*z);
-    }
-    
-    bool is_invisible(int cn) 
-    {
-        return is_invisible(getinfo(cn));
-    }
-    
-    bool vec_equal(vec a, vec b)
-    {
-        loopi(3) if ((int)a[i] != (int)b[i]) return false;
-        return true;
-    }
+    #define anticheat
+    #include "anticheat.h"
+    #undef anticheat
 
     extern void setspectator(clientinfo * spinfo, bool val, bool broadcast=true);
     
@@ -696,8 +625,7 @@ namespace server
             ci->connectmillis = totalmillis;
             ci->sendprivtext(RED "You've left the spy-mode.");
             if (mastermode <= 1) setspectator(ci, 0);
-            else sendf(-1, 1, "ri3", N_SPECTATOR, ci->clientnum, 1);      
-            sendf(-1, 1, "riisi", N_SETTEAM, cn, ci->team, -1);
+            else sendf(-1, 1, "ri3", N_SPECTATOR, ci->clientnum, 1);
             defformatstring(admin_info)(RED "ADMIN-INFO: %s left spy-mode.", ci->name);
             loopv(clients) if (clients[i] != ci && clients[i]->privilege >= PRIV_ADMIN) clients[i]->sendprivtext(admin_info);            
         }
@@ -713,15 +641,9 @@ namespace server
     int spec_count()
     {
         int n = 0;
-        loopv(clients) if (clients[i]->state.state == CS_SPECTATOR && !clients[i]->spy) n++;
+        loopv(clients) if (clients[i]->state.state == CS_SPECTATOR) n++;
         return n;
     }
-
-    uint mcrc = 0;
-    vector<entity> ments;
-    vector<server_entity> sents;
-    int sents_type_index[MAXENTTYPES];
-    vector<savedscore> scores;
     
     struct servmode
     {
@@ -912,11 +834,28 @@ namespace server
 
     bool pickup(int i, int sender)         // server side item pickup, acknowledge first client that gets it
     {
+        if (anti_cheat_enabled)
+        {
+            clientinfo *ci = getinfo(sender);
+            if (ci)
+            {
+                if (!sents.inrange(i)) 
+                {
+                    ci->ac.unknown_item(i, sents.length());
+                    return false;
+                }
+                if (!sents[i].spawned && totalmillis - sents[i].lastpickup >= 1000)
+                {   
+                    ci->ac.item_not_spawned(i, sents[i].spawntime);
+                }
+            }
+        }
         if((m_timed && gamemillis>=gamelimit) || !sents.inrange(i) || !sents[i].spawned) return false;
         clientinfo *ci = getinfo(sender);
         if(!ci || (!ci->local && !ci->state.canpickup(sents[i].type))) return false;
         sents[i].spawned = false;
         sents[i].spawntime = spawntime(sents[i].type);
+        sents[i].lastpickup = totalmillis;
         sendf(-1, 1, "ri3", N_ITEMACC, i, sender);
         ci->state.pickup(sents[i].type);
         return true;
@@ -1733,7 +1672,7 @@ namespace server
             return;
         loopv(ments) if(canspawnitem(ments[i].type))
         {
-            server_entity se = { NOTUSED, 0, false };
+            server_entity se = { NOTUSED, 0, false, -1 };
             while(sents.length()<=i) sents.add(se);
             sents[i].type = ments[i].type;
             if(m_mp(gamemode) && delayspawn(sents[i].type)) sents[i].spawntime = spawntime(sents[i].type);
@@ -1916,14 +1855,20 @@ namespace server
             return;
         }
 
-        float st_dist = distance(actor->state.o, target->state.o);
-        if ((int)st_dist > (guns[gun].range + 50/*tolerance*/) &&
-            actor->lag <= 35 && target->lag <= 35 &&
-            actor->last_lag <= 35 && target->last_lag <= 35)
+        if (anti_cheat_enabled)
         {
-            defformatstring(cheatinfo)("GUN: %s GUN-RANGE: %i DISTANCE: %.2f", "%s", guns[gun].range, st_dist);
-            cheat(actor->clientnum, 14, gun, cheatinfo);
-            return;
+            //anticheat *ac_a = &actor->ac;
+            anticheat *ac_t = &target->ac;
+            
+            ac_t->damage();
+
+            float st_dist = distance(actor->state.o, target->state.o);
+            if ((int)st_dist > (guns[gun].range + 50/*tolerance*/))
+            {
+                defformatstring(cheatinfo)("GUN: %s GUN-RANGE: %i DISTANCE: %.2f", "%s", guns[gun].range, st_dist);
+                actor->ac.out_of_gun_distance_range(gun, cheatinfo);
+                return;
+            }
         }
          
         gamestate &ts = target->state;
@@ -2506,6 +2451,8 @@ namespace server
                     return;
                 }
 
+                ci->ac.reset(sender);
+
                 ci->playermodel = getint(p);
                 
                 if(m_demo) enddemoplayback();
@@ -2582,11 +2529,12 @@ namespace server
                     pos[k] = n/DMF;
                 }
 
-                vec cam = vec(p.get(), p.get(), p.get());
+                vec cam = vec(p.get(), p.get(), p.get());// hopmod
 
                 int mag = p.get(); if(flags&(1<<3)) mag |= p.get()<<8;
                 int dir = p.get(); dir |= p.get()<<8;
                 vec vel = vec((dir%360)*RAD, (clamp(dir/360, 0, 180)-90)*RAD).mul(mag/DVELF);
+
                 if(flags&(1<<4))
                 {
                     falling = true;
@@ -2604,49 +2552,40 @@ namespace server
                     }
                     if(smode && cp->state.state==CS_ALIVE) smode->moved(cp, cp->state.o, cp->gameclip, pos, (flags&0x80)!=0);
 
-                    if (anti_cheat_enabled && !cp->was_falling && !falling)
+                    if (anti_cheat_enabled)
                     {
                         /*
                          * Position based speed-hack detection. 
                          * Teleporters are giving false positives, that's why
-                         * I am decreasing speedhack2 @ N_TELEPORTER.
+                         * I am decreasing speedhack2 @ N_TELEPORT.
                          * Falling (= Jumping / Falling from somewhere) is excluded as well.
                          */
                        
                         int real_lag = totalmillis - cp->lastposupdate;
                         int last_lag = cp->last_lag;
 
-                        if (pos != cp->state.o && last_lag > 0 && real_lag <= 35 && last_lag <= 35 
-                            && cp->lag <= 35 && cp->state.state == CS_ALIVE)
-                        {
-                            bool reset = totalmillis - cp->speedhack2_lastreset >= 30000;
-                            float dist = distance(pos, cp->state.o);
-                            if (dist >= 7.0)
+                        anticheat *ac = &cp->ac; 
+                        
+                        if (pos != cp->state.o && last_lag > 0 && real_lag > 0 && real_lag <= 35
+                            && last_lag <= 35 && cp->lag <= 35 && cp->state.state == CS_ALIVE)
+                        {   
+                        
+                            if (!ac->was_falling && !falling) 
                             {
-                                cp->speedhack2++;
-                                cp->speedhack2_dist += (int)dist;
-                                cp->speedhack2_lastdist = dist;
+                                ac->check_speedhack_dist(distance(pos, cp->state.o));
                             }
-                            if (cp->speedhack2 >= 30)
+                                
+                            if (falling) 
                             {
-                                float speed = (float)cp->speedhack2_dist / (float)cp->speedhack2 / (float)4;
-                                if (speed >= 1.5)
-                                {
-                                    int speed2 = (speed * (float)1000);
-                                    cheat(cp->clientnum, 16, speed2);
-                                }
-                                reset = true;
+                                ac->check_jumphack(pos.z - cp->state.o.z, pos.z);
                             }
-                            if (reset)
-                            {
-                                cp->speedhack2 = 0;
-                                cp->speedhack2_dist = 0;     
-                                cp->speedhack2_lastreset = totalmillis;                               
-                            }
+                                
                         }
+                        
+                        if (!falling) ac->no_falling();
+                        
+                        ac->was_falling = falling;
                     }
-                    
-                    cp->was_falling = falling;
 
                     cp->state.o = pos;
                     cp->state.cam = cam;
@@ -2672,12 +2611,12 @@ namespace server
             case N_SOUND:
             {
                 int sound = getint(p);
-                if (sound == S_JUMP && is_invisible(cq)) break;
+                if (sound == S_JUMP && cq->ac.is_player_invisible()) break;
 
                 if (sound != S_JUMP && sound != S_LAND && sound != S_NOAMMO 
                    && (m_capture && sound != S_ITEMAMMO))
                 {
-                    if (anti_cheat_enabled) cheat(ci->clientnum, 8, sound);
+                    if (anti_cheat_enabled) ci->ac.unknown_sound(sound);
                     break;
                 }
 
@@ -2689,16 +2628,14 @@ namespace server
             {
                 int pcn = getint(p), teleport = getint(p), teledest = getint(p);
                 clientinfo *cp = getinfo(pcn);
-                if (is_invisible(cp)) break;
+                if(!cq) break;
+                anticheat *ac = &cp->ac;
+                if(ac->is_player_invisible()) break;
                 if(cp && pcn != sender && cp->ownernum != sender) cp = NULL;
                 if(cp && (!ci->local || demorecord || hasnonlocalclients()) && (cp->state.state==CS_ALIVE || cp->state.state==CS_EDITING))
                 {
                     flushclientposition(*cp);
-                    if (cp->speedhack2)
-                    {
-                        cp->speedhack2--;
-                        cp->speedhack2_dist -= (int)cp->speedhack2_lastdist;
-                    }
+                    ac->teleport();
                     sendf(-1, 0, "ri4x", N_TELEPORT, pcn, teleport, teledest, cp->ownernum); 
                 }
                 break;
@@ -2707,17 +2644,18 @@ namespace server
             case N_JUMPPAD:
             {
                 int pcn = getint(p), jumppad = getint(p);
+                //defformatstring(debug)("%i", jumppad);
+                //sendservmsg(debug);
                 clientinfo *cp = getinfo(pcn);
-                if (is_invisible(cp)) break;
+                if(!cq) break;
+                anticheat *ac = &cp->ac;
+                if(ac->is_player_invisible()) break;
                 if(cp && pcn != sender && cp->ownernum != sender) cp = NULL;
                 if(cp && (!ci->local || demorecord || hasnonlocalclients()) && (cp->state.state==CS_ALIVE || cp->state.state==CS_EDITING))
                 {
                     cp->setpushed();
                     flushclientposition(*cp);
-                  /*
-                   * Jumppad won't trigger the speedhack detection.
-                   * It's already excluded with falling in N_POS.
-                   */
+                    ac->jumppad();
                     sendf(-1, 0, "ri3x", N_JUMPPAD, pcn, jumppad, cp->ownernum);
                 }
                 break;
@@ -2739,7 +2677,7 @@ namespace server
             {
                 if (!m_edit)
                 { 
-                    if (anti_cheat_enabled) cheat(ci->clientnum, 2, type);
+                    if (anti_cheat_enabled) ci->ac.edit_packet(type);
                     break;
                 }
                 int val = getint(p);
@@ -2813,7 +2751,7 @@ namespace server
                 if(!cq || cq->state.state!=CS_ALIVE) break;
                 if(gunselect<GUN_FIST || gunselect>GUN_PISTOL) 
                 {
-                    if (anti_cheat_enabled) cheat(ci->clientnum, 4, gunselect);
+                    if (anti_cheat_enabled) ci->ac.unknown_weapon(gunselect);
                     break;
                 }
                 cq->state.gunselect = gunselect;
@@ -2827,7 +2765,7 @@ namespace server
                 int ls = getint(p), gunselect = getint(p);
                 if(gunselect<GUN_FIST || gunselect>GUN_PISTOL) 
                 {
-                    if (anti_cheat_enabled) cheat(ci->clientnum, 4, gunselect);
+                    if (anti_cheat_enabled) ci->ac.unknown_weapon(gunselect);
                     break;
                 }
                 if(!cq || (cq->state.state!=CS_ALIVE && cq->state.state!=CS_DEAD) || ls!=cq->state.lifesequence || cq->state.lastspawn<0) break;
@@ -2849,9 +2787,7 @@ namespace server
                 cq->state.state = CS_ALIVE;
                 cq->state.gunselect = gunselect;
                 cq->exceeded = 0;
-                cq->speedhack2 = 0;
-                cq->speedhack2_dist = 0;
-                cq->speedhack2_lastreset = totalmillis;
+                cq->ac.spawn();
                 if(smode) smode->spawned(cq);
                 QUEUE_AI;
                 QUEUE_BUF({
@@ -2889,10 +2825,11 @@ namespace server
                     hit.rays = getint(p);
                     loopk(3) hit.dir[k] = getint(p)/DNF;
                 }
-                if(cq && !is_invisible(cq))
+                if(cq && !cq->ac.is_player_invisible())
                 {
                     cq->addevent(shot);
                     cq->setpushed();
+                    cq->ac.shoot();
                 }
                 else delete shot;
                 break;
@@ -2916,7 +2853,7 @@ namespace server
                     hit.rays = getint(p);
                     loopk(3) hit.dir[k] = getint(p)/DNF;
                 }
-                if(cq && !is_invisible(cq)) cq->addevent(exp);
+                if(cq && !cq->ac.is_player_invisible()) cq->addevent(exp);
                 else delete exp;
                 break;
             }
@@ -2926,7 +2863,7 @@ namespace server
             {
                 int n = getint(p);
                 if(!cq) break;
-                if(is_invisible(cq)) break;
+                if(cq->ac.is_player_invisible()) break;
                 pickupevent *pickup = new pickupevent;
                 pickup->ent = n;
                 cq->addevent(pickup);
@@ -3090,7 +3027,7 @@ namespace server
                     }  
                     if (modified) 
                     {
-                        cheat(ci->clientnum, 11, 0);
+                        ci->ac.modified_map_items();
                     }
                     break;
                 }
@@ -3116,7 +3053,7 @@ namespace server
             {
                 if (anti_cheat_enabled && !m_edit)
                 { 
-                    cheat(ci->clientnum, 2, type);
+                    ci->ac.edit_packet(type);
                     break;
                 }
                 int i = getint(p);
@@ -3144,7 +3081,7 @@ namespace server
             {
                 if (anti_cheat_enabled && !m_edit)
                 { 
-                    cheat(ci->clientnum, 2, type);
+                    ci->ac.edit_packet(type);
                     break;
                 }
                 int type = getint(p);
@@ -3172,58 +3109,9 @@ namespace server
                 if(ci) 
                 {
                     ci->lastpingupdate = totalmillis; 
-                    ci->pingupdates++;
 
-                    
-                    if (anti_cheat_enabled && gamemillis - ci->maploaded > 5000 && ci->pingupdates % 20 == 0)
-                    {
-                        /*
-                         * Ping based speed-hack detection
-                         * How does it work?
-                         * Well if someone turns on a speed-hack then the engine is running
-                         * faster and sends ping more often than in real. In realtime the client
-                         * sends about 3-4 ping packets per second, means if someone turned a 2x
-                         * speedhack on, then we will receive approx. 6-7 ping packets per sec.
-                         * From so far, I wasn't able to trigger it falsely.
-                         */
+                    if (anti_cheat_enabled && gamemillis - ci->maploaded > 5000) ci->ac.ping();
 
-                        if (ci->lastpingsnapshot) 
-                        {
-                            int snapsec = (totalmillis - ci->lastpingsnapshot) / 1000;
-                            if (snapsec)
-                            {
-                                int pingupdates = 20 / snapsec;
-                                if (pingupdates >= 5) // 2x from real time
-                                {
-                                    ci->speedhack++;
-                                    ci->speedhack_updates += pingupdates;
-                                }
-                            }
-                            else // more than 20 updates / sec
-                            {
-                                ci->speedhack++;
-                                int updates = ci->pingupdates - ci->lastpingupdates;
-                                ci->speedhack_updates += updates > 0 ? updates : 20;
-                            }
-                            
-                            if (ci->speedhack >= 10) // trapped 10 times into the detection
-                            {
-                                float speed = ((float)ci->speedhack_updates / (float)ci->speedhack) / (float)4;
-                                if (speed >= 1.5)
-                                {
-                                    ci->speedhack = 0;
-                                    ci->speedhack_updates = 0;
-
-                                    int speed2 = (speed * (float)1000);
-                                    
-                                    cheat(ci->clientnum, 6, speed2);
-                                }
-                            }
-                            ci->lastpingupdates = ci->pingupdates;
-                        }
-                        ci->lastpingsnapshot = totalmillis;
-                    }
-                    
                     ci->clientmillis = clientmillis;
                 }
                 
@@ -3238,7 +3126,7 @@ namespace server
                 {
                     if(ci) 
                     {
-                        ci->ping = ping;
+                        ci->ac._ping = ci->ping = ping;
                         loopv(ci->bots) ci->bots[i]->ping = ping;
                     }
                     if (!ci->spy) QUEUE_MSG;
@@ -3477,7 +3365,7 @@ namespace server
             {
                 if (anti_cheat_enabled && !m_edit)
                 { 
-                    cheat(ci->clientnum, 2, type);
+                    ci->ac.edit_packet(type);
                     break;
                 }
                 ci->cleanclipboard();
@@ -3489,7 +3377,7 @@ namespace server
             {
                 if (anti_cheat_enabled && !m_edit)
                 { 
-                    cheat(ci->clientnum, 2, type);
+                    ci->ac.edit_packet(type);
                     break;
                 }
                 if(ci->state.state!=CS_SPECTATOR) sendclipboard(ci);
@@ -3500,7 +3388,7 @@ namespace server
             {
                 if (anti_cheat_enabled && !m_edit)
                 { 
-                    cheat(ci->clientnum, 2, type);
+                    ci->ac.edit_packet(type);
                     break;
                 }
                 int unpacklen = getint(p), packlen = getint(p); 
@@ -3533,7 +3421,7 @@ namespace server
             
             case -1:
             {
-                if (anti_cheat_enabled) cheat(ci->clientnum, 3, type);
+                if (anti_cheat_enabled) ci->ac.unknown_packet(-1);
                 else disconnect_client(sender, DISC_TAGT);
                 return;
             }
@@ -3546,7 +3434,7 @@ namespace server
             {
                 int size = server::msgsizelookup(type);
                 if(size<=0) { 
-                    if (anti_cheat_enabled) cheat(sender, 3, type);
+                    if (anti_cheat_enabled) ci->ac.unknown_packet(type);
                     else disconnect_client(sender, DISC_TAGT);
                     return;
                 }

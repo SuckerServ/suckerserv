@@ -133,6 +133,7 @@ namespace aiman
         ci->playerid = next_botid--;
         ci->sessionid = (rnd(0x1000000)*((totalmillis%10000)+1))&0xFFFFFF;
         ci->lastposupdate = totalmillis;
+        ci->ac.reset(ci->clientnum);
         dorefresh = true;
         
         event_connect(event_listeners(), boost::make_tuple(ci->clientnum, false));

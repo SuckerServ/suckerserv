@@ -1,16 +1,22 @@
 // (c) 2011 Thomas
 // Description: Functions for loading map items, flags and bases statically 
 
+void add_jumppad(int n)
+{
+
+}
+
 void add_item(int n, int v) // normal items
 {
     if (gamemillis) return;
-    server_entity se = { NOTUSED, 0, false };
+    server_entity se = { NOTUSED, 0, false, -1 };
     while(sents.length()<=n) sents.add(se);
     sents[n].type = v;
     if(canspawnitem(sents[n].type))
     {
         if(m_mp(gamemode) && delayspawn(sents[n].type)) sents[n].spawntime = spawntime(sents[n].type);
         else sents[n].spawned = true;
+        sents[n].lastpickup = -1;
     }
     notgotitems = false;
 }

@@ -201,12 +201,12 @@ const char * player_team(int cn)
 
 const char * player_ip(int cn)
 {
-    return get_ci(cn)->hostname();
+    return get_ci(get_ci(cn)->ownernum)->hostname();
 }
 
 unsigned long player_iplong(int cn)
 {
-    return ntohl(getclientip(get_ci(cn)->clientnum));
+    return ntohl(getclientip(get_ci(get_ci(cn)->ownernum)->clientnum));
 }
 
 int player_status_code(int cn)
@@ -232,6 +232,11 @@ int player_lag(int cn)
 int player_real_lag(int cn)
 {
     return totalmillis - get_ci(cn)->lastposupdate;
+}
+
+int player_maploaded(int cn)
+{
+    return get_ci(cn)->maploaded;
 }
 
 int player_deathmillis(int cn)

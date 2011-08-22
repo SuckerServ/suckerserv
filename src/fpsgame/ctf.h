@@ -287,7 +287,7 @@ struct ctfservmode : servmode
     {
         if(notgotflags || !flags.inrange(i) || ci->state.state!=CS_ALIVE || !ci->team[0]) return;
 
-	if(is_invisible(ci)) return;
+        if(ci->ac.is_player_invisible()) return;
 
         flag &f = flags[i];
 
@@ -328,11 +328,12 @@ struct ctfservmode : servmode
         
         if (anti_cheat_enabled) 
         {
+        /*
             float flag_dist = distance(flag_location, ci->state.o); 
 
             if (flag_dist >= 250)
             {
-                /*defformatstring(debug)("%s -> flag location (%.2f/%.2f/%.2f) / player location (%.2f/%.2f/%.2f) / distance: %.2f / dropped: %s / team flag: %s", 
+                defformatstring(debug)("%s -> flag location (%.2f/%.2f/%.2f) / player location (%.2f/%.2f/%.2f) / distance: %.2f / dropped: %s / team flag: %s",
                     ci->name,
                     flag_location.x, 
                     flag_location.y, 
@@ -344,9 +345,11 @@ struct ctfservmode : servmode
                     flag_dropped ? "Yes" : "No",
                     m_hold || m_protect || !strcmp(ci->team, ctfflagteam(f.team)) ? "Yes" : "No"
                 );
-                sendservmsg(debug);*/
+                sendservmsg(debug);
                 cheat(ci->clientnum, 10, (int)flag_dist);
             }
+            */
+            ci->ac.check_get_flag(distance(flag_location, ci->state.o));
         }
     }
 
@@ -440,7 +443,8 @@ struct ctfservmode : servmode
             }
             if (modified)
             {
-                cheat(sender, 12, 0);
+                clientinfo *ci = getinfo(sender);
+                if (ci) ci->ac.modified_map_flags();
             }           
             return;
         }
