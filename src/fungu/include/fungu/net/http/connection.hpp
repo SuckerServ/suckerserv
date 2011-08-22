@@ -108,7 +108,7 @@ public:
     
     boost::asio::io_service & io_service()
     {
-        return m_socket.io_service();
+        return m_socket.get_io_service();
     }
     
     bool has_connection_error()const
@@ -168,7 +168,7 @@ private:
         if(error_code)
         {
             m_read_error = error_code;
-            m_socket.io_service().post(boost::bind(finishedHandler, error(error::NETWORK, error_code.message())));
+            m_socket.get_io_service().post(boost::bind(finishedHandler, error(error::NETWORK, error_code.message())));
             return;
         }
         
@@ -188,7 +188,7 @@ private:
         std::size_t remaining = contentLength - completed;
         if(!remaining)
         {
-            m_socket.io_service().post(boost::bind(finishedHandler, error()));
+            m_socket.get_io_service().post(boost::bind(finishedHandler, error()));
             return;
         }
 
