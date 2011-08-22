@@ -626,6 +626,7 @@ namespace server
             ci->sendprivtext(RED "You've left the spy-mode.");
             if (mastermode <= 1) setspectator(ci, 0);
             else sendf(-1, 1, "ri3", N_SPECTATOR, ci->clientnum, 1);
+            sendf(-1, 1, "riisi", N_SETTEAM, cn, ci->team, -1);
             defformatstring(admin_info)(RED "ADMIN-INFO: %s left spy-mode.", ci->name);
             loopv(clients) if (clients[i] != ci && clients[i]->privilege >= PRIV_ADMIN) clients[i]->sendprivtext(admin_info);            
         }

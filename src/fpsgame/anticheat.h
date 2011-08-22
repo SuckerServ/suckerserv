@@ -471,7 +471,7 @@ class anticheat
     
     void fix_items()
     {
-        if (clientnum < 0) return;
+        if (clientnum < 0 || clientnum >= 128) return;
         loopv(sents)
         { 
             if (!sents[i].spawned) 
