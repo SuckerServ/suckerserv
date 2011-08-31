@@ -217,53 +217,35 @@ local function find_names_by_ip(ip, exclude_name)
 end
 
 local function player_ranking(player_name)
-    player_ranking = execute_statement("SELECT name FROM playertotals ORDER BY frags DESC")
-    local names = {}
-	row = player_ranking:fetch ({}, "a")
-    while row do
-        if not exclude_name or exclude_name ~= row.name then
-            names[#names + 1] = row.name
-        end
-		row = player_ranking:fetch (row, "a")
-    end
-    for rank,name in pairs(names) do
-        if name == player_name then return tostring(rank) end
-    end
+    player_ranking = execute_statement("SELECT count(1)+1 FROM playertotals WHERE frags>(SELECT frags FROM playertotals WHERE name = '"..player_name.."');")
+    return player_ranking:fetch()
 end
 
 local function player_ranking_by_period(player_name, period)
-    sql = "SELECT name FROM players, games \
-        WHERE games.id = players.game_id AND UNIX_TIMESTAMP(games.datetime) > UNIX_TIMESTAMP() - %d \
-        GROUP BY name \
-        ORDER BY sum(frags) DESC"
+    sql = [[SELECT COUNT(1)+1 FROM 
+             (SELECT SUM(frags) as frags
+               FROM players 
+               INNER JOIN games ON players.game_id=games.id 
+               WHERE UNIX_TIMESTAMP(games.datetime) BETWEEN UNIX_TIMESTAMP()-%d AND UNIX_TIMESTAMP() 
+               GROUP BY name )T
+ 
+             WHERE frags>(SELECT SUM(frags) 
+               FROM players 
+               INNER JOIN games ON players.game_id=games.id 
+               WHERE UNIX_TIMESTAMP(games.datetime) BETWEEN UNIX_TIMESTAMP()-%d AND UNIX_TIMESTAMP() AND name = '%s'
+               GROUP BY name)]]
 
-    player_ranking = execute_statement(string.format(sql, period))
-    print(player_ranking)
-    print(period)
-    print(name)
-    local names = {}
-    print(names)
-	row = player_ranking:fetch ({}, "a")
-    print(row)
-    while row do
-        if not exclude_name or exclude_name ~= row.name then
-            names[#names + 1] = row.name
-        end
-		row = player_ranking:fetch (row, "a")
-    end
-    for rank,name in pairs(names) do
-    print(rank,name)
-        if name == player_name then print(rank,name) return tostring(rank) end
-    end
+    player_ranking = execute_statement(string.format(sql, period, period, player_name))
+    return player_ranking:fetch()
 end
 
 local function player_stats_by_period(name, period)
-
-    sql = "SELECT name, sum(frags) AS frags, sum(deaths) AS deaths, sum(teamkills) AS teamkills, sum(suicides) AS suicides, sum(hits) AS hits, sum(shots) AS shots, sum(win) AS wins, sum(timeplayed) AS timeplayed, count(*) AS games, ipaddr \
-        FROM players, games \
-        WHERE games.id = players.game_id AND UNIX_TIMESTAMP(games.datetime) > UNIX_TIMESTAMP() - %d AND name = '%s' \
-        GROUP BY name \
-        ORDER BY sum(frags) DESC"
+  
+    sql = [[SELECT name, sum(frags) AS frags, sum(deaths) AS deaths, sum(teamkills) AS teamkills, sum(suicides) AS suicides, sum(hits) AS hits, sum(shots) AS shots, sum(win) AS wins, sum(timeplayed) AS timeplayed, count(*) AS games, ipaddr
+            FROM players, games
+            WHERE games.id = players.game_id AND UNIX_TIMESTAMP(games.datetime) > UNIX_TIMESTAMP() - %d AND name = '%s'
+            GROUP BY name
+            ORDER BY sum(frags) DESC ]]
 
 	player_stats_by_period = execute_statement(string.format(sql, period, name))
 	row = player_stats_by_period:fetch ({}, "a")
