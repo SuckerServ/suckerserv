@@ -2,14 +2,6 @@
 	A player command to raise privilege to (invisble) admin
 ]]
 
-local domains = table_unique(server.parse_list(server["invadmin_domains"])) or
-                table_unique(server.parse_list(server["admin_domains"]))
-
-if not domains then
-    server.log_error("invadmin command: no domains set.")
-    return
-end
-
 local function set_invadmin(cn, name)
 
     server.set_invisible_admin(cn)
@@ -28,11 +20,20 @@ local function unload() end
 
 local function run(cn, pw)
 
+    local domains = table_unique(server.parse_list(server["invadmin_domains"])) or
+                    table_unique(server.parse_list(server["admin_domains"]))
+
+    if not domains then
+        server.log_error("invadmin command: no domains set.")
+        return
+    end
+
+
     if server.player_priv_code(cn) > 0 then
         server.unsetpriv(cn)
     elseif pw then
         if server.check_admin_password(pw) then
-            set_invadmin(cn)
+            server.set_invisible_admin(cn)
         end
     else
         local sid = server.player_sessionid(cn)
@@ -43,7 +44,7 @@ local function run(cn, pw)
                     return
                 end
                 
-                set_invisible_admin(cn, user_id)
+                set_invadmin(cn, user_id)
             end)
         end
     end

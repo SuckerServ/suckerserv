@@ -4,17 +4,17 @@
 
 ]]
 
-local domains = table_unique(server.parse_list(server["admin_domains"]))
-
-if not domains then
-    server.log_error("admin command: no domains set")
-    return
-end
-
 local function init() end
 local function unload() end
 
 local function run(cn)
+
+    local domains = table_unique(server.parse_list(server["admin_domains"]))
+
+    if not domains then
+        server.log_error("admin command: no domains set")
+        return
+    end
 
     local sid = server.player_sessionid(cn)
     
