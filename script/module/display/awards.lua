@@ -46,6 +46,7 @@ local best = {
     frags      = {},
     kpd        = {},
     accuracy   = {},
+    damage     = {},
     takeflag   = {},
     scoreflag  = {},
     returnflag = {},
@@ -72,6 +73,9 @@ server.event_handler("intermission", function()
             best.accuracy:update(cn, player:accuracy2())
             best.frags:update(cn, player:score())
             best.kpd:update(cn, player:score() - player:deaths())
+	    if not gamemodeinfo.insta then
+                best.damage:update(cn, player:damage())
+	    end
         end
         
         if check_ctf_stats then
@@ -109,14 +113,16 @@ server.event_handler("intermission", function()
     
     local function format_message(record_name, record, append)
         if not record.value or #record.cn > 2 then return "" end
+        if gamemodeinfo.insta and record_name == "damage" then return end
         append = append or ""
         return blue(string.format("%s: %s", record_name, white(record:list_names()) .. " " .. red(record.value .. append)))
     end
-    
+
     local stats_message = print_list(
         format_message("frags", best.frags),
         format_message("kpd", best.kpd),
-        format_message("accuracy", best.accuracy, "%"))
+        format_message("accuracy", best.accuracy, "%"),
+        format_message("damage", best.damage))
         
     if #stats_message > 0 then
         server.msg(string.format(server.awards_stats_message, stats_message))
