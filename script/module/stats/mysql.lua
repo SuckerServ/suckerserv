@@ -217,25 +217,39 @@ local function find_names_by_ip(ip, exclude_name)
 end
 
 local function player_ranking(player_name)
-    player_ranking = execute_statement("SELECT count(1)+1 FROM playertotals WHERE frags>(SELECT frags FROM playertotals WHERE name = '"..player_name.."');")
+    local sql = [[SELECT rank
+                    FROM (SELECT count(1)+1 AS rank
+                            FROM playertotals 
+                            WHERE playertotals.frags > (SELECT frags FROM playertotals WHERE name = '%s'))T
+                    WHERE (SELECT frags
+                            FROM playertotals
+                            WHERE name = '%s') > 0]]
+    local player_ranking = execute_statement(string.format(sql, player_name, player_name))
     return player_ranking:fetch()
 end
 
 local function player_ranking_by_period(player_name, period)
-    sql = [[SELECT COUNT(1)+1 FROM 
-             (SELECT SUM(frags) as frags
-               FROM players 
-               INNER JOIN games ON players.game_id=games.id 
-               WHERE UNIX_TIMESTAMP(games.datetime) BETWEEN UNIX_TIMESTAMP()-%d AND UNIX_TIMESTAMP() 
-               GROUP BY name )T
+    local sql = [[SELECT rank
+                    FROM (SELECT COUNT(1)+1 rank
+                        FROM (SELECT SUM(frags) as frags
+                            FROM players 
+                            INNER JOIN games ON players.game_id=games.id 
+                            WHERE UNIX_TIMESTAMP(games.datetime) BETWEEN UNIX_TIMESTAMP()-%d AND UNIX_TIMESTAMP() 
+                            GROUP BY name )T
  
-             WHERE frags>(SELECT SUM(frags) 
-               FROM players 
-               INNER JOIN games ON players.game_id=games.id 
-               WHERE UNIX_TIMESTAMP(games.datetime) BETWEEN UNIX_TIMESTAMP()-%d AND UNIX_TIMESTAMP() AND name = '%s'
-               GROUP BY name)]]
+                        WHERE frags>(SELECT SUM(frags) 
+                            FROM players 
+                            INNER JOIN games ON players.game_id=games.id 
+                            WHERE UNIX_TIMESTAMP(games.datetime) BETWEEN UNIX_TIMESTAMP()-%d AND UNIX_TIMESTAMP() AND name = '%s'
+                            GROUP BY name))A
 
-    player_ranking = execute_statement(string.format(sql, period, period, player_name))
+                    WHERE (SELECT SUM(frags) 
+                        FROM players 
+                        INNER JOIN games ON players.game_id=games.id 
+                        WHERE UNIX_TIMESTAMP(games.datetime) BETWEEN UNIX_TIMESTAMP()-%d AND UNIX_TIMESTAMP() AND name = '%s'
+                        GROUP BY name)>0]]
+
+    local player_ranking = execute_statement(string.format(sql, period, period, player_name, period, player_name))
     return player_ranking:fetch()
 end
 
