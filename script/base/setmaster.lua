@@ -26,14 +26,21 @@ local function setmaster(cn, hash, set)
     if no_hash or failed[cn] == FAILED_LIMIT then
         return -1 
     end
-    
-    if server.hashpassword(cn, server.admin_password) == hash then
+
+    local is_spy = server.hashpassword(cn, server.admin_password .. "/spy") == hash
+    local success = is_spy
+    if not success then
+        success = server.hashpassword(cn, server.admin_password) == hash
+    end
+
+    if server.admin_password ~= "" and success then
+        if is_spy then server.setspy(cn, true) end
         if no_master then
             server.setadmin(cn) 
         else
             server.set_invisible_admin(cn)
         end
-    elseif server.hashpassword(cn, server.master_password) == hash then
+    elseif server.admin_password ~= "" and server.hashpassword(cn, server.master_password) == hash then
         if no_master then
             server.setmaster(cn) 
         else

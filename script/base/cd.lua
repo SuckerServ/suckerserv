@@ -15,11 +15,15 @@
 
 local ban_time = 21600 -- 6 hrs
 local kick_msg = string.format(red("cheating - (bantime: %i minutes)"), round(ban_time / 60, 0))
-local min_spawntime = 4600
+local min_spawntime = 4950
 local min_scoretime = 3000
 local lag_checktime = 0 -- 0 to disable (10000 = Check all 10 sec)
 local max_ping = 800
 local max_pj = 70
+local spawnhack_force_death = false -- force player to suicide 1 sec after first spawnhack was detected
+local spawnhack = {}
+local speedhack_low = { }
+local invisiblehack = { }
 
 local network_packet_types = "N_CONNECT, N_SERVINFO, N_WELCOME, N_INITCLIENT, N_POS, N_TEXT, N_SOUND, N_CDIS, N_SHOOT, N_EXPLODE, N_SUICIDE, N_DIED, N_DAMAGE, N_HITPUSH, N_SHOTFX, N_EXPLODEFX, N_TRYSPAWN, N_SPAWNSTATE, N_SPAWN, N_FORCEDEATH, N_GUNSELECT, N_TAUNT, N_MAPCHANGE, N_MAPVOTE, N_ITEMSPAWN, N_ITEMPICKUP, N_ITEMACC, N_TELEPORT, N_JUMPPAD, N_PING, N_PONG, N_CLIENTPING, N_TIMEUP, N_MAPRELOAD, N_FORCEINTERMISSION, N_SERVMSG, N_ITEMLIST, N_RESUME, N_EDITMODE, N_EDITENT, N_EDITF, N_EDITT, N_EDITM, N_FLIP, N_COPY, N_PASTE, N_ROTATE, N_REPLACE, N_DELCUBE, N_REMIP, N_NEWMAP, N_GETMAP, N_SENDMAP, N_CLIPBOARD, N_EDITVAR, N_MASTERMODE, N_KICK, N_CLEARBANS, N_CURRENTMASTER, N_SPECTATOR, N_SETMASTER, N_SETTEAM, N_BASES, N_BASEINFO, N_BASESCORE, N_REPAMMO, N_BASEREGEN, N_ANNOUNCE, N_LISTDEMOS, N_SENDDEMOLIST, N_GETDEMO, N_SENDDEMO, N_DEMOPLAYBACK, N_RECORDDEMO, N_STOPDEMO, N_CLEARDEMOS, N_TAKEFLAG, N_RETURNFLAG, N_RESETFLAG, N_INVISFLAG, N_TRYDROPFLAG, N_DROPFLAG, N_SCOREFLAG, N_INITFLAGS, N_SAYTEAM, N_CLIENT, N_AUTHTRY, N_AUTHCHAL, N_AUTHANS, N_REQAUTH, N_PAUSEGAME, N_ADDBOT, N_DELBOT, N_INITAI, N_FROMAI, N_BOTLIMIT, N_BOTBALANCE, N_MAPCRC, N_CHECKMAPS, N_SWITCHNAME, N_SWITCHMODEL, N_SWITCHTEAM, NUMSV"
       network_packet_types = strSplit(network_packet_types, ", ")
@@ -28,8 +32,7 @@ local sound_types = "S_JUMP, S_LAND, S_RIFLE, S_PUNCH1, S_SG, S_CG, S_RLFIRE, S_
 local gun_types = "S_PUNCH1, S_SG, S_CG, S_RLFIRE, S_RIFLE, S_FLAUNCH, S_PISTOL, S_FLAUNCH, S_ICEBALL, S_SLIMEBALL, S_PIGR1"
       gun_types = strSplit(gun_types, ", ")
       
-      
-      
+ 
 local function network_type(packet)
     packet = packet + 1
     if #network_packet_types >= packet then
@@ -86,28 +89,70 @@ local function lag(cn)
     server.player_msg(cn, red("You have been specced due to lag / very high ping."))   
 end
 
+local function speedhack(cn, speed)
+    if speed >= 1.6 then
+        kick(cn)
+    else
+        local first = speedhack_low[cn] == nil
+        if first then speedhack_low[cn] = 1 end
+        if not first then speedhack_low[cn] = speedhack_low[cn] + 1 end    
+        if speedhack_low[cn] >= 3 then
+            kick(cn)
+        end
+    end
+end
+
+local function spawn_hack(cn)
+    if spawnhack[cn] >= 2 then
+        kick(cn)
+    else
+        if not spawnhack_force_death then return end
+        local ses = server.player_sessionid(cn)
+        server.sleep(1000, function()
+            for i, v in ipairs(server.players()) do
+                if ses == server.player_sessionid(v) then
+                    server.player_suicide(v)
+                end
+            end
+        end)
+    end
+end
+
+local function invisible_hack(cn, speed)
+    local first = invisiblehack[cn] == nil
+    if first then invisiblehack[cn] = 1 end
+    if not first then invisiblehack[cn] = invisiblehack[cn] + 1 end    
+    if invisiblehack[cn] >= 3 then
+        kick(cn)
+    end
+end
+
 
 local type = { }
 
-type[1] = { kick,  "flag-score-hack (flags: %i)" }
-type[2] = { kick,  "edit-packet-in-non-edit-mode (type: %s)" }
-type[3] = { kick,  "unknown packet (type: %i)" }
-type[4] = { kick,  "unknown-weapon (unknown-gun: %s)" }
-type[6] = { nil,   "speed-hack-ping (avg-speed: %.2fx)" } 
-type[7] = { kick,  "spawn-time-hack (spawntime: %i ms)" } 
-type[8] = { kick,  "sent-unknown-sound (sound: %s)" } 
-type[9] = { nil,   "invisible (invis-millis: %i)" } 
-type[10] = { nil,  "getflag (distance: %i)" } 
-type[11] = { kick, "modified-map-items" } 
-type[12] = { kick, "modified-map-flags" } 
-type[13] = { kick, "modified-capture-bases" } 
-type[14] = { gun,  "shoot-out-of-gun-distance-range", true } 
-type[15] = { kick, "scored-in-less-than-" .. round(min_scoretime / 1000, 1) .. "-seconds (%i ms)" } 
-type[16] = { kick, "speed-hack-pos (avg-speed: %.2fx)" } 
-type[17] = { nil,  "jumphack (height: %.2f)" } 
-type[18] = { lag,  "lag / high ping" } 
-type[19] = { kick, "unknown-map-item %s" } 
-type[20] = { kick, "map-item-not-spawned (item: %i)" } 
+type[1] = { kick,  "flag-score-hack (flags: %i)", "flag-limit exceeded" }
+type[2] = { kick,  "edit-packet-in-non-edit-mode (type: %s)", "fly hack" }
+type[3] = { kick,  "unknown packet (type: %i)", "unknown packet" }
+type[4] = { kick,  "unknown-weapon (unknown-gun: %s)", "unknown weapon" }
+type[6] = { nil,   "speed-hack-ping (avg-speed: %.2fx)", "speedhack ping" } 
+type[7] = { spawn_hack,  "spawn-time-hack (spawntime: %i ms)", "spawntime hack" } 
+type[8] = { kick,  "sent-unknown-sound (sound: %s)", "unknown sound" } 
+type[9] = { invisible_hack, "invisible (invis-millis: %i)", "invisible hack" } 
+type[10] = { nil,  "getflag (distance: %i)", "getflag" } 
+type[11] = { kick, "modified-map-items", "modified map items" } 
+type[12] = { kick, "modified-map-flags", "modified map flags" } 
+type[13] = { kick, "modified-capture-bases", "modified capture bases" } 
+type[14] = { nil,  "shoot-out-of-gun-distance-range", "shoot distance" } 
+type[15] = { kick, "scored-in-less-than-" .. round(min_scoretime / 1000, 1) .. "-seconds (%i ms)", "flag score hack" } 
+type[16] = { speedhack, "speed-hack-pos (avg-speed: %.2fx)", "speedhack" } 
+type[17] = { nil,  "jumphack (height: %.2f)", "jumphack" } 
+type[18] = { lag,  "lag / high ping", "lag" } 
+type[19] = { kick, "unknown-map-item %s", "unknown map item" } 
+type[20] = { nil,  "map-item-not-spawned (item: %i)", "item not spawned" } 
+type[21] = { kick, "map-item-not-spawned (item: %i)" } 
+type[22] = { nil,  "impossible-player-action", "impossible player action" } 
+type[23] = { nil,  "player-position exceeded (pos: %i)", "player position exceeded" } 
+type[24] = { invisible_hack, "null-player-position / invisible", "player position / invisible" } 
 
 local logged = { }
 
@@ -117,6 +162,9 @@ end)
 
 server.event_handler("disconnect", function(cn)
     logged[cn] = nil
+    spawnhack[cn] = nil
+    speedhack_low[cn] = nil
+    invisiblehack[cn] = nil
 end)
 
 local function cheat(cn, cheat_type, info, info_str)
@@ -145,7 +193,7 @@ local function cheat(cn, cheat_type, info, info_str)
         if cheat_type == 4 then info = gun_type(info) end
         if cheat_type == 8 then info = sound_type(info) end
 		if cheat_type == 14 then info_str = string.format(info_str, gun_type(info)) end
-        if cheat_type == 6 or cheat_type == 16 or cheat_type == 17 then info = info / 1000 end
+        if cheat_type == 6 or cheat_type == 16 or cheat_type == 17 then info = info / 100000 end
 
         if info_str ~= "" then info_str = " (INFO: " .. info_str .. ")" end
         
@@ -155,18 +203,14 @@ local function cheat(cn, cheat_type, info, info_str)
         server.log(log)
         logged[cn][cheat_type] = true
         
-        if not testing then
-            admin_msg(log)
+        if type[cheat_type][3] ~= nil then
+            admin_msg(string.format("\f3\f8CHEAT-DETECTION\f3\f8 %s -> %s%s", blue(server.player_displayname(cn)), red(type[cheat_type][3]),  orange(_if(testing, " (TESTING)", ""))))
         end
         
     end
     
     if action ~= nil then
-        if type[cheat_type][2] ~= nil then
-            action(cn, info)
-        else
-            action(cn)
-        end
+        action(cn, info)
     end
 end
 
@@ -209,13 +253,18 @@ server.event_handler("spawn", function(cn)
     
     local spawntime = server.gamemillis - deathmillis
     
+    --server.msg(string.format("(%s) spawntime: %d", server.player_name(cn), spawntime))
+    
     if spawntime >= 0 and spawntime < min_spawntime then
+        local first = spawnhack[cn] == nil
+        if first then spawnhack[cn] = 1 end
+        if not first then spawnhack[cn] = spawnhack[cn] + 1 end
         cheat(cn, 7, spawntime, "")
     end
 end)
 
 
-server.event_handler("scoreflag", function(cn, _, __, timetrial)
+server.event_handler("scoreflag", function(cn, _, __, timetrial)  
     if timetrial > -1 and timetrial <= min_scoretime and is_known_map(server.map) then
         cheat(cn, 15, timetrial, "")
     end
