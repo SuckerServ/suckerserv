@@ -386,6 +386,7 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "spectator_delay", server::spectator_delay);
     bind_var(L, T, "ctf_teamkill_penalty", server::ctftkpenalty);
     bind_var(L, T, "specslots", server::spec_slots);
+    bind_var(L, T, "cheatdetection", server::anti_cheat_enabled);
     
     bind_var(L, T, "flood_protect_text", server::sv_text_hit_length);
     bind_var(L, T, "flood_protect_sayteam", server::sv_sayteam_hit_length);
@@ -404,7 +405,9 @@ void bind_core_variables(lua_State * L, int T)
         
     bind_var(L, T, "timer_alarm_threshold", server::timer_alarm_threshold);
     bind_var(L, T, "enable_extinfo", server::enable_extinfo);
-    
+
+    bind_ro_var(L, T, "anti_cheat_system_rev", server::anti_cheat_system_rev);
+
     bind_prop<int>(L, T, "mastermode", server::get_mastermode, server::script_set_mastermode);
 }
 

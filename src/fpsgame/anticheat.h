@@ -9,6 +9,7 @@
 
 bool anti_cheat_enabled = true;
 bool anti_cheat_add_log_to_demo = true;
+int anti_cheat_system_rev = 1;
 	
 void cheat(int cn, int cheat, int info1, const char *info2)
 {
@@ -58,30 +59,28 @@ void cheat(int cn, int cheat, int info1, const char *info2)
 
 }
     
-bool is_invisible(clientinfo *ci)
+int is_invisible(int cn)
 {
-    if (!anti_cheat_enabled || !ci || ci->state.state != CS_ALIVE) 
+    clientinfo *ci = getinfo(cn);
+    if (!anti_cheat_enabled || !ci || ci->state.state != CS_ALIVE || ci->ping >= 7500) 
         return false;
      
     int lag = totalmillis - ci->lastposupdate;
     if (lag == totalmillis) lag = -1;
-    if (ci->state.o == vec(0, 0, 0) || lag >= 7500 || lag == -1)
-    {
-        cheat(ci->clientnum, 9, lag);
-        return true;
-    }
-    return false;
+    
+    if (ci->state.o == vec(-1e10f, -1e10f, -1e10f) || ci->state.o == vec(0, 0, 0))
+        return 2; // weird position hack
+    
+    if (lag >= 7500 || lag == -1)
+        return 1;
+    
+    return 0;
 }
 
 float distance(vec a, vec b)
 {
     int x = a.x - b.x, y = a.y - b.y, z = a.z - b.z;
     return sqrt(x*x + y*y + z*z);
-}
-    
-bool is_invisible(int cn) 
-{
-    return is_invisible(getinfo(cn));
 }
     
 bool vec_equal(vec a, vec b)
@@ -92,7 +91,8 @@ bool vec_equal(vec a, vec b)
 
 #else
  
-extern bool is_invisible(int);
+extern bool anti_cheat_enabled;
+extern int is_invisible(int);
 extern void cheat(int cn, int cheat, int info1, const char *info2="");
 extern vector<server_entity> sents;
 
@@ -102,48 +102,56 @@ class anticheat
 
     int clientnum;
     int pingupdates, lastpingupdates, lastpingsnapshot, speedhack, speedhack_updates;
-    int speedhack2, speedhack2_dist, speedhack2_lastreset;
+    int speedhack2, speedhack2_lastreset, speedhack2_strangedist_c;
+    int positionhack;
+    float speedhack2_dist, speedhack2_strangedist;
     int timetrial;
-    int lastshoot, lastjumppad, lastteleport, lastdamage, lastspawn;
-    int lastjump;
+    int lastshoot, lastjumppad, lastteleport, lastdamage, lastspawn, spawns;
+    int lastjump, lastgun;
     int jumphack, jumppads, jumphack_dist;
+    int invisiblehack_count, invisible_first, invisible_last;
+    float exceed_position;
     int _ping;
     float last_fall_loc;
     float speedhack2_lastdist, jumpdist, lastjumphack_dist;
     bool was_falling;
+    bool initialized;
 
     void reset(int cn=-1)
     {
-        if (cn > -1) clientnum = cn;
+        if (!anti_cheat_enabled) 
+        {
+            initialized = false;
+            return;
+        }
         
+        if (cn > -1) clientnum = cn;
+
         jumpdist = 0;
         last_fall_loc = 0;
-        
+        spawns = 0;
+        lastgun = -1;
+        exceed_position = 0;
+       
         reset_speedhack_dist();
         reset_speedhack_ping();
         reset_last_action();
         reset_jumphack();
+        reset_invisible();
+        
+        initialized = true;
     }
     
     /*
      * Player Actions
      */
 
-    void teleport()
-    {
-        if (speedhack2) 
-        {
-            speedhack2--;
-            speedhack2_dist -= (int)speedhack2_lastdist;
-        }
-        lastteleport = totalmillis;    
-    }
-    
     void no_falling() { jumpdist = 0; try_decrease_jumphack(); }
     void shoot() { lastshoot = totalmillis; }
     void damage() { lastdamage = totalmillis; }
-    void jumppad() { lastjumppad = totalmillis; jumppads++; }
-    void spawn() { lastspawn = totalmillis; reset_speedhack_dist(); reset_last_action(); reset_jumphack(); fix_items(); }
+    void jumppad(int n) { lastjumppad = totalmillis; jumppads++; }
+    void teleport(int n) { if (speedhack2_strangedist_c) { speedhack2_strangedist_c--; speedhack2_strangedist -= speedhack2_lastdist; } lastteleport = totalmillis; }
+    void spawn() { reset_invisible(); reset_speedhack_dist(); reset_last_action(); reset_jumphack(); fix_items(); lastspawn = totalmillis; spawns++; }
     void ping() { check_ping(); }
     
     /*
@@ -152,8 +160,30 @@ class anticheat
      
     bool is_player_invisible()
     {
-        if (lastspawn == -1 || totalmillis - lastspawn < 1000) return false;
-        return is_invisible(clientnum);
+        if (!initialized || (lastspawn > -1 && totalmillis - lastspawn < 2000)) return false;
+        int is_invis = is_invisible(clientnum);
+        
+        switch (is_invis)
+        {
+            case 1:
+                invisiblehack_count++;
+                if (invisible_first == -1) invisible_first = totalmillis;
+                invisible_last = totalmillis;
+                if (invisiblehack_count >= 7) 
+                {
+                    int inv_time = invisible_last - invisible_first;
+                    if (inv_time >= 2000) cheat(clientnum, 9, inv_time); 
+                    reset_invisible();
+                }
+                break;
+            case 2:
+                positionhack++;
+                if (positionhack >= 4) cheat(clientnum, 24, -1);   
+                break;
+            default:;    
+        }
+
+        return is_invis > 0;
     }
     
     /*
@@ -162,21 +192,34 @@ class anticheat
 
     void check_speedhack_dist(float dist)
     {
-        if (dist >= 7)
+        if (!initialized) return;
+        if (dist >= 5.5) // DON'T CHANGE THIS VALUE!!!
         {
-            speedhack2++;
-            speedhack2_dist += (int)dist;
-            speedhack2_lastdist = dist;
+          //  defformatstring(debug)("dist: %.2f", dist);
+          //  sendservmsg(debug);
+
+            if (dist < 50) // < 12.5x
+            {
+                speedhack2++;
+                speedhack2_dist += dist;
+                speedhack2_lastdist = dist;
+            }
+            else
+            {
+                speedhack2_strangedist += dist;
+                speedhack2_strangedist_c++;
+            }
             
             int speed = is_speedhack_dist();
-            if (speed && speed / 1000 < 4 && _ping > 2000) 
+            /*if (speed  && speed / 100000 < 4 && _ping > 2000) 
             {
                 reset_speedhack_dist();
                 speed = 0;
             }
-            else
+            else*/
+            if (totalmillis - speedhack2_lastreset >= 60000)
             {
-                check_speedhack_pos_reset();
+                reset_speedhack_dist();
             }
             
             if (speed) cheat(clientnum, 16, speed);
@@ -188,7 +231,8 @@ class anticheat
      */
     
     void check_jumphack(float dist, float fall_loc)
-    {      
+    {     
+        if (!initialized) return;
         int last_action = last_player_action();
         
         if ((last_action < 1500 && last_action != -1) || (lastjump > -1 && totalmillis - lastjump < 500)) 
@@ -203,7 +247,7 @@ class anticheat
         }
         else  // falling down
         {
-            if (jumpdist > 25) 
+            if (jumpdist > 20) 
             {
                 jumphack++;
                 lastjumphack_dist = jumpdist;
@@ -318,8 +362,12 @@ class anticheat
     
     void unknown_item(int item, int len)
     {
-        defformatstring(info)("TRIED ITEM: %i ITEMLIST LENGTH: %i", item, len);
-        cheat(clientnum, 19, 0, info);
+        if (initialized && lastspawn > -1 && totalmillis - lastspawn >= 2000)
+        {
+            //if (!is_item_mode() && impossible(1, item)) return;
+            defformatstring(info)("TRIED ITEM: %i ITEMLIST LENGTH: %i", item, len);
+            cheat(clientnum, 19, 0, info);
+        }
     }
     
     /*
@@ -328,8 +376,75 @@ class anticheat
     
     void item_not_spawned(int item, int spawntime)
     {
-        defformatstring(info)("TRIED ITEM: %i SPAWNTIME: %i", item, spawntime);
-        cheat(clientnum, 20, 0, info);
+        if (initialized && lastspawn > -1 && totalmillis - lastspawn >= 2000)
+        {
+            //if (!is_item_mode() && impossible(0, item)) return; // There are item pick ups in insta. You just don't see them.
+            defformatstring(info)("TRIED ITEM: %i SPAWNTIME: %i", item, spawntime);
+            cheat(clientnum, 20, 0, info);
+        }
+    }
+    
+    /*
+     * FFA Weapons in INSTA modes
+     */
+     
+    bool check_gun(int gunselect, bool is_spawn=false)
+    {
+        if (!initialized) return true;
+        //if (mod_gamemode) return true;
+        lastgun = gunselect;
+        if (is_item_mode() || m_efficiency) return true;
+        bool correct_gun = gunselect == GUN_RIFLE || gunselect == GUN_FIST;
+        if (!correct_gun)
+        {
+            if (is_spawn)
+            { 
+                if (spawns < 2) correct_gun = true;
+            }
+            else
+            { 
+                if (lastspawn > -1 && totalmillis - lastspawn < 2000) correct_gun = true;
+            }
+        }
+        if (!correct_gun) impossible(2, gunselect);
+        return correct_gun;
+    }
+    
+    /*
+     * Player position exceeded
+     */
+    
+    void player_position_exceeded()
+    {
+        //if (mod_gamemode) return;
+        cheat(clientnum, 23, (int)exceed_position);
+    }
+    
+    /*
+     * Impossible Actions
+     */
+   
+    bool impossible(int c, int info)
+    {
+        //if (mod_gamemode) return false;
+        char cheat_info[1000];
+        switch (c)
+        {
+            case 0: // item not spawned
+            case 1: // item not inrange
+                sprintf(cheat_info, "TRIED TO PICKUP ITEM IN NON INSTA MODE / OUT OF RANGE (%i)", info);
+                break;
+            case 2: // ffa gun in non insta mode
+                sprintf(cheat_info, "TRIED TO SWITCH / SPAWN WITH A NON RIFLE / FIST GUN (%i)", info);
+                break;
+            case 3: // flag pick up in non flag mode
+                sprintf(cheat_info, "TRIED TO PICK UP FLAG / SCORE IN NON FLAG MODE");
+                break;
+            default: return false;
+        }
+        cheat_info[sizeof(cheat_info)-1] = 0;
+        cheat(clientnum, 22, 0, cheat_info);
+        return true;
     }
     
     private:
@@ -352,6 +467,7 @@ class anticheat
     void reset_speedhack_dist()
     {
         speedhack2 = speedhack2_dist = jumpdist = 0;
+        speedhack2_strangedist_c = speedhack2_strangedist = 0;
         speedhack2_lastdist = 0;
         was_falling = false;
         speedhack2_lastreset = totalmillis;
@@ -376,25 +492,20 @@ class anticheat
         return shortest > -1 ? totalmillis - shortest : shortest;
     }
     
-    /*
-     * Speed Hack Position
-     */
-    
-    void check_speedhack_pos_reset()
-    {
-        if (totalmillis - speedhack2_lastreset >= 30000) reset_speedhack_dist();
-    }
-    
     int is_speedhack_dist()
     {
-        if (speedhack2 < 30) return 0;
-        
-        float speed = (float)speedhack2_dist / (float)speedhack2 / (float)4;
-        
-        if (speed >= 1.5) 
+        if (speedhack2 >= 10) 
         {
-            reset_speedhack_dist();
-            return (speed * (float)1000);
+            float speed = speedhack2_dist / (float)speedhack2 / (float)4;
+            if (speed < 1.2) return 0;
+            else reset_speedhack_dist();
+            return (speed * (float)100000);
+        }
+        
+        if (speedhack2_strangedist_c >= 10)
+        {
+            float speed = speedhack2_strangedist / (float)speedhack2_strangedist_c / (float)4;
+            return (speed * (float)100000);// no check needed, this is anyways >= 12.5x
         }
         
         return 0;
@@ -432,7 +543,7 @@ class anticheat
                 if (speed >= 1.5)
                 {
                     reset_speedhack_ping();
-                    int speed2 = (speed * (float)1000);
+                    int speed2 = (speed * (float)100000);
                     cheat(clientnum, 6, speed2);
                 }
             }
@@ -447,9 +558,9 @@ class anticheat
 
     int is_jumphack()
     {
-        if (jumphack < 5) return 0;
+        if (jumphack < 2) return 0;
         int avg_dist = jumphack_dist / (int)jumphack;
-        return avg_dist > 25 ? avg_dist : 0;
+        return avg_dist >= 10 ? avg_dist : 0;
     }
     
     void try_decrease_jumphack()
@@ -466,20 +577,45 @@ class anticheat
     }
     
     /*
+     * Invisible 
+     */
+     
+    void reset_invisible()
+    {
+        invisiblehack_count = 0;
+        invisible_first = -1;
+        invisible_last = -1;    
+        positionhack = 0;
+    }
+    
+    /*
+     * Is item mode
+     */
+     
+    bool is_item_mode()
+    {
+        return !m_insta && !m_efficiency;
+    }
+    
+    /*
      * FFA Item Bugfix
      */
     
     void fix_items()
     {
         if (clientnum < 0 || clientnum >= 128) return;
+        
+        bool item_mode = is_item_mode();
+        
         loopv(sents)
         { 
-            if (!sents[i].spawned) 
+            if (!sents[i].spawned || !item_mode) 
             { 
                 sendf(clientnum, 1, "ri3", N_ITEMACC, i, -1); 
             } 
         } 
     }
+
 };
     
 #endif

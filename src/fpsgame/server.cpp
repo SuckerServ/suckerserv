@@ -642,7 +642,7 @@ namespace server
     int spec_count()
     {
         int n = 0;
-        loopv(clients) if (clients[i]->state.state == CS_SPECTATOR) n++;
+        loopv(clients) if (clients[i]->state.state == CS_SPECTATOR && !clients[i]->spy) n++;
         return n;
     }
     
@@ -1874,10 +1874,10 @@ namespace server
          
         gamestate &ts = target->state;
         ts.dodamage(damage);
-        actor->state.damage += damage;
+        if(target!=actor && !isteam(target->team, actor->team)) actor->state.damage += damage;
         sendf(-1, 1, "ri6", N_DAMAGE, target->clientnum, actor->clientnum, damage, ts.armour, ts.health); 
         if(target==actor) target->setpushed();
-        else if(target!=actor && !hitpush.iszero())
+        else if(!hitpush.iszero())
         {
             ivec v = vec(hitpush).rescale(DNF);
             sendf(ts.health<=0 ? -1 : target->ownernum, 1, "ri7", N_HITPUSH, target->clientnum, gun, damage, v.x, v.y, v.z);
@@ -2137,7 +2137,11 @@ namespace server
             {
                 clientinfo &c = *clients[i];
                 if(c.state.aitype != AI_NONE) continue;
-                if(c.checkexceeded()) disconnect_client(c.clientnum, DISC_TAGT);
+                if(c.checkexceeded())
+                {
+                    if (anti_cheat_enabled) c.ac.player_position_exceeded();
+                    else disconnect_client(c.clientnum, DISC_TAGT);
+                }
                 else c.scheduleexceeded();
             }
         }
@@ -2169,7 +2173,18 @@ namespace server
             interm = -1;
             checkvotes(true);
         }
-        
+
+        if (anti_cheat_enabled && smode == &ctfmode && totalmillis % 10 == 0)
+        {
+            loopv(ctfmode.flags) 
+            {
+                ctfservmode::flag &f = ctfmode.flags[i];
+                clientinfo *ci = getinfo(f.owner);
+                if (!ci) continue;
+                if (ci->ac.invisiblehack_count >= 4) ctfmode.dropflag(ci, ci);
+            }
+        }
+
         update_hopmod();
         
         timer::time_diff_t elapsed = serverupdate_time.usec_elapsed();
@@ -2198,6 +2213,7 @@ namespace server
     void sendservinfo(clientinfo *ci)
     {
         sendf(ci->clientnum, 1, "ri5s", N_SERVINFO, ci->clientnum, PROTOCOL_VERSION, ci->sessionid, serverpass[0] ? 1 : 0, serverdesc);
+    conoutf("%d  %d  %s  %d  %d  %d  %d  %s  %s", ci->clientnum, 1, "ri5s", N_SERVINFO, ci->clientnum, PROTOCOL_VERSION, ci->sessionid, serverpass[0] ? 1 : 0, serverdesc);
     }
 
     void noclients()
@@ -2546,8 +2562,12 @@ namespace server
                 {
                     if((!ci->local || demorecord || hasnonlocalclients()) && (cp->state.state==CS_ALIVE || cp->state.state==CS_EDITING))
                     {
-                        if(!ci->local && !m_edit && max(vel.magnitude2(), (float)fabs(vel.z)) >= 180)
+                        float pos_z = max(vel.magnitude2(), (float)fabs(vel.z));
+                        if(!ci->local && !m_edit && pos_z >= 180)
+                        {
                             cp->setexceeded();
+                            if (anti_cheat_enabled) cq->ac.exceed_position = pos_z;
+                        }
                         cp->position.setsize(0);
                         while(curmsg<p.length()) cp->position.add(p.buf[curmsg++]);
                     }
@@ -2612,7 +2632,7 @@ namespace server
             case N_SOUND:
             {
                 int sound = getint(p);
-                if (sound == S_JUMP && cq->ac.is_player_invisible()) break;
+                if (sound == S_JUMP && anti_cheat_enabled && cq->ac.is_player_invisible()) break;
 
                 if (sound != S_JUMP && sound != S_LAND && sound != S_NOAMMO 
                    && (m_capture && sound != S_ITEMAMMO))
@@ -2631,12 +2651,12 @@ namespace server
                 clientinfo *cp = getinfo(pcn);
                 if(!cq) break;
                 anticheat *ac = &cp->ac;
-                if(ac->is_player_invisible()) break;
+                if(anti_cheat_enabled && ac->is_player_invisible()) break;
                 if(cp && pcn != sender && cp->ownernum != sender) cp = NULL;
                 if(cp && (!ci->local || demorecord || hasnonlocalclients()) && (cp->state.state==CS_ALIVE || cp->state.state==CS_EDITING))
                 {
                     flushclientposition(*cp);
-                    ac->teleport();
+                    ac->teleport(teleport);
                     sendf(-1, 0, "ri4x", N_TELEPORT, pcn, teleport, teledest, cp->ownernum); 
                 }
                 break;
@@ -2650,13 +2670,13 @@ namespace server
                 clientinfo *cp = getinfo(pcn);
                 if(!cq) break;
                 anticheat *ac = &cp->ac;
-                if(ac->is_player_invisible()) break;
+                if(anti_cheat_enabled && ac->is_player_invisible()) break;
                 if(cp && pcn != sender && cp->ownernum != sender) cp = NULL;
                 if(cp && (!ci->local || demorecord || hasnonlocalclients()) && (cp->state.state==CS_ALIVE || cp->state.state==CS_EDITING))
                 {
                     cp->setpushed();
                     flushclientposition(*cp);
-                    ac->jumppad();
+                    ac->jumppad(jumppad);
                     sendf(-1, 0, "ri3x", N_JUMPPAD, pcn, jumppad, cp->ownernum);
                 }
                 break;
@@ -2750,11 +2770,13 @@ namespace server
             {
                 int gunselect = getint(p);
                 if(!cq || cq->state.state!=CS_ALIVE) break;
+                anticheat *ac = &cq->ac;
                 if(gunselect<GUN_FIST || gunselect>GUN_PISTOL) 
                 {
-                    if (anti_cheat_enabled) ci->ac.unknown_weapon(gunselect);
+                    if (anti_cheat_enabled) ac->unknown_weapon(gunselect);
                     break;
                 }
+                if (anti_cheat_enabled && !ac->check_gun(gunselect)) break;
                 cq->state.gunselect = gunselect;
                 QUEUE_AI;
                 QUEUE_MSG;
@@ -2764,9 +2786,10 @@ namespace server
             case N_SPAWN:
             {
                 int ls = getint(p), gunselect = getint(p);
+                anticheat *ac = cq ? &cq->ac : NULL;
                 if(gunselect<GUN_FIST || gunselect>GUN_PISTOL) 
                 {
-                    if (anti_cheat_enabled) ci->ac.unknown_weapon(gunselect);
+                    if (anti_cheat_enabled && ac) ac->unknown_weapon(gunselect);
                     break;
                 }
                 if(!cq || (cq->state.state!=CS_ALIVE && cq->state.state!=CS_DEAD) || ls!=cq->state.lifesequence || cq->state.lastspawn<0) break;
@@ -2788,7 +2811,11 @@ namespace server
                 cq->state.state = CS_ALIVE;
                 cq->state.gunselect = gunselect;
                 cq->exceeded = 0;
-                cq->ac.spawn();
+                if (anti_cheat_enabled && ac)
+                {
+                    ac->spawn();
+                    if (!ac->check_gun(gunselect)) break;
+                }
                 if(smode) smode->spawned(cq);
                 QUEUE_AI;
                 QUEUE_BUF({
@@ -2816,6 +2843,7 @@ namespace server
                 loopk(3) shot->from[k] = getint(p)/DMF;
                 loopk(3) shot->to[k] = getint(p)/DMF;
                 int hits = getint(p);
+                anticheat *ac = cq ? &cq->ac : NULL;
                 loopk(hits)
                 {
                     if(p.overread()) break;
@@ -2826,11 +2854,18 @@ namespace server
                     hit.rays = getint(p);
                     loopk(3) hit.dir[k] = getint(p)/DNF;
                 }
-                if(cq && !cq->ac.is_player_invisible())
+                if(cq) 
                 {
-                    cq->addevent(shot);
-                    cq->setpushed();
-                    cq->ac.shoot();
+                    if (anti_cheat_enabled && (ac->is_player_invisible() || !ac->check_gun(shot->gun)))
+                    {
+                        delete shot;
+                    }
+                    else
+                    {
+                        cq->addevent(shot);
+                        cq->setpushed();
+                        if (anti_cheat_enabled) ac->shoot();
+                    }
                 }
                 else delete shot;
                 break;
@@ -2844,6 +2879,7 @@ namespace server
                 exp->gun = getint(p);
                 exp->id = getint(p);
                 int hits = getint(p);
+                anticheat *ac = cq ? &cq->ac : NULL;
                 loopk(hits)
                 {
                     if(p.overread()) break;
@@ -2854,7 +2890,17 @@ namespace server
                     hit.rays = getint(p);
                     loopk(3) hit.dir[k] = getint(p)/DNF;
                 }
-                if(cq && !cq->ac.is_player_invisible()) cq->addevent(exp);
+                if(cq) 
+                {
+                    if (anti_cheat_enabled && (ac->is_player_invisible() || !ac->check_gun(exp->gun)))
+                    {
+                        delete exp;
+                    }
+                    else
+                    {
+                        cq->addevent(exp);
+                    }
+                }
                 else delete exp;
                 break;
             }
@@ -2864,7 +2910,7 @@ namespace server
             {
                 int n = getint(p);
                 if(!cq) break;
-                if(cq->ac.is_player_invisible()) break;
+                if(anti_cheat_enabled && cq->ac.is_player_invisible()) break;
                 pickupevent *pickup = new pickupevent;
                 pickup->ent = n;
                 cq->addevent(pickup);
@@ -3036,7 +3082,7 @@ namespace server
                 if((ci->state.state==CS_SPECTATOR && !ci->privilege && !ci->local) || !notgotitems || strcmp(ci->clientmap, smapname)) { while(getint(p)>=0 && !p.overread()) getint(p); break; }
                 while((n = getint(p))>=0 && n<MAXENTS && !p.overread())
                 {
-                    server_entity se = { NOTUSED, 0, false };
+                    server_entity se = { NOTUSED, 0, false, -1 };
                     while(sents.length()<=n) sents.add(se);
                     sents[n].type = getint(p);
                     sents_type_index[sents[n].type] = n;
@@ -3052,15 +3098,15 @@ namespace server
 
             case N_EDITENT:
             {
+                int i = getint(p);
+                loopk(3) getint(p);
+                int type = getint(p);
+                loopk(5) getint(p);
                 if (anti_cheat_enabled && !m_edit)
                 { 
                     ci->ac.edit_packet(type);
                     break;
                 }
-                int i = getint(p);
-                loopk(3) getint(p);
-                int type = getint(p);
-                loopk(5) getint(p);
                 if(!ci || ci->state.state==CS_SPECTATOR) break;
                 QUEUE_MSG;
                 bool canspawn = canspawnitem(type);
@@ -3080,13 +3126,13 @@ namespace server
 
             case N_EDITVAR:
             {
+                int type = getint(p);
+                getstring(text, p);
                 if (anti_cheat_enabled && !m_edit)
                 { 
                     ci->ac.edit_packet(type);
                     break;
                 }
-                int type = getint(p);
-                getstring(text, p);
                 switch(type)
                 {
                     case ID_VAR: getint(p); break;

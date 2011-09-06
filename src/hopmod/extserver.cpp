@@ -24,7 +24,7 @@ struct disconnect_info
 static int execute_disconnect(void * info_vptr)
 {
     disconnect_info * info = reinterpret_cast<disconnect_info *>(info_vptr);
-    clientinfo * ci = reinterpret_cast<clientinfo *>(getclientinfo(info->cn));
+    clientinfo * ci = getinfo(info->cn);
     if(!ci || ci->sessionid != info->session_id)
     {
         delete info;

@@ -122,6 +122,8 @@ namespace server
     extern void shutdown();
     extern bool ctftkpenalty;
     extern bool spec_slots;
+    extern bool anti_cheat_enabled;
+    extern int anti_cheat_system_rev;
 }
 
 #endif

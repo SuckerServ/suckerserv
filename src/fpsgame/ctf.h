@@ -283,14 +283,25 @@ struct ctfservmode : servmode
         }
     }
 
-    void takeflag(clientinfo *ci, int i, int version)
+
+    void takeflag(clientinfo *ci, int i, int version, bool ctfmode)
     {
+        anticheat *ac = &ci->ac;
+
+        if (anti_cheat_enabled) 
+        {
+            if (!ctfmode && ac->lastspawn > -1 && totalmillis - ac->lastspawn >= 2000)
+            {
+                ac->impossible(3, NULL);
+                return;
+            }
+            if (ac->is_player_invisible()) return;      
+        }
+        
         if(notgotflags || !flags.inrange(i) || ci->state.state!=CS_ALIVE || !ci->team[0]) return;
-
-        if(ci->ac.is_player_invisible()) return;
-
+            
         flag &f = flags[i];
-
+        
         vec flag_location = vec(0, 0, 0);
 
         bool flag_dropped = f.dropper > -1;
@@ -349,7 +360,7 @@ struct ctfservmode : servmode
                 cheat(ci->clientnum, 10, (int)flag_dist);
             }
             */
-            ci->ac.check_get_flag(distance(flag_location, ci->state.o));
+            ac->check_get_flag(distance(flag_location, ci->state.o));
         }
     }
 
@@ -427,17 +438,11 @@ struct ctfservmode : servmode
                 {
                     if(m_hold) 
                     {
-                        if (!holdspawns.inrange(i) || !vec_equal(holdspawns[i].o, o))
-                        {
-                            modified = true;
-                        }
+                        if (!holdspawns.inrange(i) || !vec_equal(holdspawns[i].o, o)) modified = true;
                     }
                     else 
                     {
-                        if (!flags.inrange(i) || flags[i].team != team || !vec_equal(flags[i].spawnloc, o))
-                        {
-                            modified = true;
-                        }
+                        if (!flags.inrange(i) || flags[i].team != team || !vec_equal(flags[i].spawnloc, o)) modified = true;
                     }
                 }
             }
@@ -480,7 +485,7 @@ case N_TRYDROPFLAG:
 case N_TAKEFLAG:
 {
     int flag = getint(p), version = getint(p);
-    if((ci->state.state!=CS_SPECTATOR || ci->local || ci->privilege) && cq && smode==&ctfmode) ctfmode.takeflag(cq, flag, version);
+    if((ci->state.state!=CS_SPECTATOR || ci->local || ci->privilege) && cq) ctfmode.takeflag(cq, flag, version, smode==&ctfmode);
     break;
 }
 

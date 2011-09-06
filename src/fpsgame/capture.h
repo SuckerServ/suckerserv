@@ -517,10 +517,7 @@ struct captureservmode : servmode
                 vec o;
                 loopk(3) o[k] = max(getint(p)/DMF, 0.0f);
                 if(p.overread()) break;
-                if (!bases.inrange(i) || bases[i].ammotype != ammotype || !vec_equal(bases[i].o, o))
-                {
-                    modified = true;
-                }
+                if (!bases.inrange(i) || bases[i].ammotype != ammotype || !vec_equal(bases[i].o, o)) modified = true;
             }
             if (modified)
             {
