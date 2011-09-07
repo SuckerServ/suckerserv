@@ -40,7 +40,7 @@ local function setmaster(cn, hash, set)
         else
             server.set_invisible_admin(cn)
         end
-    elseif server.admin_password ~= "" and server.hashpassword(cn, server.master_password) == hash then
+    elseif server.master_password ~= "" and server.hashpassword(cn, server.master_password) == hash then
         if no_master then
             server.setmaster(cn) 
         else
