@@ -151,8 +151,6 @@ end
 
 accept_next(irc_bot)
 
-end)
-
 
 -- begin of game events
 
@@ -476,3 +474,5 @@ server.event_handler("intermission", function()
 end)
 
 -- end of Awards listener
+
+end)
