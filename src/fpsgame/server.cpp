@@ -2632,7 +2632,7 @@ namespace server
             case N_SOUND:
             {
                 int sound = getint(p);
-                if (sound == S_JUMP && anti_cheat_enabled && cq->ac.is_player_invisible()) break;
+                if (sound == S_JUMP && anti_cheat_enabled && cq && cq->ac.is_player_invisible()) break;
 
                 if (sound != S_JUMP && sound != S_LAND && sound != S_NOAMMO 
                    && (m_capture && sound != S_ITEMAMMO))
