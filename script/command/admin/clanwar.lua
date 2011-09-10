@@ -50,8 +50,10 @@ end
 
 local disconnect = server.event_handler("disconnect", function(cn)
     if not running then return; end
-    if players[server.player_id(cn)] then server.pausegame(true) end
-    players[server.player_id(cn)] = "not_loaded"
+    if players[server.player_id(cn)] then
+        server.pausegame(true)
+        players[server.player_id(cn)] = "not_loaded"
+    end
 end)
 
 local active = server.event_handler("maploaded", function(cn)
