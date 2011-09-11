@@ -328,7 +328,7 @@ end)
 
 --> MapBattle Listener
 server.event_handler("intermission", function() -- shows wich maps are selected
-    server.sleep(500, function()
+    server.sleep(mapbattle.delay+500, function()
         if server.playercount < 1 then return end
         sendmsg(string.format(irc_color_pink("MAPBATTLE: ")..irc_color_green("MAP1: ")..irc_color_blue("%s ")..irc_color_green("or MAP2: ")..irc_color_blue("%s"), mapbattle.maps[1], mapbattle.maps[2]))
     end)
