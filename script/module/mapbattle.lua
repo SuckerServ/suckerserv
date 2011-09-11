@@ -1,139 +1,89 @@
 --[[
     Vote for map at intermission 
-    By piernov -- Original script from hopmod-extentions, thanks to killme_nl
+    By piernov
 ]]
 
-local mapbattle = { mode = {} }
-local votes1 = 0
-local votes2 = 0
-local has_voted = {}
-local map_changed = false
-local mapa = nil
-local mapb = nil
-local mode = nil
-local voted = 0
+mapbattle = {}
+mapbattle.delay = 1000 -- Time to wait before starting mapbattle
+mapbattle.timeout = server.intermission_time - 2500 -- Time to wait for votes
+mapbattle.range = 2 -- Distance between nextmap and second map in maprotation
 
-server.mapbattle_running = false
-mapbattle.selected = "MAPBATTLE" --mode on intermission
-mapbattle.timeout = server.intermission_time - 1000
-mapbattle.defaultmap = "ot"
-
-function mapbattle.reset_votes()
-    votes1 = 0
-    votes2 = 0
-    has_voted = {}
-    map_changed = false
-    mode = nil
-    mapa = nil
-    mapb = nil
-    voted = 0
-    server.mapbattle_running = false
+function mapbattle.clean()
+    mapbattle.votes = { {}, {} }
+    mapbattle.maps = {}
+    mapbattle.map_changed = false
+    mapbattle.running = false
 end
 
 function mapbattle.get_next_map(num, mode)
-    if mode == nil then mode = server.gamemode or "ffa" end
-    maps =  map_rotation.get_map_rotation(mode)
-    local mapvar = maps[mode]
-    local playing = 0
-    for k,v in pairs(mapvar) do
+    local maps = map_rotation.get_map_rotation(mode)[mode]
+	local playing = 1
+    for k,v in ipairs(maps) do
         if v == server.map then 
             playing = k
         end
     end
-    local countmaps = #mapvar or 0
-    if playing > countmaps-2 then playing = 0 end
-    local nextmap = mapvar[playing+num]
-    return nextmap or mapbattle.defaultmap
+    if playing > (table_size(maps)-num) then playing = 1 end
+    return maps[playing+num]
 end
 
-function mapbattle.winner(map1, map2)
-    if votes1 < votes2 then
-        server.msg(string.format(server.mapbattle_winner_message, map2))
-        return map2
+function mapbattle.winner()
+    if table_size(mapbattle.votes[1]) >= table_size(mapbattle.votes[2]) then
+        return mapbattle.maps[1]
     else
-        server.msg(string.format(server.mapbattle_winner_message, map1))
-        return map1
+        return mapbattle.maps[2]
     end
 end
 
 function mapbattle.process_vote(cn, vote)
-    for _,player in pairs(server.players()) do
-        if cn == player then
-            isplayer=true
-        end
-    end
-    if not isplayer then
+    if vote ~= "1" and vote ~= "2" then return end
+    vote = tonumber(vote)
+
+    if table_count(server.players(), cn) ~= 1 then
         server.player_msg(cn, server.mapbattle_cant_vote_message)
-        return -1
+        return false
     else
-        isplayer = false
-        if has_voted[cn] == true then
+        if mapbattle.votes[1][cn] == true or mapbattle.votes[2][cn] == true then
             server.player_msg(cn, server.mapbattle_vote_already)
-            return -1
+            return false
         end
-        if vote == "1" or vote == mapa then
-            map = mapa
-            votes1 = votes1 + 1
-        elseif vote == "2" or vote == mapb then
-            map = mapb
-            votes2 = votes2 + 1
-        else
-            return -1
-        end
-        
-        voted = voted + 1
-        has_voted[cn] = true
-        server.msg(string.format(server.mapbattle_vote_ok, server.player_displayname(cn), map))
-
-        if voted >= (#server.players()/1.5) then
-            if map_changed == true then return end
-            map_changed = true
-            server.changemap(mapbattle.winner(mapa, mapb), mode)
-        end
-        return
+        mapbattle.votes[vote][cn] = true
+        server.msg(string.format(server.mapbattle_vote_ok, server.player_displayname(cn), mapbattle.maps[vote]))
+        return true
     end
 end
 
-
-mapbattle.mode.DEFAULT = function (map1, map2, gamemode) 
-    server.sleep(mapbattle.timeout, function()
-        server.changemap(map1, gamemode)
-    end)
+function mapbattle.start(map1, map2, mode)
+    mapbattle.clean()
+    mapbattle.maps = { map1, map2 }
+	server.msg(string.format(server.mapbattle_vote_message, mapbattle.maps[1], mapbattle.maps[2]))
+	mapbattle.running = true
+	server.sleep(mapbattle.timeout, function()
+        mapbattle.running = false
+		if not mapbattle.map_changed then
+            server.msg(string.format(server.mapbattle_winner_message, mapbattle.winner()))
+			mapbattle.map_changed = true
+		end
+	end)
 end
 
-mapbattle.mode.MAPBATTLE = function (map1, map2, gamemode)
-    server.sleep(1000, function()
-        mapa = map1
-        mapb = map2
-        mode = gamemode
-        server.msg(string.format(server.mapbattle_vote_message, map1, map2))
-        server.mapbattle_running = true
-
-        server.sleep(mapbattle.timeout, function()
-            if not map_changed then
-                server.mapbattle_running = false
-                server.changemap(mapbattle.winner(mapa, mapb), gamemode)
-                map_changed = true
-            end
-        end)
-
-    end)
-end
+server.event_handler("setnextgame", function()
+    server.next_mode = server.gamemode
+    server.next_map = mapbattle.winner()
+    return -1
+end)
 
 server.event_handler("intermission", function() 
-        mapbattle.reset_votes()
-        local map1 = map_rotation.get_map_name(server.gamemode)
-        local map2 = mapbattle.get_next_map(2)
-        local intermission_mode = mapbattle.mode[mapbattle.selected] or mapbattle.mode.DEFAULT
-        intermission_mode(map1, map2, server.gamemode)
+    server.sleep(mapbattle.delay, function()
+        mapbattle.start(map_rotation.get_map_name(server.gamemode), mapbattle.get_next_map(mapbattle.range, server.gamemode), server.gamemode)
+    end)
 end)
 
 server.event_handler("mapchange", function()
-    map_changed = true
+    mapbattle.map_changed = true
 end)
 
 server.event_handler("text", function(cn, text)
-    if map_changed  or not server.mapbattle_running then return end
-    if text ~= "1" and text ~= "2" and text ~= mapa and text ~= mapb then return end
-    mapbattle.process_vote(cn, text)
+    if mapbattle.map_changed or not mapbattle.running then return end
+    if mapbattle.process_vote(cn, text) then return -1 end
 end)
