@@ -110,6 +110,8 @@ server.event_handler("intermission", function()
         if deaths == 0 then deaths = 1 end
         best.kpd.value = round(frags / deaths, 2)
     end
+
+    server.awards = best
     
     local function format_message(record_name, record, append)
         if not record.value or #record.cn > 2 then return "" end
