@@ -224,7 +224,7 @@ local function player_ranking(player_name)
                     WHERE (SELECT frags
                             FROM playertotals
                             WHERE name = '%s') > 0]]
-    local player_ranking = execute_statement(string.format(sql, player_name, player_name))
+    local player_ranking = execute_statement(string.format(sql, escape_string(player_name), escape_string(player_name)))
     return player_ranking:fetch()
 end
 
@@ -249,7 +249,7 @@ local function player_ranking_by_period(player_name, period)
                         WHERE UNIX_TIMESTAMP(games.datetime) BETWEEN UNIX_TIMESTAMP()-%d AND UNIX_TIMESTAMP() AND name = '%s'
                         GROUP BY name)>0]]
 
-    local player_ranking = execute_statement(string.format(sql, period, period, player_name, period, player_name))
+    local player_ranking = execute_statement(string.format(sql, period, period, escape_string(player_name), period, escape_string(player_name)))
     return player_ranking:fetch()
 end
 
@@ -261,7 +261,7 @@ local function player_stats_by_period(name, period)
             GROUP BY name
             ORDER BY sum(frags) DESC ]]
 
-	player_stats_by_period = execute_statement(string.format(sql, period, name))
+	player_stats_by_period = execute_statement(string.format(sql, period, escape_string(name)))
 	row = player_stats_by_period:fetch ({}, "a")
     return row
 end
