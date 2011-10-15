@@ -41,7 +41,7 @@ if using_mysql then
         database    = server.stats_mysql_database,
         schema      = "./script/module/stats/mysql_schema.sql",
         triggers    = "./script/module/stats/mysql_triggers.sql",
-        install     = server.stats_mysql_install == 0,
+        install     = server.stats_mysql_install == "true",
         servername  = server.stats_servername
     })
 end
