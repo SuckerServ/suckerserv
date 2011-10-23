@@ -71,7 +71,7 @@ private:
         m_consume = std::min(bytes_buffered + bytes_transferred, max_consume);
         handler(ec, boost::asio::buffer_cast<const PodType *>(
             *m_buffer.data().begin()), static_cast<std::size_t>(m_consume/sizeof(PodType)));
-        assert(!m_consume);
+        if (!m_consume) return; // not the best solution, but doesn't "crash" the server at least.
     }
     
     StreamBufferClass & m_buffer;
