@@ -1105,6 +1105,13 @@ void player_nospawn(int cn, int no_spawn)
     ci->no_spawn = no_spawn;
 }
 
+void updateservinfo(int cn, const char* servername)
+{
+    clientinfo *ci = getinfo(cn);
+    if (!ci) return;
+    sendf(ci->clientnum, 1, "ri5s", N_SERVINFO, ci->clientnum, PROTOCOL_VERSION, ci->sessionid, 0, servername);
+}
+
 #include <static_item_functions.h>
 
 #endif

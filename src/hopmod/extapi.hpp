@@ -128,6 +128,8 @@ namespace server
     void set_player_privilege(int, int);
     void player_freeze(int);
     void player_unfreeze(int);
+
+    void updateservinfo(int, const char*);
     void set_spy(int, bool);
     
     void team_msg(const char *,const char *);
