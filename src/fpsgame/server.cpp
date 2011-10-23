@@ -1739,6 +1739,8 @@ namespace server
         
         if(smode) smode->setup();
         
+        loopv(clients) clients[i]->ac.reset();
+        
         event_mapchange(event_listeners(), boost::make_tuple(smapname, modename(gamemode,"unknown")));
         
         next_timeupdate = 0; //as soon as possible
@@ -2469,6 +2471,7 @@ namespace server
                 }
 
                 ci->ac.reset(sender);
+                ci->state.lastdeath = -5000;
 
                 ci->playermodel = getint(p);
                 
@@ -2584,8 +2587,10 @@ namespace server
                        
                         int real_lag = totalmillis - cp->lastposupdate;
                         int last_lag = cp->last_lag;
-
+                        
                         anticheat *ac = &cp->ac; 
+                        
+                        if (cp->lastposupdate > 0) ac->check_lag(real_lag);
                         
                         if (pos != cp->state.o && last_lag > 0 && real_lag > 0 && real_lag <= 35
                             && last_lag <= 35 && cp->lag <= 35 && cp->state.state == CS_ALIVE)
@@ -2593,12 +2598,20 @@ namespace server
                         
                             if (!ac->was_falling && !falling) 
                             {
-                                ac->check_speedhack_dist(distance(pos, cp->state.o));
-                            }
-                                
-                            if (falling) 
-                            {
-                                ac->check_jumphack(pos.z - cp->state.o.z, pos.z);
+                                float dist = distance(pos, cp->state.o);
+                                ac->check_speedhack_dist(dist, real_lag);
+                               /* float speed = dist / (float)4;
+                                if (speed > 1.0)
+                                {
+                                    defformatstring(debug)("%s speed %.2f", ci->name, speed);
+                                    loopv(clients)
+                                    {
+                                        if (clients[i]->privilege >= 2)
+                                        {
+                                            clients[i]->sendprivtext(debug);
+                                        }
+                                    }
+                                }*/
                             }
                                 
                         }
@@ -2811,6 +2824,7 @@ namespace server
                 cq->state.state = CS_ALIVE;
                 cq->state.gunselect = gunselect;
                 cq->exceeded = 0;
+                cq->lastposupdate = 0;
                 if (anti_cheat_enabled && ac)
                 {
                     ac->spawn();

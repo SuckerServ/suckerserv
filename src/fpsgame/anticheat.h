@@ -95,6 +95,7 @@ extern bool anti_cheat_enabled;
 extern int is_invisible(int);
 extern void cheat(int cn, int cheat, int info1, const char *info2="");
 extern vector<server_entity> sents;
+extern clientinfo *getinfo(int n);
 
 class anticheat
 {
@@ -105,6 +106,8 @@ class anticheat
     int speedhack2, speedhack2_lastreset, speedhack2_strangedist_c;
     int positionhack;
     float speedhack2_dist, speedhack2_strangedist;
+	bool lagged;
+    int last_lag;
     int timetrial;
     int lastshoot, lastjumppad, lastteleport, lastdamage, lastspawn, spawns;
     int lastjump, lastgun;
@@ -132,12 +135,13 @@ class anticheat
         spawns = 0;
         lastgun = -1;
         exceed_position = 0;
-       
+
         reset_speedhack_dist();
         reset_speedhack_ping();
         reset_last_action();
         reset_jumphack();
         reset_invisible();
+        reset_lag();
         
         initialized = true;
     }
@@ -190,14 +194,11 @@ class anticheat
      * Speed Hack Position
      */
 
-    void check_speedhack_dist(float dist)
+    void check_speedhack_dist(float dist, int lag)
     {
         if (!initialized) return;
-        if (dist >= 5.5) // DON'T CHANGE THIS VALUE!!!
-        {
-          //  defformatstring(debug)("dist: %.2f", dist);
-          //  sendservmsg(debug);
-
+        if (!lagged && dist >= 5.5) // DON'T CHANGE THIS VALUE!!!
+        {          
             if (dist < 50) // < 12.5x
             {
                 speedhack2++;
@@ -217,7 +218,7 @@ class anticheat
                 speed = 0;
             }
             else*/
-            if (totalmillis - speedhack2_lastreset >= 60000)
+            if (totalmillis - speedhack2_lastreset >= 45000)
             {
                 reset_speedhack_dist();
             }
@@ -399,7 +400,7 @@ class anticheat
         {
             if (is_spawn)
             { 
-                if (spawns < 2) correct_gun = true;
+                if (spawns < 3) correct_gun = true;
             }
             else
             { 
@@ -445,6 +446,25 @@ class anticheat
         cheat_info[sizeof(cheat_info)-1] = 0;
         cheat(clientnum, 22, 0, cheat_info);
         return true;
+    }
+    
+    /*
+     * Lag
+     */
+     
+    void check_lag(int lag)
+    {
+        if (lag >= 500) 
+        {
+            lagged = true;
+            last_lag = totalmillis;
+            return;
+        }
+        
+        if (last_lag > 0 && totalmillis >= (last_lag + 10000)) 
+        {
+            reset_lag();
+        }
     }
     
     private:
@@ -494,7 +514,7 @@ class anticheat
     
     int is_speedhack_dist()
     {
-        if (speedhack2 >= 10) 
+        if (speedhack2 >= 30) 
         {
             float speed = speedhack2_dist / (float)speedhack2 / (float)4;
             if (speed < 1.2) return 0;
@@ -603,7 +623,7 @@ class anticheat
     
     void fix_items()
     {
-        if (clientnum < 0 || clientnum >= 128) return;
+        if (clientnum < 0 || clientnum >= 128 || !getinfo(clientnum)) return;
         
         bool item_mode = is_item_mode();
         
@@ -614,6 +634,16 @@ class anticheat
                 sendf(clientnum, 1, "ri3", N_ITEMACC, i, -1); 
             } 
         } 
+    }
+    
+    /*
+     * Lag
+     */
+     
+    void reset_lag()
+    {
+        lagged = false;
+        last_lag = 0; 
     }
 
 };
