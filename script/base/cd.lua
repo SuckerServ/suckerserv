@@ -99,7 +99,7 @@ local type = { }
 -- "log long", "log short", "points"
 type[1] = { "flag-score-hack (flags: %i)", "flag-limit exceeded", 100 }
 type[2] = { "edit-packet-in-non-edit-mode (type: %s)", "fly hack", 100 }
-type[3] = { "unknown packet (type: %i)", "unknown packet", 50 }
+type[3] = { "unknown packet (type: %s)", "unknown packet", 50 }
 type[4] = { "unknown-weapon (unknown-gun: %s)", "unknown weapon", 34 }
 type[6] = { "speed-hack-ping (avg-speed: %.2fx)", "speedhack ping", 10 } 
 type[7] = { "spawn-time-hack (spawntime: %i ms)", "spawntime hack", spawn_hack } 
@@ -173,7 +173,7 @@ local function cheat(cn, cheat_type, info, info_str)
         if (cheat_type == 3 or cheat_type == 2) and info > 0 then info = network_type(info) end
         if cheat_type == 4 then info = gun_type(info) end
         if cheat_type == 8 then info = sound_type(info) end
-		if cheat_type == 14 then info_str = string.format(info_str, gun_type(info)) end
+        if cheat_type == 14 then info_str = string.format(info_str, gun_type(info)) end
         if cheat_type == 6 or cheat_type == 16 or cheat_type == 17 then info = info / 100000 end
 
         if info_str ~= "" then info_str = " (INFO: " .. info_str .. ")" end
