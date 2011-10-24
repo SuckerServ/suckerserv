@@ -321,7 +321,7 @@ end)
 -- Auth Listener for masterauth events
 auth.listener("", function(cn, user_id, domain, status)
     if status ~= auth.request_status.SUCCESS then return end
-    local msg = string.format(irc_color_green("%i")..irc_color_blue("successfully authed"), server.player_name(cn), cn)
+    local msg = string.format(irc_color_green("%s (%i)")..irc_color_blue("successfully authed"), server.player_name(cn), cn)
     sendmsg(irc_color_red("AUTH: ") .. msg)
 end)
 
