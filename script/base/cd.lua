@@ -220,7 +220,29 @@ local function gamemode_has_respawn_wait_time()
     return false
 end
 
+local is_intermission = false
+
+local first_spawn = { }
+
+server.event_handler("intermission", function()
+    is_intermission = true
+end)
+server.event_handler("mapchange", function()
+    is_intermission = false
+    first_spawn = { }
+end)
+server.event_handler("disconnect", function(cn)
+    first_spawn[cn] = nil
+end)
+
 server.event_handler("spawn", function(cn)
+    if is_intermission then return end
+    
+    if first_spawn[cn] == nil then
+        first_spawn[cn] = true
+        return
+    end
+    
     local gamemode = server.gamemode
 
     if not gamemode_has_respawn_wait_time() then return end
