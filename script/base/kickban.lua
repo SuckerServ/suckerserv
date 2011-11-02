@@ -39,7 +39,7 @@ function server.ban(ipmask, bantime, admin, reason, name)
     end
     
     reason = reason or ""
-	
+
     server.set_ip_var(ipmask, "ban_name", name)
     server.set_ip_var(ipmask, "ban_time", os.date())
     server.set_ip_var(ipmask, "ban_expire", os.time() + bantime)
@@ -60,7 +60,7 @@ function server.unban(ipmask)
     server.log(log_message)
     server.log_status(log_message)
     
-	server.set_ip_var(ipmask, "ban_name", nil)    
+    server.set_ip_var(ipmask, "ban_name", nil)    
     server.set_ip_var(ipmask, "ban_expire", nil)
     server.set_ip_var(ipmask, "ban_admin", nil)
     server.set_ip_var(ipmask, "ban_reason", nil)
@@ -90,8 +90,9 @@ end)
 
 server.event_handler("clearbans_request", function()
     
-    for _, iplong in pairs(temporary_bans) do
-        server.unban(iplong)
+    -- Clear all bans
+    for ipmask, vars in pairs(server.ip_vars()) do
+        server.unban(ipmask)
     end
     
     temporary_bans = {}
