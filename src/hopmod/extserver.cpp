@@ -1098,6 +1098,8 @@ void player_respawn(int cn)
     try_respawn(ci, ci);
 }
 
+int enet_time_get_() { return (int)enet_time_get(); }
+
 void player_nospawn(int cn, int no_spawn)
 {
     clientinfo *ci = getinfo(cn);

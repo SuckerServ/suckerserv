@@ -61,6 +61,8 @@ namespace server
     extern void add_base(int type, int x, int y, int z);
     extern void prepare_capture_mode();
     
+    int enet_time_get_();
+    
     void started();
     int player_sessionid(int);
     int player_id(lua_State * L);

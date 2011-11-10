@@ -164,6 +164,9 @@ void bind_core_functions(lua_State * L, int T)
     
     int get_lua_stack_size();
     bind_function(L, T, "lua_stack_size", get_lua_stack_size);
+    
+    bind_function(L, T, "enet_time_set", enet_time_set);
+    bind_function(L, T, "enet_time_get", server::enet_time_get_);
 }
 
 template<int Constant>

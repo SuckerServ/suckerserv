@@ -525,11 +525,21 @@ static void check_timeouts()
     }
 }
 
+uint totalsecs = 0;
+
 static void update_time_vars()
 {
     int millis = (int)enet_time_get();
     curtime = millis - totalmillis;
     lastmillis = totalmillis = millis;
+
+    static int lastsec = 0;
+    if(totalmillis - lastsec >= 1000) 
+    {
+        int cursecs = (totalmillis - lastsec) / 1000;
+        totalsecs += cursecs;
+        lastsec += cursecs * 1000;
+    }
 }
 
 void update_server(const boost::system::error_code & error)
