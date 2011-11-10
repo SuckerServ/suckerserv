@@ -645,6 +645,17 @@ static int constfolding (OpCode op, expdesc *e1, expdesc *e2) {
     case OP_POW: r = luai_numpow(v1, v2); break;
     case OP_UNM: r = luai_numunm(v1); break;
     case OP_LEN: return 0;  /* no constant folding for 'len' */
+#if defined(LUA_BITWISE_OPERATORS)
+    case OP_BOR: luai_logor(r, v1, v2); break;
+    case OP_BAND: luai_logand(r, v1, v2); break;
+    case OP_BXOR: luai_logxor(r, v1, v2);  break;
+    case OP_BLSHFT: luai_loglshft(r, v1, v2); break;
+    case OP_BRSHFT: luai_logrshft(r, v1, v2); break;
+    case OP_BNOT: luai_lognot(r, v1); break;
+    case OP_INTDIV:
+      if (v2 == 0) return 0;  /* do not attempt to divide by 0 */
+      r = luai_numintdiv(v1, v2); break;
+#endif
     default: lua_assert(0); r = 0; break;
   }
   if (luai_numisnan(r)) return 0;  /* do not attempt to produce NaN */
@@ -687,6 +698,14 @@ void luaK_prefix (FuncState *fs, UnOpr op, expdesc *e) {
   expdesc e2;
   e2.t = e2.f = NO_JUMP; e2.k = VKNUM; e2.u.nval = 0;
   switch (op) {
+#if defined(LUA_BITWISE_OPERATORS)
+    case OPR_BNOT: {
+      if (e->k == VK)
+        luaK_exp2anyreg(fs, e);  /* cannot operate on non-numeric constants */
+      codearith(fs, OP_BNOT, e, &e2);
+      break;
+    }
+#endif
     case OPR_MINUS: {
       if (e->k == VK)
         luaK_exp2anyreg(fs, e);  /* cannot operate on non-numeric constants */
@@ -764,6 +783,14 @@ void luaK_posfix (FuncState *fs, BinOpr op, expdesc *e1, expdesc *e2) {
     case OPR_DIV: codearith(fs, OP_DIV, e1, e2); break;
     case OPR_MOD: codearith(fs, OP_MOD, e1, e2); break;
     case OPR_POW: codearith(fs, OP_POW, e1, e2); break;
+#if defined(LUA_BITWISE_OPERATORS)
+    case OPR_BOR: codearith(fs, OP_BOR, e1, e2); break;
+    case OPR_BAND: codearith(fs, OP_BAND, e1, e2); break;
+    case OPR_BXOR: codearith(fs, OP_BXOR, e1, e2); break;
+    case OPR_BLSHFT: codearith(fs, OP_BLSHFT, e1, e2); break;
+    case OPR_BRSHFT: codearith(fs, OP_BRSHFT, e1, e2); break;
+    case OPR_INTDIV: codearith(fs, OP_INTDIV, e1, e2); break;
+#endif
     case OPR_EQ: codecomp(fs, OP_EQ, 1, e1, e2); break;
     case OPR_NE: codecomp(fs, OP_EQ, 0, e1, e2); break;
     case OPR_LT: codecomp(fs, OP_LT, 1, e1, e2); break;
