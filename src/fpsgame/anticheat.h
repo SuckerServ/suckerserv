@@ -705,6 +705,7 @@ void anti_cheat_parsepacket(int type, clientinfo *ci, clientinfo *cq, packetbuf 
             ac_check_invis;
             ac->check_gun(getint(p));
             ac->shoot();
+            break;
         }
         
         case N_EXPLODE:
@@ -896,7 +897,7 @@ void anti_cheat_parsepacket(int type, clientinfo *ci, clientinfo *cq, packetbuf 
             if (flag_dropped) break;
             
             float flag_dist = distance(flag_location, ac->pos); 
-            if (flag_dist >= 200)
+            if (flag_dist >= 250)
             {
                 if ((m_protect && (f.invistime && !is_team_flag)) || (!has_flag && score_flag && !m_protect)) break;
                 ac->get_flag(flag_dist, m_protect ? !score_flag : score_flag);
@@ -1005,3 +1006,4 @@ void anti_cheat_serverupdate()
 }
 
 #endif
+
