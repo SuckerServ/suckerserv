@@ -285,19 +285,7 @@ struct ctfservmode : servmode
 
 
     void takeflag(clientinfo *ci, int i, int version, bool ctfmode)
-    {
-        anticheat *ac = &ci->ac;
-
-        if (anti_cheat_enabled) 
-        {
-            if (!ctfmode && ac->lastspawn > -1 && totalmillis - ac->lastspawn >= 2000)
-            {
-                ac->impossible(3, NULL);
-                return;
-            }
-            if (ac->is_player_invisible()) return;      
-        }
-        
+    {        
         if(notgotflags || !flags.inrange(i) || ci->state.state!=CS_ALIVE || !ci->team[0]) return;
             
         flag &f = flags[i];
@@ -336,7 +324,8 @@ struct ctfservmode : servmode
         {
             loopvj(flags) if(flags[j].owner==ci->clientnum) { scoreflag(ci, i, j); break; }
         }
-        
+		
+        #if 0
         if (anti_cheat_enabled) 
         {
         /*
@@ -362,6 +351,7 @@ struct ctfservmode : servmode
             */
             ac->check_get_flag(distance(flag_location, ci->state.o));
         }
+		#endif
     }
 
     void update()
@@ -424,35 +414,6 @@ struct ctfservmode : servmode
     void parseflags(ucharbuf &p, bool commit, int sender=-1)
     {
         int numflags = getint(p);
-        
-        if (anti_cheat_enabled && !notgotflags && sender > -1)
-        {
-            bool modified = false;
-            loopi(numflags)
-            {
-                int team = getint(p);
-                vec o;
-                loopk(3) o[k] = max(getint(p)/DMF, 0.0f);
-                if(p.overread()) break;
-                if(true)
-                {
-                    if(m_hold) 
-                    {
-                        if (!holdspawns.inrange(i) || !vec_equal(holdspawns[i].o, o)) modified = true;
-                    }
-                    else 
-                    {
-                        if (!flags.inrange(i) || flags[i].team != team || !vec_equal(flags[i].spawnloc, o)) modified = true;
-                    }
-                }
-            }
-            if (modified)
-            {
-                clientinfo *ci = getinfo(sender);
-                if (ci) ci->ac.modified_map_flags();
-            }           
-            return;
-        }
         
         loopi(numflags)
         {

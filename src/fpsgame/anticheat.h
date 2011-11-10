@@ -5,7 +5,7 @@
  *
  */
 
-#ifdef anticheat
+#ifdef anticheat_helper_func
 
 bool anti_cheat_enabled = true;
 bool anti_cheat_add_log_to_demo = true;
@@ -89,7 +89,8 @@ bool vec_equal(vec a, vec b)
     return true;
 }
 
-#else
+#endif 
+#ifdef anticheat_class
  
 extern bool anti_cheat_enabled;
 extern int is_invisible(int);
@@ -118,7 +119,9 @@ class anticheat
     float last_fall_loc;
     float speedhack2_lastdist, jumpdist, lastjumphack_dist;
     bool was_falling;
+    vec pos;
     bool initialized;
+    
 
     void reset(int cn=-1)
     {
@@ -135,7 +138,7 @@ class anticheat
         spawns = 0;
         lastgun = -1;
         exceed_position = 0;
-
+        
         reset_speedhack_dist();
         reset_speedhack_ping();
         reset_last_action();
@@ -491,6 +494,7 @@ class anticheat
         speedhack2_lastdist = 0;
         was_falling = false;
         speedhack2_lastreset = totalmillis;
+        pos = vec(-1e10f, -1e10f, -1e10f);
     }
     
     void reset_speedhack_ping()
@@ -648,4 +652,298 @@ class anticheat
 
 };
     
+#endif
+
+#ifdef anticheat_parsepacket
+
+#define AC_PROTOCOL_VERSION 258
+#define ac_check_sender if (ca->clientnum != ci->clientnum && ca->ownernum != ci->clientnum) break;
+#define ac_check_invis if (ca->state.state == CS_ALIVE && ac->is_player_invisible()) ci->state.state = CS_LAGGED;
+//TELEPORTER
+void anti_cheat_parsepacket(int type, clientinfo *ci, clientinfo *cq, packetbuf p)
+{
+    #if PROTOCOL_VERSION != AC_PROTOCOL_VERSION
+    throw;
+    #endif
+ 
+    clientinfo *ca = cq ? cq : ci;
+    anticheat *ac = &ca->ac;
+
+    switch(type)
+    {
+    
+        case N_JUMPPAD:
+        case N_TELEPORT:
+        {
+            ca = getinfo(getint(p));
+            if (!ca) break;
+            ac_check_sender;
+            ac_check_invis;
+            if (type == N_TELEPORT && ca->state.state == CS_ALIVE) ac->teleport(getint(p));
+            break;
+        }
+        
+        case N_SOUND:
+        {      
+            int sound = getint(p);
+
+            if (sound != S_JUMP && sound != S_LAND && sound != S_NOAMMO 
+                && (m_capture && sound != S_ITEMAMMO)) 
+            {
+                ac->unknown_sound(sound);
+                break;
+            }
+            if (sound == S_JUMP) ac_check_invis;
+            break;
+        }
+        
+        case N_SHOOT:
+        {
+            getint(p);
+            ac_check_invis;
+            ac->check_gun(getint(p));
+            ac->shoot();
+        }
+        
+        case N_EXPLODE:
+            ac_check_invis;
+            break;
+            
+        case N_ITEMPICKUP:
+        {
+            ac_check_invis;
+            int n = getint(p);
+            if (!sents.inrange(n)) 
+            {
+                ac->unknown_item(n, sents.length());
+                break;
+            }
+            if (!sents[n].spawned && totalmillis - sents[n].lastpickup >= 1000)
+            {   
+                ac->item_not_spawned(n, sents[n].spawntime);
+            }
+            break;
+        }
+ 
+        case N_POS:
+        {   
+            ca = getinfo(getuint(p));
+            if (!ca) break;
+            
+            ac_check_sender;
+            
+            ac = &ca->ac; 
+            if (!ac->initialized) return;
+            
+            p.get();
+            uint flags = getuint(p);
+            vec pos;
+            loopk(3)
+            {
+                int n = p.get(); n |= p.get()<<8; if(flags&(1<<k)) { n |= p.get()<<16; if(n&0x800000) n |= -1<<24; }
+                pos[k] = n/DMF;
+            }
+            
+            bool falling = flags&(1<<4);
+            
+            if (ca->state.state == CS_ALIVE)
+            {
+                /*
+                 * Position based speed-hack detection. 
+                 * Teleporters are giving false positives, that's why
+                 * I am decreasing speedhack2 @ N_TELEPORT.
+                 * Falling (= Jumping / Falling from somewhere) is excluded as well.
+                 */
+               
+                int real_lag = totalmillis - ca->lastposupdate;
+                int last_lag = ca->last_lag;
+
+                if (ca->lastposupdate > 0) ac->check_lag(real_lag);
+
+                if (pos != ac->pos && last_lag > 0 && real_lag > 0 && real_lag <= 35
+                    && last_lag <= 35 && ca->lag <= 35 && ca->state.state == CS_ALIVE)
+                {   
+
+                    if (!ac->was_falling && !falling) 
+                    {
+                        float dist = distance(pos, ac->pos);
+                        ac->check_speedhack_dist(dist, real_lag);
+                    }
+
+                }
+
+                if (!falling) ac->no_falling();
+
+                ac->was_falling = falling;
+            }
+            
+            ac->pos = pos;
+
+            break;
+        }
+        
+        case N_SPAWN:
+        {
+            int ls = getint(p), gunselect = getint(p);
+            
+            if (gunselect<GUN_FIST || gunselect>GUN_PISTOL) 
+            {
+                ac->unknown_weapon(gunselect);
+                break;
+            }
+            if ((ca->state.state!=CS_ALIVE && ca->state.state!=CS_DEAD) || ls!=ca->state.lifesequence || ca->state.lastspawn<0) break;
+            
+            ac->spawn();
+            
+            break;
+        } 
+
+        case N_GUNSELECT:
+        {
+            int gunselect = getint(p);
+            if (ca->state.state != CS_ALIVE) break;
+            if (gunselect < GUN_FIST || gunselect > GUN_PISTOL) 
+            {
+                ac->unknown_weapon(gunselect);
+                break;
+            }
+            ac->check_gun(gunselect);
+            break;
+        }
+
+        case N_ITEMLIST:
+        {
+            int n;
+            if (!notgotitems && gamemode != 1)
+            {
+                while((n = getint(p))>=0 && n<MAXENTS && !p.overread())
+                {
+                    int item_type = getint(p);
+                    if (sents[n].type != item_type)
+                    {
+                        ac->modified_map_items();
+                        break;
+                    }
+                }  
+                break;
+            }        
+            break;
+        }
+        
+        case N_INITFLAGS:
+        {
+            extern void ac_parseflags(ucharbuf &p, bool commit, clientinfo *ci);
+            if (smode == &ctfmode) ac_parseflags(p, (ca->state.state!=CS_SPECTATOR || ca->privilege) && !strcmp(ca->clientmap, smapname), ca);
+        }
+        
+        case N_BASES:
+        {
+            extern void ac_parsebases(ucharbuf &p, bool commit, clientinfo *ci);
+            if (smode == &capturemode) ac_parsebases(p, (ca->state.state!=CS_SPECTATOR || ca->privilege) && !strcmp(ca->clientmap, smapname), ca);
+            break;
+        }
+            
+        case N_TAKEFLAG:
+        {
+            if (smode != &ctfmode && ac->lastspawn > -1 && totalmillis - ac->lastspawn >= 2000)
+            {
+                ac->impossible(3, -1);
+                return;
+            }
+            ac->is_player_invisible();
+            break;
+        }
+        
+        case N_PING:
+            if (gamemillis - ci->maploaded > 5000) ac->ping();
+            break;
+        
+        case N_CLIENTPING:
+            ac->_ping = getint(p);
+            break;
+
+        case N_EDITENT:
+        case N_EDITVAR:
+        case N_EDITMODE:
+        case N_COPY:
+        case N_PASTE:
+        case N_CLIPBOARD:
+        {
+            if (!m_edit) ac->edit_packet(type);
+            break;
+        }
+        
+        default:;
+    }
+}
+
+void ac_parseflags(ucharbuf &p, bool commit, clientinfo *ci)
+{
+    int numflags = getint(p);
+    
+    if (!ctfmode.notgotflags && commit)
+    {
+        loopi(numflags)
+        {
+            int team = getint(p);
+            vec o;
+            loopk(3) o[k] = max(getint(p)/DMF, 0.0f);
+            if(p.overread()) break;
+            if(true)
+            {
+                if(m_hold) 
+                {
+                    if (!ctfmode.holdspawns.inrange(i) || !vec_equal(ctfmode.holdspawns[i].o, o))
+                    {
+                        ci->ac.modified_map_flags();
+                        return;
+                    }
+                }
+                else 
+                {
+                    if (!ctfmode.flags.inrange(i) || ctfmode.flags[i].team != team || !vec_equal(ctfmode.flags[i].spawnloc, o))
+                    {
+                        ci->ac.modified_map_flags();
+                        return;
+                    }
+                }
+            }
+        }         
+        return;
+    }
+}
+
+void ac_parsebases(ucharbuf &p, bool commit, clientinfo *ci)
+{
+    int numbases = getint(p);
+      
+    if (anti_cheat_enabled && !capturemode.notgotbases)
+    {
+        loopi(numbases)
+        {
+            int ammotype = getint(p);
+            vec o;
+            loopk(3) o[k] = max(getint(p)/DMF, 0.0f);
+            if(p.overread()) break;
+            if (!capturemode.bases.inrange(i) || capturemode.bases[i].ammotype != ammotype || !vec_equal(capturemode.bases[i].o, o))
+                ci->ac.modified_capture_bases();
+        }
+        return;
+    }
+}
+
+void anti_cheat_serverupdate()
+{
+    if (smode == &ctfmode && totalmillis % 10 == 0)
+    {
+        loopv(ctfmode.flags) 
+        {
+            ctfservmode::flag &f = ctfmode.flags[i];
+            clientinfo *ci = getinfo(f.owner);
+            if (!ci) continue;
+            if (ci->ac.invisiblehack_count >= 4) ctfmode.dropflag(ci, ci);
+        }
+    }
+}
+
 #endif

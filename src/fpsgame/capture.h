@@ -507,25 +507,6 @@ struct captureservmode : servmode
     void parsebases(ucharbuf &p, bool commit, int sender=-1)
     {
         int numbases = getint(p);
-        
-        if (anti_cheat_enabled && !notgotbases && sender > -1)
-        {
-            bool modified = false;
-            loopi(numbases)
-            {
-                int ammotype = getint(p);
-                vec o;
-                loopk(3) o[k] = max(getint(p)/DMF, 0.0f);
-                if(p.overread()) break;
-                if (!bases.inrange(i) || bases[i].ammotype != ammotype || !vec_equal(bases[i].o, o)) modified = true;
-            }
-            if (modified)
-            {
-                clientinfo *ci = getinfo(sender);
-                if (ci) ci->ac.modified_capture_bases();
-            }
-            return;
-        }
 
         loopi(numbases)
         {
