@@ -18,6 +18,54 @@ end
 
 server.format_duration = format_duration
 
+function format_duration_str(seconds, table)
+
+    local periods = { }
+    
+    periods[1] = { "centuries", 3155692600 }
+    periods[2] = { "decades", 315569260 }
+    periods[3] = { "years", 31556926 }
+    periods[4] = { "months", 2629743 }
+    periods[5] = { "weeks", 604800 }
+    periods[6] = { "days", 86400 }
+    periods[7] = { "hours", 3600 }
+    periods[8] = { "minutes", 60 }
+    periods[9] = { "seconds", 1 }
+
+    local durations = { }
+    
+    for _, p in ipairs(periods) do
+        local period = p[1]
+        local seconds_in_period = p[2]
+        
+        if seconds >= seconds_in_period then
+            local time = math.floor(seconds / seconds_in_period)
+            seconds = seconds - (time * seconds_in_period)
+            durations[#durations + 1] = { period, time }
+        end
+    end
+    
+    if table then return durations end
+
+    local formatted_time = ""
+    
+    for _, p in ipairs(durations) do
+        local period = p[1]
+        local time = p[2]     
+        formatted_time = string.format(
+            "%s %d %s",
+            formatted_time,
+            time,
+            _if(time == 1, string.sub(period, 1, string.len(period) - 1), period)
+        )
+    end
+    
+    return string.sub(formatted_time, 2, string.len(formatted_time))
+    
+end
+
+server.format_duration_str = format_duration_str
+
 function tabulate(text)
     
     local output = ""
