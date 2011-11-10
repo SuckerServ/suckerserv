@@ -2,11 +2,7 @@
     CHEATER-DETECTION
 
     Copyright (C) 2011 Thomas
-    
-    TODO: 
 
-        HOLD / CTF  -> check score distance
-        
     COMMENTS:
     
         LOGS WITH (TESTING) ARE !!_NOT_!! 100% secure proofs
@@ -28,6 +24,9 @@ local logged = { }
 local debug = false
 local global_log = false
 local kicked = { }
+local deathmillis = { }
+local first_spawn = { }
+
 cheaters = { }
 
 local network_packet_types = "N_CONNECT, N_SERVINFO, N_WELCOME, N_INITCLIENT, N_POS, N_TEXT, N_SOUND, N_CDIS, N_SHOOT, N_EXPLODE, N_SUICIDE, N_DIED, N_DAMAGE, N_HITPUSH, N_SHOTFX, N_EXPLODEFX, N_TRYSPAWN, N_SPAWNSTATE, N_SPAWN, N_FORCEDEATH, N_GUNSELECT, N_TAUNT, N_MAPCHANGE, N_MAPVOTE, N_ITEMSPAWN, N_ITEMPICKUP, N_ITEMACC, N_TELEPORT, N_JUMPPAD, N_PING, N_PONG, N_CLIENTPING, N_TIMEUP, N_MAPRELOAD, N_FORCEINTERMISSION, N_SERVMSG, N_ITEMLIST, N_RESUME, N_EDITMODE, N_EDITENT, N_EDITF, N_EDITT, N_EDITM, N_FLIP, N_COPY, N_PASTE, N_ROTATE, N_REPLACE, N_DELCUBE, N_REMIP, N_NEWMAP, N_GETMAP, N_SENDMAP, N_CLIPBOARD, N_EDITVAR, N_MASTERMODE, N_KICK, N_CLEARBANS, N_CURRENTMASTER, N_SPECTATOR, N_SETMASTER, N_SETTEAM, N_BASES, N_BASEINFO, N_BASESCORE, N_REPAMMO, N_BASEREGEN, N_ANNOUNCE, N_LISTDEMOS, N_SENDDEMOLIST, N_GETDEMO, N_SENDDEMO, N_DEMOPLAYBACK, N_RECORDDEMO, N_STOPDEMO, N_CLEARDEMOS, N_TAKEFLAG, N_RETURNFLAG, N_RESETFLAG, N_INVISFLAG, N_TRYDROPFLAG, N_DROPFLAG, N_SCOREFLAG, N_INITFLAGS, N_SAYTEAM, N_CLIENT, N_AUTHTRY, N_AUTHCHAL, N_AUTHANS, N_REQAUTH, N_PAUSEGAME, N_ADDBOT, N_DELBOT, N_INITAI, N_FROMAI, N_BOTLIMIT, N_BOTBALANCE, N_MAPCRC, N_CHECKMAPS, N_SWITCHNAME, N_SWITCHMODEL, N_SWITCHTEAM, NUMSV"
@@ -101,25 +100,25 @@ type[1] = { "flag-score-hack (flags: %i)", "flag-limit exceeded", 100 }
 type[2] = { "edit-packet-in-non-edit-mode (type: %s)", "fly hack", 100 }
 type[3] = { "unknown packet (type: %s)", "unknown packet", 50 }
 type[4] = { "unknown-weapon (unknown-gun: %s)", "unknown weapon", 34 }
-type[6] = { "speed-hack-ping (avg-speed: %.2fx)", "speedhack ping", 10 } 
-type[7] = { "spawn-time-hack (spawntime: %i ms)", "spawntime hack", spawn_hack } 
-type[8] = { "sent-unknown-sound (sound: %s)", "unknown sound", 100 } 
-type[9] = { "invisible (invis-millis: %i)", "invisible hack", 34 } 
-type[10] = { "getflag (distance: %i)", "getflag", 0 } 
-type[11] = { "modified-map-items", "modified map items", 100 } 
-type[12] = { "modified-map-flags", "modified map flags", 100 } 
-type[13] = { "modified-capture-bases", "modified capture bases", 100 } 
-type[14] = { "shoot-out-of-gun-distance-range", "shoot distance", 25 } 
-type[15] = { "scored-in-less-than-" .. round(min_scoretime / 1000, 1) .. "-seconds (%i ms)", "flag score hack", 100 } 
-type[16] = { "speed-hack-pos (avg-speed: %.2fx)", "speedhack", speedhack } 
-type[17] = { "jumphack (height: %.2f)", "jumphack", 0 } 
-type[18] = { nil, nil } 
-type[19] = { "unknown-map-item %s", "unknown map item", 50 } 
-type[20] = { "map-item-not-spawned (item: %i)", "item not spawned", 0 } 
-type[21] = { nil, nil } 
-type[22] = { "impossible-player-action", "impossible player action", 25 } 
-type[23] = { "player-position exceeded (pos: %i)", "player position exceeded", pos_exceeded } 
-type[24] = { "null-player-position / invisible", "player position / invisible", 34 } 
+type[6] = { "speed-hack-ping (avg-speed: %.2fx)", "speedhack ping", 10 }
+type[7] = { "spawn-time-hack (spawntime: %i ms)", "spawntime hack", spawn_hack }
+type[8] = { "sent-unknown-sound (sound: %s)", "unknown sound", 100 }
+type[9] = { "invisible (invis-millis: %i)", "invisible hack", 34 }
+type[10] = { "getflag (distance: %i)", "getflag", 0 }
+type[11] = { "modified-map-items", "modified map items", 100 }
+type[12] = { "modified-map-flags", "modified map flags", 100 }
+type[13] = { "modified-capture-bases", "modified capture bases", 100 }
+type[14] = { "shoot-out-of-gun-distance-range", "shoot distance", 25 }
+type[15] = { "scored-in-less-than-" .. round(min_scoretime / 1000, 1) .. "-seconds (%i ms)", "flag score hack", 100 }
+type[16] = { "speed-hack-pos (avg-speed: %.2fx)", "speedhack", speedhack }
+type[17] = { "jumphack (height: %.2f)", "jumphack", 0 }
+type[18] = { nil, nil }
+type[19] = { "unknown-map-item %s", "unknown map item", 50 }
+type[20] = { "map-item-not-spawned (item: %i)", "item not spawned", 0 }
+type[21] = { nil, nil }
+type[22] = { "impossible-player-action", "impossible player action", 25 }
+type[23] = { "player-position exceeded (pos: %i)", "player position exceeded", pos_exceeded }
+type[24] = { "null-player-position / invisible", "player position / invisible", 34 }
 
 local function check_points(cn, _type, info)
     if point_table[cn] == nil then point_table[cn] = 0 end
@@ -150,15 +149,15 @@ local function cheat(cn, cheat_type, info, info_str)
     if cheat_type >= 11 and cheat_type <= 13 and not is_known_map(server.map) then
         return
     end
-	if cheat_type == 19 and not is_known_map(server.map) then
-		return
-	end
+    if cheat_type == 19 and not is_known_map(server.map) then
+        return
+    end
 
     if type[cheat_type][2] == nil then return end
 
-    local logmsg = 
-        string.format("CHEATER: %s IP: %s PING: %i LAG: %i GAMEMODE: %s MAP: %s CHEAT: ", 
-            server.player_displayname(cn), 
+    local logmsg =
+        string.format("CHEATER: %s IP: %s PING: %i LAG: %i GAMEMODE: %s MAP: %s CHEAT: ",
+            server.player_displayname(cn),
             server.player_ip(cn),
             server.player_ping(cn),
             server.player_real_lag(cn),
@@ -175,7 +174,8 @@ local function cheat(cn, cheat_type, info, info_str)
         if cheat_type == 8 then info = sound_type(info) end
         if cheat_type == 14 then info_str = string.format(info_str, gun_type(info)) end
         if cheat_type == 6 or cheat_type == 16 or cheat_type == 17 then info = info / 100000 end
-
+        if cheat_type == 10 then type[cheat_type][2] = info_str; info_str = "" end
+        
         if info_str ~= "" then info_str = " (INFO: " .. info_str .. ")" end
         
         local points = check_points(cn, cheat_type, info)
@@ -222,8 +222,6 @@ end
 
 local is_intermission = false
 
-local first_spawn = { }
-
 server.event_handler("intermission", function()
     is_intermission = true
 end)
@@ -233,27 +231,33 @@ server.event_handler("mapchange", function()
 end)
 server.event_handler("disconnect", function(cn)
     first_spawn[cn] = nil
+    deathsmillis[cn] = nil
+end)
+
+server.event_handler("suicide", function(cn)
+    deathmillis[cn] = server.enet_time_get()
+end)
+
+server.event_handler("frag", function(cn)
+    deathmillis[cn] = server.enet_time_get()
 end)
 
 server.event_handler("spawn", function(cn)
     if is_intermission then return end
-    
-    if first_spawn[cn] == nil then
+    if first_spawn[cn] == nil then 
         first_spawn[cn] = true
         return
-    end
-    
-    local gamemode = server.gamemode
+    end 
 
     if not gamemode_has_respawn_wait_time() then return end
     
     if server.player_connection_time(cn) <= 6 then return end
     
-    local deathmillis = server.player_deathmillis(cn)
+    local deathmillis = deathmillis[cn] or 0
     
     if deathmillis == 0 or server.gamemillis < 5000 then return end
     
-    local spawntime = server.gamemillis - deathmillis
+    local spawntime = server.enet_time_get() - deathmillis
     
     --server.msg(string.format("(%s) spawntime: %d", server.player_name(cn), spawntime))
     
