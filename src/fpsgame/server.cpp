@@ -2595,17 +2595,13 @@ namespace server
             case N_JUMPPAD:
             {
                 int pcn = getint(p), jumppad = getint(p);
-                //defformatstring(debug)("%i", jumppad);
-                //sendservmsg(debug);
                 clientinfo *cp = getinfo(pcn);
                 if(!cq) break;
                 if(cp && pcn != sender && cp->ownernum != sender) cp = NULL;
                 if(cp && (!ci->local || demorecord || hasnonlocalclients()) && (cp->state.state==CS_ALIVE || cp->state.state==CS_EDITING))
                 {
-					anticheat *ac = &cp->ac;
                     cp->setpushed();
                     flushclientposition(*cp);
-                    ac->jumppad(jumppad);
                     sendf(-1, 0, "ri3x", N_JUMPPAD, pcn, jumppad, cp->ownernum);
                 }
                 break;

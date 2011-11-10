@@ -62,7 +62,7 @@ void cheat(int cn, int cheat, int info1, const char *info2)
 int is_invisible(int cn)
 {
     clientinfo *ci = getinfo(cn);
-    if (!anti_cheat_enabled || !ci || ci->state.state != CS_ALIVE || ci->ping >= 7500) 
+    if (!anti_cheat_enabled || !ci || (ci->state.state != CS_ALIVE && ci->state.state != CS_LAGGED)|| ci->ping >= 7500) 
         return false;
      
     int lag = totalmillis - ci->lastposupdate;
@@ -179,7 +179,10 @@ class anticheat
                 if (invisiblehack_count >= 7) 
                 {
                     int inv_time = invisible_last - invisible_first;
-                    if (inv_time >= 2000) cheat(clientnum, 9, inv_time); 
+                    if (inv_time >= 2000) 
+                    {
+                        cheat(clientnum, 9, inv_time); 
+                    }
                     reset_invisible();
                 }
                 break;
@@ -352,12 +355,9 @@ class anticheat
      * Get Flag
      */
      
-    void check_get_flag(float dist)
+    void get_flag(float dist, bool score_flag)
     {
-        if (dist >= 250)
-        {
-            //cheat(clientnum, 10, (int)dist); //FIXME
-        }
+        cheat(clientnum, 10, (int)dist, score_flag ? "scoreflag" : "getflag");
     }
     
     /*
@@ -658,8 +658,8 @@ class anticheat
 
 #define AC_PROTOCOL_VERSION 258
 #define ac_check_sender if (ca->clientnum != ci->clientnum && ca->ownernum != ci->clientnum) break;
-#define ac_check_invis if (ca->state.state == CS_ALIVE && ac->is_player_invisible()) ci->state.state = CS_LAGGED;
-//TELEPORTER
+#define ac_check_invis if ((ca->state.state == CS_ALIVE || ca->state.state == CS_LAGGED) && ac->is_player_invisible()) ci->state.state = CS_LAGGED;
+
 void anti_cheat_parsepacket(int type, clientinfo *ci, clientinfo *cq, packetbuf p)
 {
     #if PROTOCOL_VERSION != AC_PROTOCOL_VERSION
@@ -679,7 +679,9 @@ void anti_cheat_parsepacket(int type, clientinfo *ci, clientinfo *cq, packetbuf 
             if (!ca) break;
             ac_check_sender;
             ac_check_invis;
-            if (type == N_TELEPORT && ca->state.state == CS_ALIVE) ac->teleport(getint(p));
+            if (ca->state.state != CS_ALIVE) break;
+            if (type == N_TELEPORT) ac->teleport(getint(p));
+            else ac->jumppad(getint(p));
             break;
         }
         
@@ -776,8 +778,10 @@ void anti_cheat_parsepacket(int type, clientinfo *ci, clientinfo *cq, packetbuf 
 
                 ac->was_falling = falling;
             }
-            
+
             ac->pos = pos;
+            
+            if (ca->state.state == CS_LAGGED) ca->state.state = CS_ALIVE;
 
             break;
         }
@@ -851,6 +855,62 @@ void anti_cheat_parsepacket(int type, clientinfo *ci, clientinfo *cq, packetbuf 
                 return;
             }
             ac->is_player_invisible();
+            int i = getint(p), version = getint(p);
+            if (ctfmode.notgotflags || !ctfmode.flags.inrange(i) || ca->state.state!=CS_ALIVE || !ca->team[0]) return;
+
+            ctfservmode::flag &f = ctfmode.flags[i];
+            
+            if (f.version != version) break;
+            
+            vec flag_location = vec(0, 0, 0);
+            
+            bool flag_dropped = f.droploc != vec(0, 0, 0) && f.droploc != f.spawnloc;
+            
+            if (m_ctf) flag_location = flag_dropped ? f.droploc : f.spawnloc;
+            if ((m_hold || m_protect) && ctfmode.holdspawns.inrange(f.spawnindex)) 
+                flag_location = flag_dropped ? f.droploc : ctfmode.holdspawns[f.spawnindex].o; 
+
+            bool has_flag = false;
+            
+            loopv(ctfmode.flags) 
+            {
+                if (ctfmode.flags[i].owner == ca->clientnum)
+                {
+                    has_flag = true;
+                    break;
+                }
+            }
+            
+            const char *flag_team = ctfflagteam(f.team);
+            bool is_team_flag = m_hold || !strcmp(ca->team, flag_team);
+           
+            bool score_flag = is_team_flag && !m_hold;
+            
+            if (!m_hold || !m_protect) // this matters only in "ctf" (to make sure score limit below isnt checked while returning enemy flag)
+            {
+                ctfservmode::flag &e = ctfmode.flags[strcmp(ca->team, "good") ? ctfteamflag("evil") : ctfteamflag("good")];
+                flag_dropped = flag_dropped || (e.droploc != vec(0, 0, 0) && e.droploc != e.spawnloc); // enemy flag is dropped
+            }
+            
+            if (flag_dropped) break;
+            
+            float flag_dist = distance(flag_location, ac->pos); 
+            if (flag_dist >= 200)
+            {
+                if ((m_protect && (f.invistime && !is_team_flag)) || (!has_flag && score_flag && !m_protect)) break;
+                ac->get_flag(flag_dist, m_protect ? !score_flag : score_flag);
+            }   
+            
+            if (score_flag && !m_protect && !m_hold)
+            {
+                if (i > 2 || i < 1) break;
+                int score = ctfmode.scores[i-1] + 1;
+                if (score > ctfmode.FLAGLIMIT)
+                {
+                    cheat(ci->clientnum, 1, score);
+                }
+            }
+            
             break;
         }
         
@@ -889,25 +949,22 @@ void ac_parseflags(ucharbuf &p, bool commit, clientinfo *ci)
             vec o;
             loopk(3) o[k] = max(getint(p)/DMF, 0.0f);
             if(p.overread()) break;
-            if(true)
+            if(m_hold) 
             {
-                if(m_hold) 
+                if (!ctfmode.holdspawns.inrange(i) || !vec_equal(ctfmode.holdspawns[i].o, o))
                 {
-                    if (!ctfmode.holdspawns.inrange(i) || !vec_equal(ctfmode.holdspawns[i].o, o))
-                    {
-                        ci->ac.modified_map_flags();
-                        return;
-                    }
-                }
-                else 
-                {
-                    if (!ctfmode.flags.inrange(i) || ctfmode.flags[i].team != team || !vec_equal(ctfmode.flags[i].spawnloc, o))
-                    {
-                        ci->ac.modified_map_flags();
-                        return;
-                    }
+                    ci->ac.modified_map_flags();
+                    return;
                 }
             }
+            else 
+            {
+                if (!ctfmode.flags.inrange(i) || ctfmode.flags[i].team != team || !vec_equal(ctfmode.flags[i].spawnloc, o))
+                {
+                    ci->ac.modified_map_flags();
+                    return;
+                }
+            } 
         }         
         return;
     }
@@ -917,7 +974,7 @@ void ac_parsebases(ucharbuf &p, bool commit, clientinfo *ci)
 {
     int numbases = getint(p);
       
-    if (anti_cheat_enabled && !capturemode.notgotbases)
+    if (!capturemode.notgotbases)
     {
         loopi(numbases)
         {
