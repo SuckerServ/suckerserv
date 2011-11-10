@@ -231,7 +231,7 @@ server.event_handler("mapchange", function()
 end)
 server.event_handler("disconnect", function(cn)
     first_spawn[cn] = nil
-    deathsmillis[cn] = nil
+    deathmillis[cn] = nil
 end)
 
 server.event_handler("suicide", function(cn)
