@@ -838,6 +838,7 @@ void anti_cheat_parsepacket(int type, clientinfo *ci, clientinfo *cq, packetbuf 
         {
             extern void ac_parseflags(ucharbuf &p, bool commit, clientinfo *ci);
             if (smode == &ctfmode) ac_parseflags(p, (ca->state.state!=CS_SPECTATOR || ca->privilege) && !strcmp(ca->clientmap, smapname), ca);
+            break;
         }
         
         case N_BASES:
@@ -888,7 +889,7 @@ void anti_cheat_parsepacket(int type, clientinfo *ci, clientinfo *cq, packetbuf 
             
             if (!m_hold || !m_protect) // this matters only in "ctf" (to make sure score limit below isnt checked while returning enemy flag)
             {
-                ctfservmode::flag &e = ctfmode.flags[strcmp(ca->team, "good") ? ctfteamflag("evil") : ctfteamflag("good")];
+                ctfservmode::flag &e = ctfmode.flags[!strcmp(ca->team, "good") ? ctfteamflag("evil") : ctfteamflag("good")];
                 flag_dropped = flag_dropped || (e.droploc != vec(0, 0, 0) && e.droploc != e.spawnloc); // enemy flag is dropped
             }
             
