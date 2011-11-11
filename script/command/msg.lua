@@ -1,3 +1,9 @@
+--[[
+
+	A player command to send a message to a player
+
+]]
+
 return function(cn, tcn, ...)
     
 	if not tcn then

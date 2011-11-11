@@ -43,7 +43,10 @@ local function run(cn,cheat)
 	if cheat_report < 8 then
 		if server.player_connection_time(cheat) > 10 then
 			server.player_msg(cn, string.format(server.cheater_thanks_message))
-			server.log("CHEATER: " .. server.player_name(cheat) .. "(" .. cheat .. ") was reported by " .. server.player_name(cn) .. "(" .. cn .. ")")
+            for p in server.gplayers() do
+                if p:priv_code() >= server.PRIV_MASTER then p:msg(string.format(server.cheater_admin_message, server.player_displayname(cn), server.player_displayname(cheat))) end
+            end
+			server.log("CHEATER: " .. server.player_displayname(cheat) .. "(" .. cheat .. ") was reported by " .. server.player_displayname(cn) .. "(" .. cn .. ")")
         end
     end
 end
