@@ -19,36 +19,27 @@ local gamecount = 0
 local suspended = false
 
 local evthandlers = {}
-
 local uinstallHandlers -- function
 
 local function onActive(cn)
-    
     if cn == player1_cn then 
-    
         player1_ready = true
-        
     elseif cn == player2_cn then
-    
         player2_ready = true
-        
     end
     
     if player1_ready and player2_ready then
-        
         if suspended then
             server.msg(orange("--[ Game resumed!"))
             suspended = false
         else
             server.msg(orange("--[ Game started!"))
         end
-        
         server.pausegame(false)
     end
 end
 
 local function onMapchange(map, mode)
-
     gamecount = gamecount + 1
     
     if gamecount > 1 then
@@ -62,17 +53,12 @@ local function onMapchange(map, mode)
     
     server.msg(orange("--[ Starting Demo Recording"))
     server.msg(orange("--[ Waiting until all Players loaded the Map."))
-    
 end
 
 local function onIntermission()
-
     if server.player_score(player1_cn) > server.player_score(player2_cn) then
-    
         server.msg(string.format(server.versus_win_message, server.player_name(player1_cn)))       
-    
     elseif server.player_score(player1_cn) < server.player_score(player2_cn) then
-    
         server.msg(string.format(server.versus_win_message, server.player_name(player2_cn)))
     else
         server.msg("--[ 1on1 Game ended - No Winner!")
@@ -85,7 +71,6 @@ end
 
 
 local function onConnect(cn)
-
     local id = server.player_id(cn)
     
     if id == player1_id then 
@@ -100,20 +85,16 @@ local function onConnect(cn)
 end
 
 local function onDisconnect(cn)
-
     local id = server.player_id(cn)
 
     if id == player1_id or id == player2_id then 
-    
         server.msg(string.format(server.versus_disconnect_message, server.player_name(cn)))
         server.pausegame(true)
-        
         suspended = true
     end
 end
 
 local function installHandlers()
-    
     local connect = server.event_handler("connect", onConnect)
     local disconnect = server.event_handler("disconnect", onDisconnect)
     local active = server.event_handler("maploaded", onActive)
@@ -125,7 +106,6 @@ local function installHandlers()
     table.insert(evthandlers, active)
     table.insert(evthandlers, mapchange)
     table.insert(evthandlers, intermission)
-    
 end
 
 uninstallHandlers = function()
@@ -134,7 +114,6 @@ uninstallHandlers = function()
 end
 
 return function(cn, player1, player2, mode, map)
-    
     if running then 
         server.player_msg(cn, red("Already running"))
         return
@@ -146,7 +125,7 @@ return function(cn, player1, player2, mode, map)
     end
     
     if player1 == player2 then 
-        server.player_msg(cn, string.format(server.versus_samecn_message))
+       server.player_msg(cn, string.format(server.versus_samecn_message))
        return 
     end
     
@@ -181,16 +160,11 @@ return function(cn, player1, player2, mode, map)
     local countdown = 6
     
     server.interval(1000, function()
-        
         countdown = countdown - 1
-        
         server.msg(orange(string.format(server.versus_countdown_message, countdown)))
-        
         if countdown == 0 then
             server.changemap(map, mode, -1)
             return -1
         end
-        
     end)
-    
 end

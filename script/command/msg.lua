@@ -12,14 +12,12 @@ return function(cn, tcn, ...)
 			if #text > 0 then
 				text = text .. " "
 			end
-
 			text = text .. item
 		end
 	end
     
 	if not server.valid_cn(tcn) then
 		tcn = server.name_to_cn_list_matches(cn,tcn)
-
 		if not tcn then
 			return
 		end

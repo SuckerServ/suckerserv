@@ -13,26 +13,22 @@ local votes = {}
 
 local usage = "#votekick <cn>|\"<name>\""
 
-
 local function check_kick(cn)
 
 	local required_votes = round((server.playercount / 2), 0)
 
 	if votes[cn].votes >= required_votes then
-
 		server.kick(cn,3600,"server","votekick")
-		server.msg(string.format(server.votekick_passed_message, server.player_displayname(cn)))
+		server.msg(string.format("Vote passed to kick player %s",green(server.player_displayname(cn))))
 	end
 
 end
-
 
 local function check_player_on_disconnect(tcn,dcn)
 
 	if votes[tcn] then
 
 		if votes[tcn][dcn] then
-
 			votes[tcn][dcn] = nil
 			votes[tcn].votes = votes[tcn].votes - 1
 		end
@@ -50,13 +46,10 @@ local function init()
 	server.event_handler("disconnect", function(cn, reason)
 
 		if votes[cn] then
-
 			votes[cn] = nil
-
 		else
 
 			for p in server.gclients() do
-
 				check_player_on_disconnect(p.cn)
 			end
 		end
@@ -73,12 +66,10 @@ end
 local function run(cn,kick_who)
 
 	if server.playercount < 3 then
-
 		return false, "There aren't enough players here for votekick to work"
 	end
     
 	if not kick_who then
-
 		return false, usage
 	end
 
@@ -116,7 +107,6 @@ local function run(cn,kick_who)
 
 	votes[kick_who][cn] = true
     if not votes[kick_who].votes then
-
         votes[kick_who].votes = 0
     end
     votes[kick_who].votes = votes[kick_who].votes + 1
@@ -127,15 +117,12 @@ local function run(cn,kick_who)
 	if server.player_priv_code(kick_who) == priv_master then
 
 		for p in server.gplayers() do
-
-			if not (p.cn == kick_who) then
-
+			if not p.cn == kick_who then
 				p:msg(msg)
 			end
 		end
 
 	else
-
 		server.msg(msg)
 	end
 

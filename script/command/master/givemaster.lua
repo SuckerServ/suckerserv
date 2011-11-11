@@ -1,19 +1,17 @@
 --[[
-
 	A player command to raise player's privilege to master
-
 ]]
 
+local usage = "#givemaster <cn>"
 
 return function(cn, target)
 
 	if not target then
 
-		return false, "#givemaster <cn>"
+		return false, usage
 	end
 
 	if not server.valid_cn(target) then
-
 		return false, "CN is not valid"
 	end
 

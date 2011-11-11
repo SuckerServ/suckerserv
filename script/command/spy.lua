@@ -9,7 +9,7 @@ return function(cn, val)
         return
     end
 
-    if val == nil then
+    if not val then
         return false, usage
     end
 
