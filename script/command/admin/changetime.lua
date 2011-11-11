@@ -2,13 +2,15 @@
 	A player command to change the current map time
 ]]
 
+local usage = "#changetime <minutes> [<seconds>]"
+
 return function(cn, minutes, seconds)
 
-	if not minutes then
-		return false, "#changetime <minutes> [<seconds>]"
-	end
-    
-	minutes = tonumber(minutes)
+    if not minutes then
+        return false, usage
+    end
+
+    minutes = tonumber(minutes)
     seconds = tonumber(seconds) or 0
     
     if not minutes or minutes < 0 then
