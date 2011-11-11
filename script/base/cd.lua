@@ -92,35 +92,56 @@ end
 local function speedhack(speed) return _if(speed >= 1.6, 75, 25) end
 local function spawn_hack(spawntime) return _if(spawntime <= 3000, 100, 50) end
 local function pos_exceeded(pos) return _if(pos >= 200, 25, 10) end
+local function getflag(distance, info, cn)
+    if info == "stealflag" then return max_points end
+    if server.player_lag(cn) <= 40 then
+        return _if(distance >= 400, max_points, 34)
+    else
+        return 10
+    end
+end
+local function gun_distance(distance, gun, cn)
+    if gun ~= "S_PUNCH1" and gun ~= "S_RIFLE" then
+       return -1
+    end
+    local lag = server.player_lag(cn)  
+    if lag > 40 then return -1 end   
+    if gun == "S_PUNCH1" and distance >= 250 and lag <= 40 then
+        return 100
+    end 
+    if gun == "S_RIFLE" and distance >= 2000 and lag <= 40 then
+        return 100
+    end
+end
 
 local type = { }
 
 -- "log long", "log short", "points"
-type[1] = { "flag-score-hack (flags: %i)", "flag-limit exceeded", 100 }
-type[2] = { "edit-packet-in-non-edit-mode (type: %s)", "fly hack", 100 }
+type[1] = { "flag-score-hack (flags: %i)", "flag-limit exceeded", max_points }
+type[2] = { "edit-packet-in-non-edit-mode (type: %s)", "fly hack", max_points }
 type[3] = { "unknown packet (type: %s)", "unknown packet", 50 }
 type[4] = { "unknown-weapon (unknown-gun: %s)", "unknown weapon", 34 }
 type[6] = { "speed-hack-ping (avg-speed: %.2fx)", "speedhack ping", 10 }
 type[7] = { "spawn-time-hack (spawntime: %i ms)", "spawntime hack", spawn_hack }
-type[8] = { "sent-unknown-sound (sound: %s)", "unknown sound", 100 }
+type[8] = { "sent-unknown-sound (sound: %s)", "unknown sound", max_points }
 type[9] = { "invisible (invis-millis: %i)", "invisible hack", 34 }
-type[10] = { "getflag (distance: %i)", "getflag", 0 }
-type[11] = { "modified-map-items", "modified map items", 100 }
-type[12] = { "modified-map-flags", "modified map flags", 100 }
-type[13] = { "modified-capture-bases", "modified capture bases", 100 }
-type[14] = { "shoot-out-of-gun-distance-range", "shoot distance", 25 }
-type[15] = { "scored-in-less-than-" .. round(min_scoretime / 1000, 1) .. "-seconds (%i ms)", "flag score hack", 100 }
+type[10] = { "getflag (distance: %i)", "getflag", getflag }
+type[11] = { "modified-map-items", "modified map items", max_points }
+type[12] = { "modified-map-flags", "modified map flags", max_points }
+type[13] = { "modified-capture-bases", "modified capture bases", max_points }
+type[14] = { "shoot-out-of-gun-distance-range", "shoot distance", gun_distance }
+type[15] = { "scored-in-less-than-" .. round(min_scoretime / 1000, 1) .. "-seconds (%i ms)", "flag score hack", max_points }
 type[16] = { "speed-hack-pos (avg-speed: %.2fx)", "speedhack", speedhack }
-type[17] = { "jumphack (height: %.2f)", "jumphack", 0 }
+type[17] = { "jumphack (height: %i)", "jumphack", 0 }
 type[18] = { nil, nil }
 type[19] = { "unknown-map-item %s", "unknown map item", 50 }
 type[20] = { "map-item-not-spawned (item: %i)", "item not spawned", 0 }
 type[21] = { nil, nil }
 type[22] = { "impossible-player-action", "impossible player action", 25 }
 type[23] = { "player-position exceeded (pos: %i)", "player position exceeded", pos_exceeded }
-type[24] = { "null-player-position / invisible", "player position / invisible", 34 }
+type[24] = { "null-player-position / invisible", "player position / invisible", 25 }
 
-local function check_points(cn, _type, info)
+local function check_points(cn, _type, info, info_str, cn)
     if point_table[cn] == nil then point_table[cn] = 0 end
     
     local point_action = type[_type][3]
@@ -128,7 +149,7 @@ local function check_points(cn, _type, info)
     local cheat_points
     
     if fun_var_type(point_action) == "function" then
-        cheat_points = point_action(info)
+        cheat_points = point_action(info, info_str, cn)
     else
         cheat_points = point_action or 0
     end
@@ -175,13 +196,15 @@ local function cheat(cn, cheat_type, info, info_str)
         if cheat_type == 14 then info_str = string.format(info_str, gun_type(info)) end
         if cheat_type == 6 or cheat_type == 16 or cheat_type == 17 then info = info / 100000 end
         if cheat_type == 10 then type[cheat_type][2] = info_str; info_str = "" end
+
+        local points = check_points(cn, cheat_type, info, type[cheat_type][2], cn)
         
         if info_str ~= "" then info_str = " (INFO: " .. info_str .. ")" end
         
-        local points = check_points(cn, cheat_type, info)
-        
         local points_complete = points[1]
         local points_lastaction = points[2]
+        
+        if points_lastaction < 0 then return end
         
         local testing = points_lastaction <= 0
         local points_str = string.format(" (%d/%d)", points_complete, max_points)
