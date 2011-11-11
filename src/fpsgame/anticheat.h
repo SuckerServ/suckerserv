@@ -898,7 +898,7 @@ void anti_cheat_parsepacket(int type, clientinfo *ci, clientinfo *cq, packetbuf 
             if (!m_hold || !m_protect) // this matters only in "ctf" (to make sure score limit below isnt checked while returning enemy flag)
             {
                 ctfservmode::flag &e = ctfmode.flags[!strcmp(ca->team, "good") ? ctfteamflag("evil") : ctfteamflag("good")];
-                enemy_flag_dropped = !std::isnan(e.droploc.x) && (e.droploc != vec(0, 0, 0) && e.droploc != f.spawnloc); // enemy flag is dropped
+                enemy_flag_dropped = !std::isnan(e.droploc.x) && (e.droploc != vec(0, 0, 0) && e.droploc != e.spawnloc); // enemy flag is dropped
             }
             
             if (flag_dropped) break;
