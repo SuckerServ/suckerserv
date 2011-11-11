@@ -9,7 +9,7 @@
 
 bool anti_cheat_enabled = true;
 bool anti_cheat_add_log_to_demo = true;
-int anti_cheat_system_rev = 1;
+int anti_cheat_system_rev = 3;
 	
 void cheat(int cn, int cheat, int info1, const char *info2)
 {
@@ -114,7 +114,7 @@ class anticheat
     int lastjump, lastgun;
     int jumphack, jumppads, jumphack_dist;
     int invisiblehack_count, invisible_first, invisible_last;
-    float exceed_position;
+    float exceed_position; int ignore_exceed;
     int _ping;
     float last_fall_loc;
     float speedhack2_lastdist, jumpdist, lastjumphack_dist;
@@ -138,6 +138,7 @@ class anticheat
         spawns = 0;
         lastgun = -1;
         exceed_position = 0;
+        ignore_exceed = 0;
         
         reset_speedhack_dist();
         reset_speedhack_ping();
@@ -355,9 +356,9 @@ class anticheat
      * Get Flag
      */
      
-    void get_flag(float dist, bool score_flag)
+    void get_flag(float dist, bool score_flag, bool flag_owned)
     {
-        cheat(clientnum, 10, (int)dist, score_flag ? "scoreflag" : "getflag");
+        cheat(clientnum, 10, (int)dist, flag_owned ? "stealflag" : score_flag ? "scoreflag" : "getflag");
     }
     
     /*
@@ -778,6 +779,7 @@ void anti_cheat_parsepacket(int type, clientinfo *ci, clientinfo *cq, packetbuf 
                 if (!falling) ac->no_falling();
 
                 ac->was_falling = falling;
+     
             }
 
             ac->pos = pos;
@@ -856,6 +858,7 @@ void anti_cheat_parsepacket(int type, clientinfo *ci, clientinfo *cq, packetbuf 
                 ac->impossible(3, -1);
                 return;
             }
+            
             ac->is_player_invisible();
             int i = getint(p), version = getint(p);
             if (ctfmode.notgotflags || !ctfmode.flags.inrange(i) || ca->state.state!=CS_ALIVE || !ca->team[0]) return;
@@ -866,11 +869,13 @@ void anti_cheat_parsepacket(int type, clientinfo *ci, clientinfo *cq, packetbuf 
             
             vec flag_location = vec(0, 0, 0);
             
-            bool flag_dropped = f.droploc != vec(0, 0, 0) && f.droploc != f.spawnloc;
-            
+            bool flag_dropped = !std::isnan(f.droploc.x) && (f.droploc != vec(0, 0, 0) && f.droploc != f.spawnloc);
+
             if (m_ctf) flag_location = flag_dropped ? f.droploc : f.spawnloc;
             if ((m_hold || m_protect) && ctfmode.holdspawns.inrange(f.spawnindex)) 
                 flag_location = flag_dropped ? f.droploc : ctfmode.holdspawns[f.spawnindex].o; 
+                
+            int flag_owner = ctfmode.flags[i].owner;
 
             bool has_flag = false;
             
@@ -888,20 +893,24 @@ void anti_cheat_parsepacket(int type, clientinfo *ci, clientinfo *cq, packetbuf 
            
             bool score_flag = is_team_flag && !m_hold;
             
+            bool enemy_flag_dropped = false;
+            
             if (!m_hold || !m_protect) // this matters only in "ctf" (to make sure score limit below isnt checked while returning enemy flag)
             {
                 ctfservmode::flag &e = ctfmode.flags[!strcmp(ca->team, "good") ? ctfteamflag("evil") : ctfteamflag("good")];
-                flag_dropped = flag_dropped || (e.droploc != vec(0, 0, 0) && e.droploc != e.spawnloc); // enemy flag is dropped
+                enemy_flag_dropped = !std::isnan(e.droploc.x) && (e.droploc != vec(0, 0, 0) && e.droploc != f.spawnloc); // enemy flag is dropped
             }
             
             if (flag_dropped) break;
             
             float flag_dist = distance(flag_location, ac->pos); 
-            if (flag_dist >= 250)
+            if (flag_dist >= 250 || flag_owner != -1)
             {
                 if ((m_protect && (f.invistime && !is_team_flag)) || (!has_flag && score_flag && !m_protect)) break;
-                ac->get_flag(flag_dist, m_protect ? !score_flag : score_flag);
+                ac->get_flag(flag_dist, m_protect ? !score_flag : score_flag, flag_owner != -1);
             }   
+            
+            if (enemy_flag_dropped) break;
             
             if (score_flag && !m_protect && !m_hold)
             {
@@ -1006,4 +1015,3 @@ void anti_cheat_serverupdate()
 }
 
 #endif
-
