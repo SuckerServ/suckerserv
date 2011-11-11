@@ -2132,7 +2132,15 @@ namespace server
                 if(c.state.aitype != AI_NONE) continue;
                 if(c.checkexceeded())
                 {
-                    if (anti_cheat_enabled) c.ac.player_position_exceeded();
+                    if (anti_cheat_enabled) 
+                    {
+                        anticheat *ac = &c.ac;
+                        if (!ac->ignore_exceed || totalmillis > ac->ignore_exceed)
+                        {
+                            ac->player_position_exceeded();
+                            ac->ignore_exceed = totalmillis + 2500;
+                        }
+                    }
                     else disconnect_client(c.clientnum, DISC_TAGT);
                 }
                 else c.scheduleexceeded();
