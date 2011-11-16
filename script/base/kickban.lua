@@ -32,7 +32,9 @@ function server.kick(cn, bantime, admin, reason)
     server.ban(server.player_iplong(cn), bantime, admin, reason, server.player_name(cn))
 end
 
-function server.ban(ipmask, bantime, admin, reason, name)
+function server.ban(ipmask, bantime, admin, reason, name, gban)
+
+    
 
     if not bantime or bantime == -1 then
         bantime = VERY_LONG_BANTIME
@@ -45,8 +47,9 @@ function server.ban(ipmask, bantime, admin, reason, name)
     server.set_ip_var(ipmask, "ban_expire", os.time() + bantime)
     server.set_ip_var(ipmask, "ban_admin", admin)
     server.set_ip_var(ipmask, "ban_reason", reason)
+    server.set_ip_var(ipmask, "is_gban", gban or false)
     
-    if bantime <= SHORT_BANTIME then
+    if bantime <= SHORT_BANTIME and not gban then
         table.insert(temporary_bans, ipmask)
     end
     
@@ -60,7 +63,7 @@ function server.unban(ipmask)
     server.log(log_message)
     server.log_status(log_message)
     
-    server.set_ip_var(ipmask, "ban_name", nil)    
+	server.set_ip_var(ipmask, "ban_name", nil)    
     server.set_ip_var(ipmask, "ban_expire", nil)
     server.set_ip_var(ipmask, "ban_admin", nil)
     server.set_ip_var(ipmask, "ban_reason", nil)
@@ -68,7 +71,11 @@ function server.unban(ipmask)
 end
 
 local function is_banned(ipmask)
-    local bantime = server.ip_vars(ipmask).ban_expire
+    local ban = server.ip_vars(ipmask)
+    local bantime = ban.ban_expire
+    if (ban.ignore_gban or false) then 
+        return false
+    end
     if bantime and not reserved_slot then
         if bantime > os.time() then
             return true
@@ -90,9 +97,8 @@ end)
 
 server.event_handler("clearbans_request", function()
     
-    -- Clear all bans
-    for ipmask, vars in pairs(server.ip_vars()) do
-        server.unban(ipmask)
+    for _, iplong in pairs(temporary_bans) do
+        server.unban(iplong)
     end
     
     temporary_bans = {}
