@@ -148,15 +148,40 @@ void getstring(char *text, ucharbuf &p, int len)
     while(*t++);
 }
 
+static int iscubeprint(int c) // copied from shared/cube2font.c 
+{
+    static const char flags[256] =
+    {
+        0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+    };
+    return flags[c];
+}
+
 void filtertext(char *dst, const char *src, bool whitespace, int len)
 {
-    for(int c = *src; c; c = *++src)
+    for(int c = uchar(*src); c; c = uchar(*++src))
     {
-        if(c == '\f') { 
+        if(c == '\f')
+        {
             if(!*++src) break;
             continue;
         }
-        if(c == ' ' ? whitespace : isprint(c)) //NEW c == ' ' instead "isspace(c) to skip whitespaces: TAB LF VT FF CR
+        if(iscubeprint(c) || (isspace(c) && whitespace))
         {
             *dst++ = c;
             if(!--len) break;
