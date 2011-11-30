@@ -95,10 +95,9 @@ server.event_handler("connecting", function(cn, hostname, name, password, reserv
     end
 end)
 
-server.event_handler("clearbans_request", function()
-    
-    for _, iplong in pairs(temporary_bans) do
-        server.unban(iplong)
+server.event_handler("clearbans_request", function()    
+    for ipmask, vars in pairs(server.ip_vars()) do
+        if not (vars.is_gban or false) then server.unban(ipmask) end
     end
     
     temporary_bans = {}
