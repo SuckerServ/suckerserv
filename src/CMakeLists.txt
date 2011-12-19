@@ -5,6 +5,7 @@ add_subdirectory(fungu)
 add_subdirectory(lsqlite3)
 add_subdirectory(hopmod/standalone/luapp)
 add_subdirectory(luasql)
+add_subdirectory(authserver)
 
 include(CheckLibraryExists)
 
@@ -102,9 +103,7 @@ target_link_libraries(lua_modules
 
 SET(GAME_SERVER_SOURCES
     engine/server.cpp
-    engine/worldio.cpp
     fpsgame/server.cpp
-    fpsgame/entities.cpp
     hopmod/startup.cpp
     hopmod/scheduler.cpp
     hopmod/lua.cpp
