@@ -174,9 +174,9 @@ local function external_load(host, port, db, user, pass, install_db)
     
     for domain, _ in pairs(domains_and_users)
     do
-	for tab in mysql.rows(mysql.exec(connection, string.format("SELECT users.name as name, users.pubkey as pubkey FROM users, domains WHERE domains.name = '%s'", mysql.escape_string(domain))))
-	do
-    	    domains_and_users[domain][tab.name] = tab.pubkey
+        for tab in mysql.rows(mysql.exec(connection, string.format("SELECT users.name as name, users.pubkey as pubkey, users.rights as rights FROM users, domains WHERE domains.name = '%s' AND domains.id = users.domain_id", mysql.escape_string(domain))))
+        do
+    	    domains_and_users[domain][tab.name] = { key = tab.pubkey, rights = tab.rights}
     	end
     end
     

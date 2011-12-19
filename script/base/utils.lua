@@ -61,7 +61,7 @@ end
 
 dofile("./script/base/utils/apps.lua")
 dofile("./script/base/utils/file.lua")
-dofile("./script/base/utils/gamemode.lua")
+if not server.is_authserver then dofile("./script/base/utils/gamemode.lua") end
 dofile("./script/base/utils/mysql.lua")
 dofile("./script/base/utils/string.lua")
 dofile("./script/base/utils/table.lua")
