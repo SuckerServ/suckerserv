@@ -124,6 +124,7 @@ namespace server
     extern bool spec_slots;
     extern bool anti_cheat_enabled;
     extern int anti_cheat_system_rev;
+    extern uint mcrc;
 }
 
 #endif

@@ -16,13 +16,7 @@ server.event_handler("mapcrc", function(cn, map, crc)
         return
     end
     
-    local map_info = supported_maps[map]
-        
-    if not map_info or not map_info.crc then
-        return
-    end
-
-    if crypto.tigersum(tostring(crc)) ~= map_info.crc then
+    if crc ~= server.mapcrc then
 
         server.msg(string.format(server.client_crcfail_message, server.player_displayname(cn)))
         server.log(string.format("%s(%i) is using a modified map (crc %s)", server.player_name(cn), cn, crc))
