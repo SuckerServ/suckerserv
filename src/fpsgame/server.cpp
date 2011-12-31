@@ -1654,14 +1654,18 @@ namespace server
         putinitclient(ci, p);
         sendpacket(-1, 1, p.finalize(), ci->clientnum);
     }
+    
+    #include "ents.h"
 
     void loaditems()
     {
         resetitems();
         notgotitems = true;
-    #if 0 // we have our own method in hopmod (static_item_functions.h / static_items.lua / map-info.lua)
-        if(m_edit || !loadents(smapname, ments))
+        if(m_edit || !e::loadents(smapname, ments, mcrc))
+        {
+            mcrc = 0;
             return;
+        }
         loopv(ments) if(canspawnitem(ments[i].type))
         {
             server_entity se = { NOTUSED, 0, false, -1 };
@@ -1671,7 +1675,6 @@ namespace server
             else sents[i].spawned = true;
         }
         notgotitems = false;
-    #endif
     }
 
     void changemap(const char *s, int mode,int mins = -1)

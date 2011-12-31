@@ -54,12 +54,6 @@ namespace server
     extern bool enable_extinfo;
     
     extern int spectator_delay;
-	
-    extern void add_item(int n, int v);
-    extern void add_flag(int num, int team, int x, int y, int z);
-    extern void prepare_hold_mode();
-    extern void add_base(int type, int x, int y, int z);
-    extern void prepare_capture_mode();
     
     int enet_time_get_();
     

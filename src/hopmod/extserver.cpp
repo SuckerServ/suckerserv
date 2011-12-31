@@ -1114,6 +1114,4 @@ void updateservinfo(int cn, const char* servername)
     sendf(ci->clientnum, 1, "ri5s", N_SERVINFO, ci->clientnum, PROTOCOL_VERSION, ci->sessionid, 0, servername);
 }
 
-#include <static_item_functions.h>
-
 #endif
