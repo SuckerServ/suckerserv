@@ -20,6 +20,7 @@ local function check_kick(cn)
 	if votes[cn].votes >= required_votes then
 		server.kick(cn,3600,"server","votekick")
 		server.msg(string.format("Vote passed to kick player %s",green(server.player_displayname(cn))))
+        votes[cn] = nil
 	end
 
 end
@@ -63,61 +64,62 @@ local function unload()
 end
 
 
-local function run(cn,kick_who)
+local function run(cn,victim)
 
 	if server.playercount < 3 then
 		return false, "There aren't enough players here for votekick to work"
 	end
     
-	if not kick_who then
+	if not victim then
 		return false, usage
 	end
 
-	if not server.valid_cn(kick_who) then
+	if not server.valid_cn(victim) then
 
-		kick_who = server.name_to_cn_list_matches(cn,kick_who)
+		victim = server.name_to_cn_list_matches(cn,victim)
 
-		if not kick_who then
+		if not victim then
 
 			return
 		end
 	end
+    
+    local ip = server.player_ip(cn)
 
-	kick_who = tonumber(kick_who)
-	cn = tonumber(cn)
+	cn = tonumber(victim)
 
-	if kick_who == cn then
+	if victim == cn then
 
 		return false, "You can't vote to kick yourself"
 	end
 	
-	if server.player_priv(kick_who) == "admin" then
+	if server.player_priv(victim) == "admin" then
 		return false, "You can't vote to kick a server admin!"
 	end 
 
-	if not votes[kick_who] then
+	if not votes[victim] then
 
-		votes[kick_who] = {}
+		votes[victim] = {}
 	end
 
-	if votes[kick_who][cn] then
+	if votes[victim][ip] then
 
 		return false, "You have already voted for this player to be kicked"
 	end
 
-	votes[kick_who][cn] = true
-    if not votes[kick_who].votes then
-        votes[kick_who].votes = 0
+	votes[victim][ip] = true
+    if not votes[victim].votes then
+        votes[victim].votes = 0
     end
-    votes[kick_who].votes = votes[kick_who].votes + 1
+    votes[victim].votes = votes[victim].votes + 1
 
 	local required_votes = math.min(round((server.playercount / 2), 0), MIN_VOTES_REQUIRED)
-	local msg = green(server.player_displayname(cn)) .. " voted to kick " .. red(server.player_displayname(kick_who)) .. "\n" .. "Votes: " .. votes[kick_who].votes .. " of " .. required_votes
+	local msg = green(server.player_displayname(cn)) .. " voted to kick " .. red(server.player_displayname(victim)) .. "\n" .. "Votes: " .. votes[victim].votes .. " of " .. required_votes
 
-	if server.player_priv_code(kick_who) == priv_master then
+	if server.player_priv_code(victim) == priv_master then
 
 		for p in server.gplayers() do
-			if not p.cn == kick_who then
+			if not p.cn == victim then
 				p:msg(msg)
 			end
 		end
@@ -126,7 +128,7 @@ local function run(cn,kick_who)
 		server.msg(msg)
 	end
 
-	check_kick(kick_who)
+	check_kick(victim)
 
 end
 
