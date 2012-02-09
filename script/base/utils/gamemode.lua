@@ -24,7 +24,10 @@ gamemodes = {
     [17] = "insta hold",
     [18] = "efficiency ctf",
     [19] = "efficiency protect",
-    [20] = "efficiency hold"
+    [20] = "efficiency hold",
+    [21] = "efficiency collect",
+    [22] = "insta collect",
+    [23] = "collect"
 }
 
 do
@@ -66,13 +69,17 @@ do
         ["eprotect"]		= "efficiency protect",
         ["efficiencyhold"]	= "efficiency hold",
         ["effichold"]		= "efficiency hold",
-        ["ehold"]		= "efficiency hold"
+        ["ehold"]		= "efficiency hold",
+        ["effichold"]		= "efficiency hold",
+        ["ecollect"]		= "efficiency collect",
+        ["icollect"]	= "insta collect"
     }
     
     function server.parse_mode(mode)
         local available_modes = list_to_set(gamemodes)
         if not available_modes[mode] then mode = mode_aliases[mode] end
-        return mode
+            return mode
+        end
     end
 end
 
@@ -97,7 +104,10 @@ do
         ["insta hold"]          = true,
         ["efficiency ctf"]      = true,
         ["efficiency protect"]  = true,
-        ["efficiency hold"]     = true
+        ["efficiency hold"]     = true,
+        ["insta collect"]       = true,
+        ["collect"]             = true,
+        ["efficiency collect"]  = true
     }
         
     function server.valid_gamemode(input)

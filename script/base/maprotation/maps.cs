@@ -153,3 +153,14 @@ global "efficiency hold_maps" $capture_maps
 global "big_efficiency hold_maps" $big_capture_maps
 global "small_efficiency hold_maps" $small_capture_maps
 
+global "insta collect_maps" $ctf_maps
+global "big_insta collect_maps" $big_ctf_maps
+global "small_insta collect_maps" $small_ctf_maps
+
+global "efficiency collect_maps" $ctf_maps
+global "big_efficiency collect_maps" $big_ctf_maps
+global "small_efficiency collect_maps" $small_ctf_maps
+
+global "collect_maps" $ctf_maps
+global "big collect_maps" $big_ctf_maps
+global "small collect_maps" $small_ctf_maps
