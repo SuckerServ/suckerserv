@@ -177,7 +177,7 @@ namespace server
 
             timeplayed = 0;
             effectiveness = 0;
-            frags = flags = deaths = suicides = teamkills = shotdamage = explosivedamage = damage = hits = misses = shots = 0;
+            frags = flags = deaths = suicides = teamkills = shotdamage = explosivedamage = damage = hits = misses = shots = tokens = 0;
 
             respawn();
         }
@@ -189,6 +189,7 @@ namespace server
             cam = o;
             lastspawn = -1;
             lastshot = 0;
+            tokens = 0;
         }
 
         void reassign()
