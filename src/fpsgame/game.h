@@ -89,7 +89,8 @@ enum
     M_LOBBY      = 1<<15,
     M_DMSP       = 1<<16,
     M_CLASSICSP  = 1<<17,
-    M_SLOWMO     = 1<<18
+    M_SLOWMO     = 1<<18,
+    M_COLLECT    = 1<<19
 };
 
 static struct gamemodeinfo
@@ -121,7 +122,10 @@ static struct gamemodeinfo
     { "insta hold", M_NOITEMS | M_INSTA | M_CTF | M_HOLD | M_TEAM, "Instagib Hold The Flag: Hold \fs\f7the flag\fr for 20 seconds to score points for \fs\f1your team\fr. You spawn with full rifle ammo and die instantly from one shot. There are no items." },
     { "efficiency ctf", M_NOITEMS | M_EFFICIENCY | M_CTF | M_TEAM, "Efficiency Capture The Flag: Capture \fs\f3the enemy flag\fr and bring it back to \fs\f1your flag\fr to score points for \fs\f1your team\fr. You spawn with all weapons and armour. There are no items." },
     { "efficiency protect", M_NOITEMS | M_EFFICIENCY | M_CTF | M_PROTECT | M_TEAM, "Efficiency Protect The Flag: Touch \fs\f3the enemy flag\fr to score points for \fs\f1your team\fr. Pick up \fs\f1your flag\fr to protect it. \fs\f1Your team\fr loses points if a dropped flag resets. You spawn with all weapons and armour. There are no items." },
-    { "efficiency hold", M_NOITEMS | M_EFFICIENCY | M_CTF | M_HOLD | M_TEAM, "Efficiency Hold The Flag: Hold \fs\f7the flag\fr for 20 seconds to score points for \fs\f1your team\fr. You spawn with all weapons and armour. There are no items." }
+    { "efficiency hold", M_NOITEMS | M_EFFICIENCY | M_CTF | M_HOLD | M_TEAM, "Efficiency Hold The Flag: Hold \fs\f7the flag\fr for 20 seconds to score points for \fs\f1your team\fr. You spawn with all weapons and armour. There are no items." },
+    { "collect", M_COLLECT | M_TEAM, "Skull Collector: Frag \fs\f3the enemy team\fr to drop \fs\f3skulls\fr. Collect them and bring them to \fs\f3the enemy base\fr to score points for \fs\f1your team\fr. Collect items for ammo." },
+    { "insta collect", M_NOITEMS | M_INSTA | M_COLLECT | M_TEAM, "Instagib Skull Collector: Frag \fs\f3the enemy team\fr to drop \fs\f3skulls\fr. Collect them and bring them to \fs\f3the enemy base\fr to score points for \fs\f1your team\fr. You spawn with full rifle ammo and die instantly from one shot. There are no items." },
+    { "efficiency collect", M_NOITEMS | M_EFFICIENCY | M_COLLECT | M_TEAM, "Efficiency Skull Collector: Frag \fs\f3the enemy team\fr to drop \fs\f3skulls\fr. Collect them and bring them to \fs\f3the enemy base\fr to score points for \fs\f1your team\fr. You spawn with all weapons and armour. There are no items." }
 };
 
 #define STARTGAMEMODE (-3)
@@ -142,6 +146,7 @@ static struct gamemodeinfo
 #define m_ctf          (m_check(gamemode, M_CTF))
 #define m_protect      (m_checkall(gamemode, M_CTF | M_PROTECT))
 #define m_hold         (m_checkall(gamemode, M_CTF | M_HOLD))
+#define m_collect      (m_check(gamemode, M_COLLECT))
 #define m_teammode     (m_check(gamemode, M_TEAM))
 #define m_overtime     (m_check(gamemode, M_OVERTIME))
 #define isteam(a,b)    (m_teammode && strcmp(a, b)==0)
@@ -232,6 +237,7 @@ enum
     N_ADDBOT, N_DELBOT, N_INITAI, N_FROMAI, N_BOTLIMIT, N_BOTBALANCE,
     N_MAPCRC, N_CHECKMAPS,
     N_SWITCHNAME, N_SWITCHMODEL, N_SWITCHTEAM,
+    N_INITTOKENS, N_TAKETOKEN, N_EXPIRETOKENS, N_DROPTOKENS, N_DEPOSITTOKENS,
     NUMSV
 };
 
@@ -259,6 +265,7 @@ static const int msgsizes[] =               // size inclusive message token, 0 f
     N_ADDBOT, 2, N_DELBOT, 1, N_INITAI, 0, N_FROMAI, 2, N_BOTLIMIT, 2, N_BOTBALANCE, 2,
     N_MAPCRC, 0, N_CHECKMAPS, 1,
     N_SWITCHNAME, 0, N_SWITCHMODEL, 2, N_SWITCHTEAM, 0,
+    N_INITTOKENS, 0, N_TAKETOKEN, 2, N_EXPIRETOKENS, 0, N_DROPTOKENS, 0, N_DEPOSITTOKENS, 2,
     -1
 };
 
@@ -266,7 +273,7 @@ static const int msgsizes[] =               // size inclusive message token, 0 f
 #define SAUERBRATEN_SERVER_PORT 28785
 #define SAUERBRATEN_SERVINFO_PORT 28786
 #define SAUERBRATEN_MASTER_PORT 28787
-#define PROTOCOL_VERSION 258            // bump when protocol changes
+#define PROTOCOL_VERSION 259            // bump when protocol changes
 #define DEMO_VERSION 1                  // bump when demo format changes
 #define DEMO_MAGIC "SAUERBRATEN_DEMO"
 
@@ -301,6 +308,8 @@ enum
     HICON_BLUE_FLAG,
     HICON_NEUTRAL_FLAG,
 
+    HICON_TOKEN,
+
     HICON_X       = 20,
     HICON_Y       = 1650,
     HICON_TEXTY   = 1644,
@@ -325,25 +334,24 @@ static struct itemstat { int add, max, sound; const char *name; int icon, info; 
 };
 
 #define SGRAYS 20
-#define SGSPREAD 4
 #define RL_DAMRAD 40
 #define RL_SELFDAMDIV 2
 #define RL_DISTSCALE 1.5f
 
-static const struct guninfo { short sound, attackdelay, damage, projspeed, part, kickamount, range; const char *name, *file; } guns[NUMGUNS] =
+static const struct guninfo { short sound, attackdelay, damage, spread, projspeed, part, kickamount, range; const char *name, *file; } guns[NUMGUNS] =
 {
-    { S_PUNCH1,    250,  50, 0,   0, 0,   14,  "fist",            "fist"  },
-    { S_SG,       1400,  10, 0,   0, 20, 1024, "shotgun",         "shotg" },  // *SGRAYS
-    { S_CG,        100,  30, 0,   0, 7, 1024,  "chaingun",        "chaing"},
-    { S_RLFIRE,    800, 120, 80,  0, 10, 1024, "rocketlauncher",  "rocket"},
-    { S_RIFLE,    1500, 100, 0,   0, 30, 2048, "rifle",           "rifle" },
-    { S_FLAUNCH,   500,  75, 80,  0, 10, 1024, "grenadelauncher", "gl" },
-    { S_PISTOL,    500,  25, 0,   0,  7, 1024, "pistol",          "pistol" },
-    { S_FLAUNCH,   200,  20, 50,  PART_FIREBALL1,  1, 1024, "fireball",  NULL },
-    { S_ICEBALL,   200,  40, 30,  PART_FIREBALL2,  1, 1024, "iceball",   NULL },
-    { S_SLIMEBALL, 200,  30, 160, PART_FIREBALL3,  1, 1024, "slimeball", NULL },
-    { S_PIGR1,     250,  50, 0,   0,  1,   12, "bite",            NULL },
-    { -1,            0, 120, 0,   0,  0,    0, "barrel",          NULL }
+    { S_PUNCH1,    250,  50, 0,   0,   0, 0,   14,  "fist",            "fist"  },
+    { S_SG,       1400,  10, 400, 0,   0, 20, 1024, "shotgun",         "shotg" },  // *SGRAYS
+    { S_CG,        100,  30, 100, 0,   0, 7, 1024,  "chaingun",        "chaing"},
+    { S_RLFIRE,    800, 120, 0,   80,  0, 10, 1024, "rocketlauncher",  "rocket"},
+    { S_RIFLE,    1500, 100, 0,   0,   0, 30, 2048, "rifle",           "rifle" },
+    { S_FLAUNCH,   500,  75, 0,   270, 0, 10, 1024, "grenadelauncher", "gl" },
+    { S_PISTOL,    500,  35, 50,  0,   0,  7, 1024, "pistol",          "pistol" },
+    { S_FLAUNCH,   200,  20, 0,   50,  PART_FIREBALL1,  1, 1024, "fireball",  NULL },
+    { S_ICEBALL,   200,  40, 0,   30,  PART_FIREBALL2,  1, 1024, "iceball",   NULL },
+    { S_SLIMEBALL, 200,  30, 0,   160, PART_FIREBALL3,  1, 1024, "slimeball", NULL },
+    { S_PIGR1,     250,  50, 0,   0,   0,  1,   12, "bite",            NULL },
+    { -1,            0, 120, 0,   0,   0,  0,    0, "barrel",          NULL }
 };
 
 #include "ai.h"
@@ -472,7 +480,7 @@ struct fpsstate
             gunselect = GUN_CG;
             ammo[GUN_CG] /= 2;
         }
-        else if(m_ctf)
+        else if(m_ctf || m_collect)
         {
             armourtype = A_BLUE;
             armour = 50;
@@ -514,7 +522,8 @@ struct fpsent : dynent, fpsstate
     bool attacking;
     int attacksound, attackchan, idlesound, idlechan;
     int lasttaunt;
-    int lastpickup, lastpickupmillis, lastbase, lastrepammo, flagpickup;
+    int lastpickup, lastpickupmillis, lastbase, lastrepammo, flagpickup, tokens;
+    vec lastcollect;
     int frags, flags, deaths, totaldamage, totalshots;
     editinfo *edit;
     float deltayaw, deltapitch, newyaw, newpitch;
@@ -573,11 +582,13 @@ struct fpsent : dynent, fpsstate
         lastpickupmillis = 0;
         lastbase = lastrepammo = -1;
         flagpickup = 0;
+        tokens = 0;
+        lastcollect = vec(-1e10f, -1e10f, -1e10f);
         stopattacksound();
         lastnode = -1;
     }
 };
-
+//hopmod
 struct teamscore
 {
     const char *team;
@@ -585,13 +596,14 @@ struct teamscore
     teamscore() {}
     teamscore(const char *s, int n) : team(s), score(n) {}
 
-    static bool compare(const teamscore &x, const teamscore &y)
+    static int compare(const teamscore *x, const teamscore *y)
     {
-        if(x.score > y.score) return true;
-        if(x.score < y.score) return false;
-        return strcmp(x.team, y.team) < 0;
+        if(x->score > y->score) return -1;
+        if(x->score < y->score) return 1;
+        return strcmp(x->team, y->team);
     }
 };
+//end hopmod
 
 namespace entities
 {
@@ -689,6 +701,9 @@ namespace game
     extern string servinfo;
 
     extern int parseplayer(const char *arg);
+    extern void ignore(int cn);
+    extern void unignore(int cn);
+    extern bool isignored(int cn);
     extern void addmsg(int type, const char *fmt = NULL, ...);
     extern void switchname(const char *name);
     extern void switchteam(const char *name);
@@ -726,6 +741,7 @@ namespace game
     extern void hitmovable(int damage, movable *m, fpsent *at, const vec &vel, int gun);
 
     // weapon
+    extern int getweapon(const char *name);
     extern void shoot(fpsent *d, const vec &targ);
     extern void shoteffects(int gun, const vec &from, const vec &to, fpsent *d, bool local, int id, int prevaction);
     extern void explode(bool local, fpsent *owner, const vec &v, dynent *safe, int dam, int gun);
@@ -761,7 +777,7 @@ namespace game
         const char *ffa, *blueteam, *redteam, *hudguns,
                    *vwep, *quad, *armour[3],
                    *ffaicon, *blueicon, *redicon;
-        bool ragdoll, selectable;
+        bool ragdoll;
     };
 
     extern int playermodel, teamskins, testteam;
