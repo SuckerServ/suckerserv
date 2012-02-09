@@ -24,9 +24,7 @@ lua::event< boost::tuple<int,int,const char *> >                     event_authr
 lua::event< boost::tuple<int,int,int> >                              event_addbot("addbot");
 lua::event< boost::tuple<int> >                                      event_delbot("delbot");
 lua::event< boost::tuple<int> >                                      event_botleft("botleft");
-lua::event< boost::tuple<int> >                                      event_mapcrcfail("mapcrcfail");
-lua::event< boost::tuple<int, const char *, int> >                   event_mapcrc("mapcrc");
-lua::event< boost::tuple<int> >                                      event_checkmaps("checkmaps");
+lua::event< boost::tuple<int, const char *, int> >                   event_modmap("modmap");
 lua::event< boost::tuple<int,int> >                                  event_frag("frag");
 lua::event< boost::tuple<int,int,int> >                              event_shot("shot");
 lua::event< boost::tuple<int> >                                      event_suicide("suicide");
@@ -88,9 +86,7 @@ void register_event_idents(lua::event_environment & env)
         & event_addbot,
         & event_delbot,
         & event_botleft,
-        & event_mapcrcfail,
-        & event_mapcrc,
-        & event_checkmaps,
+        & event_modmap,
         & event_frag,
         & event_shot,
         & event_suicide,

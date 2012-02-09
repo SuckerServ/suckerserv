@@ -27,9 +27,7 @@ extern lua::event< boost::tuple<int,int,const char *> >                     even
 extern lua::event< boost::tuple<int,int,int> >                              event_addbot;
 extern lua::event< boost::tuple<int> >                                      event_delbot;
 extern lua::event< boost::tuple<int> >                                      event_botleft;
-extern lua::event< boost::tuple<int> >                                      event_mapcrcfail;
-extern lua::event< boost::tuple<int, const char *, int> >                   event_mapcrc;
-extern lua::event< boost::tuple<int> >                                      event_checkmaps;
+extern lua::event< boost::tuple<int, const char *, int> >                   event_modmap;
 extern lua::event< boost::tuple<int,int> >                                  event_teamkill;
 extern lua::event< boost::tuple<int,int> >                                  event_frag;
 extern lua::event< boost::tuple<int,int,int> >                              event_shot;

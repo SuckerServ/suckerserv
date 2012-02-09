@@ -2670,12 +2670,27 @@ namespace server
                 }
                 copystring(ci->clientmap, text);
                 ci->mapcrc = text[0] ? crc : 1;
-                event_mapcrc(event_listeners(), boost::make_tuple(ci->clientnum, text, crc));
+
+                if(mcrc != 0 && (unsigned int)mcrc != (unsigned int)ci->mapcrc)
+                {
+                    event_modmap(event_listeners(), boost::make_tuple(ci->clientnum, text, crc));
+                    defformatstring(msg)("%s is using a modified map", colorname(ci, ci->name));
+                    sendservmsg(msg);
+                }
                 break;
             }
 
             case N_CHECKMAPS:
-                event_checkmaps(event_listeners(), boost::make_tuple(sender));
+                if(!mcrc) break;
+                loopv(clients)
+                {
+                    clientinfo *ci = clients[i];
+                    if((unsigned int)mcrc != (unsigned int)ci->mapcrc)
+                    {
+                        defformatstring(msg)("%s is using a modified map", colorname(ci, ci->name));
+                        sendservmsg(msg);
+                    }
+                }
                 break;
 
             case N_TRYSPAWN:
@@ -2713,11 +2728,7 @@ namespace server
                 int ls = getint(p), gunselect = getint(p);
 				if(gunselect<GUN_FIST || gunselect>GUN_PISTOL) break;
                 if(!cq || (cq->state.state!=CS_ALIVE && cq->state.state!=CS_DEAD) || ls!=cq->state.lifesequence || cq->state.lastspawn<0) break;
-                if(cq->mapcrc == 0 && cq->state.aitype == AI_NONE)
-                {
-                    cq->mapcrc = 1;
-                    event_mapcrc(event_listeners(), boost::make_tuple(cq->clientnum, smapname, cq->mapcrc));
-                }
+                if(cq->mapcrc == 0 && cq->state.aitype == AI_NONE) cq->mapcrc = 1;
                 if (ci->spy)
                 {
                     ci->spy = false;
