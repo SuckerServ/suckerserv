@@ -148,30 +148,7 @@ void getstring(char *text, ucharbuf &p, int len)
     while(*t++);
 }
 
-static int iscubeprint(int c) // copied from shared/cube2font.c 
-{
-    static const char flags[256] =
-    {
-        0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-    };
-    return flags[c];
-}
-
+#if PROTOCOL > 258
 void filtertext(char *dst, const char *src, bool whitespace, int len)
 {
     for(int c = uchar(*src); c; c = uchar(*++src))
@@ -181,7 +158,7 @@ void filtertext(char *dst, const char *src, bool whitespace, int len)
             if(!*++src) break;
             continue;
         }
-        if(iscubeprint(c) || (isspace(c) && whitespace))
+        if(iscubeprint(c) || (iscubespace(c) && whitespace))
         {
             *dst++ = c;
             if(!--len) break;
@@ -189,6 +166,24 @@ void filtertext(char *dst, const char *src, bool whitespace, int len)
     }
     *dst = '\0';
 }
+#else
+void filtertext(char *dst, const char *src, bool whitespace, int len)
+{
+    for(int c = *src; c; c = *++src)
+    {
+        if(c == '\f') { 
+            if(!*++src) break;
+            continue;
+        }
+        if(c == ' ' ? whitespace : isprint(c)) //NEW c == ' ' instead "isspace(c) to skip whitespaces: TAB LF VT FF CR
+        {
+            *dst++ = c;
+            if(!--len) break;
+        }
+    }
+    *dst = '\0';
+}
+#endif
 
 enum { ST_EMPTY, ST_LOCAL, ST_TCPIP };
 

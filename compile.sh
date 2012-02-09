@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-PROJECT="$(tput bold ; tput setaf 3)SuckerServ-v4$(tput sgr0)"
+PROJECT="$(tput bold ; tput setaf 3)SuckerServ-v5$(tput sgr0)"
 THREADS=`cat /proc/cpuinfo | grep processor | wc -l`
 ARG_LENGTH=$#
 if [ $ARG_LENGTH -gt 2 -o "$1" == "--help" ]; then
