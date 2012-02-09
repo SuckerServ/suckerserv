@@ -1663,7 +1663,7 @@ namespace server
         notgotitems = true;
         if(m_edit || !e::loadents(smapname, ments, mcrc))
         {
-            std::cout<<"failed to load mapents for map "<<smapname<<std::endl;
+            std::cerr<<"failed to load mapents for map "<<smapname<<std::endl;
             mcrc = 0;
             return;
         }
@@ -2672,7 +2672,7 @@ namespace server
                 copystring(ci->clientmap, text);
                 ci->mapcrc = text[0] ? crc : 1;
 
-                if(mcrc != 0 && (unsigned int)mcrc != (unsigned int)ci->mapcrc)
+                if(!m_edit && mcrc != 0 && (unsigned int)mcrc != (unsigned int)ci->mapcrc)
                 {
                     event_modmap(event_listeners(), boost::make_tuple(ci->clientnum, text, crc));
                     defformatstring(msg)("%s is using a modified map", colorname(ci, ci->name));
