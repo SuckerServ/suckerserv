@@ -1433,14 +1433,15 @@ namespace server
             int flags = (delayed_sendpackets[0].channel == 1 ? ENET_PACKET_FLAG_RELIABLE : 0);
             ENetPacket * packet = enet_packet_create(delayed_sendpackets[0].data, delayed_sendpackets[0].length, flags | ENET_PACKET_FLAG_NO_ALLOCATE);
             packet->freeCallback = free_packet_data;
-            
+            int specs = 0;
             loopv(clients)
             {
                 clientinfo &ci = *clients[i];
                 if(!ci.is_delayed_spectator() || ci.specmillis + spectator_delay > totalmillis) continue;
                 sendpacket(ci.clientnum, delayed_sendpackets[0].channel, packet);
+                specs++;
             }
-            
+            if(!specs) free(delayed_sendpackets[0].data);
             delayed_sendpackets.remove(0);
         }
         
