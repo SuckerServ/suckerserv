@@ -37,7 +37,6 @@ namespace e
             e.attr5 = f->get<short>();
             e.reserved = f->get<uchar>();
             loopk(3) e.o[k] = f->get<float>();
-            loopk(5) f->get<void *>();
 
             ents.add(e);
 
@@ -86,7 +85,6 @@ namespace e
             mapi->put(e.attr5);
             mapi->put(e.reserved);
             loopk(3) mapi->put(e.o[k]);
-            loopk(5) mapi->put<void *>(0); //reserved
 
             mapi->putlil(0);
         }
