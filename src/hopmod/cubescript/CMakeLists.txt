@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 project(cubescript)
 
-find_package(Lua51)
-
 add_definitions(-Wall)
 include_directories(${LUA_INCLUDE_DIR})
 
