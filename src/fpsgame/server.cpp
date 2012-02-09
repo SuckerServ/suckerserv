@@ -2672,7 +2672,7 @@ namespace server
                 copystring(ci->clientmap, text);
                 ci->mapcrc = text[0] ? crc : 1;
 
-                if(!m_edit && mcrc != 0 && (unsigned int)mcrc != (unsigned int)ci->mapcrc)
+                if(!m_edit && mcrc && (uint)mcrc != (uint)ci->mapcrc)
                 {
                     event_modmap(event_listeners(), boost::make_tuple(ci->clientnum, text, crc));
                     defformatstring(msg)("%s is using a modified map", colorname(ci, ci->name));
@@ -2686,7 +2686,7 @@ namespace server
                 loopv(clients)
                 {
                     clientinfo *ci = clients[i];
-                    if((unsigned int)mcrc != (unsigned int)ci->mapcrc)
+                    if(ci->mapcrc && (uint)mcrc != (uint)ci->mapcrc)
                     {
                         defformatstring(msg)("%s is using a modified map", colorname(ci, ci->name));
                         sendservmsg(msg);
@@ -2729,8 +2729,13 @@ namespace server
                 int ls = getint(p), gunselect = getint(p);
 				if(gunselect<GUN_FIST || gunselect>GUN_PISTOL) break;
                 if(!cq || (cq->state.state!=CS_ALIVE && cq->state.state!=CS_DEAD) || ls!=cq->state.lifesequence || cq->state.lastspawn<0) break;
-                if(cq->mapcrc == 0 && cq->state.aitype == AI_NONE)
+                if(!cq->mapcrc && cq->state.aitype == AI_NONE)
+                {
+                    defformatstring(msg)("%s is using a modified map", colorname(ci, ci->name));
+                    sendservmsg(msg);
                     event_modmap(event_listeners(), boost::make_tuple(ci->clientnum, text, cq->mapcrc));
+                    cq->mapcrc = 1;
+                }
                 if (ci->spy)
                 {
                     ci->spy = false;
