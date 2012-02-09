@@ -2728,7 +2728,8 @@ namespace server
                 int ls = getint(p), gunselect = getint(p);
 				if(gunselect<GUN_FIST || gunselect>GUN_PISTOL) break;
                 if(!cq || (cq->state.state!=CS_ALIVE && cq->state.state!=CS_DEAD) || ls!=cq->state.lifesequence || cq->state.lastspawn<0) break;
-                if(cq->mapcrc == 0 && cq->state.aitype == AI_NONE) cq->mapcrc = 1;
+                if(cq->mapcrc == 0 && cq->state.aitype == AI_NONE)
+                    event_modmap(event_listeners(), boost::make_tuple(ci->clientnum, text, cq->mapcrc));
                 if (ci->spy)
                 {
                     ci->spy = false;
