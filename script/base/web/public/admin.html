@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Cube 2 Server Control Panel</title>
+    <link href="/static/presentation/jquery.fancybox-1.3.1.css" rel="stylesheet" type="text/css" />
+    <link href="/static/presentation/screen.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" href="/static/presentation/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/static/presentation/favicon.ico" type="image/x-icon"> 
+    
+    <script src="/static/js/jquery-1.3.2.min.js" type="text/javascript"></script>
+    <script src="/static/js/jquery.json-2.2.min.js" type="text/javascript"></script>
+    <script src="/static/js/jquery.sparkline-1.5.1.min.js" type="text/javascript"></script>
+    <script src="/static/js/jquery.fancybox-1.3.1.pack.js" type="text/javascript"></script>
+    
+    <script src="/static/js/utils.js" type="text/javascript"></script>
+    <script src="/static/js/classes/Server.js" type="text/javascript"></script>
+    <script src="/static/js/classes/EventDemultiplexer.js" type="text/javascript"></script>
+    <script src="/static/js/classes/Client.js" type="text/javascript"></script>
+    <script src="/static/js/classes/ClientUpdateSet.js" type="text/javascript"></script>
+    <script src="/static/js/classes/Game.js" type="text/javascript"></script>
+    <script src="/static/js/classes/Teams.js" type="text/javascript"></script>
+    <script src="/static/js/admin.js" type="text/javascript"></script>
+</head>
+<body>
+
+<ul id="nav">
+    <li><a href="/static/ip-vars.html">IP Variables</a></li>
+    <li><a href="/error-log">Error Log</a></li>
+</ul>
+
+<div style="margin-bottom:1em">
+    <span id="serverinfo">&nbsp;</span>
+    <span id="netstats">&nbsp;</span>
+</div>
+
+<div id="left-column">
+    <div id="gameinfo">&nbsp;</div>
+    <div id="players">&nbsp;</div>
+    <div id="spectators">&nbsp;</div>
+</div>
+
+<div id="right-column">
+    <div id="chat-shell">&nbsp;</div>
+    <div id="command-shell">&nbsp;</div>
+    <div id="command-links">&nbsp;</div>
+</div>
+<div class="clear">&nbsp;</div>
+
+<div id="footer">
+    <a href="http://hopmod.googlecode.com">Hopmod Project Site</a> | <a href="http://hopmod.e-topic.info">Hopmod Wiki</a> |
+    <a href="http://suckerserv.googlecode.com/">SuckerServ Project Site</a> | <a href="http://piernov.org/dokuwiki/en:suckerserv:start">SuckerServ Wiki</a>
+</div>
+
+</body>
+</html>

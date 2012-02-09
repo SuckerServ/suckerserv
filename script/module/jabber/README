@@ -1,0 +1,21 @@
+This is a Lua Jabber bot for HopMod-based Sauerbraten's server
+It uses the verse library, included in the package, and 2 FIFO for the communication between the module and the bot.
+You have to create them by issuing this command in the root of your server: 
+mkfifo conf/bot.fifo && mkfifo conf/to_server.fifo
+
+This bot use some external commands ( "lua" and "sleep" ), so will work only on Unix systems with a compatible shell running the server.
+To configure this module, add this to your server.conf, and complete the fields : 
+
+###############################################################################
+# Jabber Bot
+###############################################################################
+
+xmpp_jid ""
+xmpp_password ""
+xmpp_debug 0
+xmpp_muc_jid ""
+xmpp_muc_nick ""
+xmpp_muc_password ""
+xmpp_bot_command_name "!"
+
+module "jabber/lua_jabber_bot"

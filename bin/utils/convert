@@ -1,0 +1,180 @@
+#!/bin/sh
+#
+################################################################################
+
+p_exec() {
+
+    if [ -p authexec ]
+    then
+        echo "$1" > authexec
+    else
+	return 1
+    fi
+    
+    return 0
+}
+
+################################################################################
+
+p_help() {
+
+    echo "usage: $0 old text <textfile>"
+    echo "       $0 old sqlite <sqlitefile>"
+    echo "       $0 text <textfile>"
+    echo "       $0 sqlite <sqlitefiles-dir>"
+    echo "       $0 mysql <hostname> <username> <password> <database>"
+    echo " converts between authserver's database backends"
+    echo " from the given type btw. from an old schema or file with direct added users"
+    echo " to the backend, that the authserver is using, now"
+}
+
+################################################################################
+
+if [ ! -p authexec ]
+then
+    p_help
+    echo "authserver must run with the backend, you plan to use."
+    exit 1
+fi
+
+################################################################################
+
+case "$1" in
+    'old')
+	case "$2" in
+	    'text')
+                if [ "x$3" = "x" ]
+                then
+            	    p_help
+            	    exit 2
+            	fi
+            	
+            	d_tmp=$(mktemp -d /tmp/hopmod.auth.convert.XXXXXX)
+            	
+            	for aa in $(grep adduser "$3" | awk '{ print $3 }' | sed 's/"//g')
+            	do
+            	    if [ ! -e $d_tmp/$aa ]
+            	    then
+            		touch $d_tmp/$aa
+            	    fi
+            	done
+            	
+            	for aa in $(ls -1 $d_tmp/)
+            	do
+            	    p_exec "add_domain \"$(basename $aa)\""
+            	done
+        	
+        	grep adduser "$3" > $d_tmp/add
+        	sed -i 's/adduser/add_user/g' $d_tmp/add
+        	cat $d_tmp/add > authexec
+        	
+        	grep deleteuser "$3" > $d_tmp/del
+        	sed -i 's/deleteuser/del_user/g' $d_tmp/del
+        	cat $d_tmp/del > authexec
+            	
+            	rm -rf $d_tmp
+            ;;
+            'sqlite')
+        	if [ "x$3" = "x" ]
+                then
+            	    p_help
+            	    exit 2
+            	fi
+            	
+            	for aa in $(sqlite3 "$3" "SELECT name FROM domains;")
+            	do
+            	    p_exec "add_domain \"$aa\""
+            	done
+            	
+            	for aa in $(sqlite3 "$3" "SELECT users.name, domains.name, users.pubkey FROM users INNER JOIN domains ON users.domain_id = domains.id;")
+            	do
+            	    p_exec "add_user \"$(echo $aa | awk -F "|" '{ print $1 }')\" \"$(echo $aa | awk -F "|" '{ print $2 }')\" \"$(echo $aa | awk -F "|" '{ print $3 }'\")"
+            	done
+    	    ;;
+            *)
+        	p_help
+        	exit 2
+	    ;;
+	esac
+    ;;
+    'text')
+	if [ "x$2" = "x" ]
+        then
+            p_help
+            exit 2
+        fi
+        
+        d_tmp=$(mktemp -d /tmp/hopmod.auth.convert.XXXXXX)
+        
+        cp "$2" $d_tmp/do
+        sed -i 's/__add_domain/add_domain/g' $d_tmp/do
+        sed -i 's/__add_user/add_user/g' $d_tmp/do
+        	
+        cat $d_tmp/do > authexec
+        
+        rm -rf $d_tmp
+    ;;
+    'sqlite')
+	if [ "x$2" = "x" ]
+        then
+            p_help
+            exit 2
+        fi
+        
+        for ff in $(ls -1 $2/*.sqlite)
+        do
+    	    for aa in $(sqlite3 "$ff" "SELECT name, case_insensitive FROM domains;")
+    	    do
+        	p_exec "add_domain \"$(echo $aa | awk -F "|" '{ print $1 }')\" \"$(echo $aa | awk -F "|" '{ print $2 }')\""
+    	    done
+    	    
+    	    for aa in $(sqlite3 "$ff" "SELECT users.name, domains.name, users.pubkey FROM users INNER JOIN domains ON users.domain_id = domains.id;")
+    	    do
+    		p_exec "add_user \"$(echo $aa | awk -F "|" '{ print $1 }')\" \"$(echo $aa | awk -F "|" '{ print $2 }')\" \"$(echo $aa | awk -F "|" '{ print $3 }')\""
+    	    done
+    	done
+    ;;
+    'mysql')
+	if [ "x$5" = "x" ] || [ "x$4" = "x" ] || [ "x$3" = "x" ] || [ "x$2" = "x" ]
+        then
+            p_help
+            exit 2
+        fi
+        
+        d_tmp=$(mktemp -d /tmp/hopmod.auth.convert.XXXXXX)
+        
+        mysql -h "$2" -u "$3" --password="$4" "$5" -e "SELECT name, case_insensitive FROM domains;" > $d_tmp/do
+        sed -i 's/name//' $d_tmp/do
+        sed -i 's/case_insensitive//' $d_tmp/do
+        sed -i '/^[[:space:]]*$/d' $d_tmp/do
+        sed -i '/^$/d' $d_tmp/do
+        sed -i 's/	/ /g' $d_tmp/do
+        sed -i 's/[[:space:]]+/ /g' $d_tmp/do
+        sed -i 's/ /" "/g' $d_tmp/do
+        sed -i 's/$/"/g' $d_tmp/do
+        sed -i 's/^/add_domain "/g' $d_tmp/do
+        
+        cat $d_tmp/do > authexec
+        
+        mysql -h "$2" -u "$3" --password="$4" "$5" -e "SELECT users.name, domains.name, users.pubkey FROM users INNER JOIN domains ON users.domain_id = domains.id;" > $d_tmp/do2
+	sed -i 's/users.name//' $d_tmp/do2
+        sed -i 's/domains.name//' $d_tmp/do2
+        sed -i 's/users.pubkey//' $d_tmp/do2
+        sed -i '/^[[:space:]]*$/d' $d_tmp/do2
+        sed -i '/^$/d' $d_tmp/do2
+        sed -i 's/	/ /g' $d_tmp/do2
+        sed -i 's/[[:space:]]+/ /g' $d_tmp/do2
+        sed -i 's/ /" "/g' $d_tmp/do2
+        sed -i 's/$/"/g' $d_tmp/do2
+        sed -i 's/^/add_user "/g' $d_tmp/do2
+        
+        cat $d_tmp/do2 > authexec
+        
+        rm -rf $d_tmp
+    ;;
+    'help'|*)
+	p_help
+    ;;
+esac
+
+exit 0
