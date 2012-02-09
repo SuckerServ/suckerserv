@@ -445,7 +445,7 @@ namespace server
         
         bool check_flooding(freqlimit & hit, const char * activity = NULL, bool sendwarning = true)
         {
-            int remaining = hit.next(totalmillis);
+            uint remaining = hit.next(totalmillis);
             bool flooding = remaining > 0;
             if(flooding && activity && sendwarning)
             {

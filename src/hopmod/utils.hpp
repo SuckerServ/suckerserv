@@ -18,10 +18,10 @@ class freqlimit
 {
 public:
     freqlimit(int length);
-    int next(int time);
+    unsigned int next(unsigned int time);
 private:
     int m_length;
-    int m_hit;
+    unsigned int m_hit;
 };
 
 bool file_exists(const char *);

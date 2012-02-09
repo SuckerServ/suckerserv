@@ -56,7 +56,7 @@ freqlimit::freqlimit(int length)
     
 }
 
-int freqlimit::next(int time)
+unsigned int freqlimit::next(unsigned int time)
 {
     if(time >= m_hit)
     {
