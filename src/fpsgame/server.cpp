@@ -2470,9 +2470,11 @@ namespace server
 
                 ci->ac.reset(sender);
                 ci->state.lastdeath = -5000;
-
-                ci->playermodel = getint(p);
                 
+                int model = getint(p);
+                if(model<0 || model>4) model = 0;
+                ci->playermodel = model;
+
                 if(m_demo) enddemoplayback();
                 
                 connects.removeobj(ci);
@@ -2919,7 +2921,9 @@ namespace server
 
             case N_SWITCHMODEL:
             {
-                ci->playermodel = getint(p);
+                int model = getint(p);
+                if(model<0 || model>4) break
+                ci->playermodel = model;
                 if (ci->spy) break;
                 QUEUE_MSG;
                 break;
