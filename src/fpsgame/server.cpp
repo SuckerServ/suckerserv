@@ -708,8 +708,8 @@ namespace server
             case I_GRENADES:
             case I_CARTRIDGES: sec = np*4; break;
             case I_HEALTH: sec = np*5; break;
-            case I_GREENARMOUR:
-            case I_YELLOWARMOUR: sec = 20; break;
+            case I_GREENARMOUR: sec = 20; break;
+            case I_YELLOWARMOUR: sec = 20 + rnd(6); break;
             case I_BOOST:
             case I_QUAD: sec = 40+rnd(40); break;
         }
@@ -2510,6 +2510,8 @@ namespace server
                 
                 event_connect(event_listeners(), boost::make_tuple(ci->clientnum, ci->spy));
                 
+                std::cout<<"connected!"<<std::endl;
+                
             }
         }
         else if(chan==2)
@@ -2922,7 +2924,7 @@ namespace server
             case N_SWITCHMODEL:
             {
                 int model = getint(p);
-                if(model<0 || model>4) break
+                if(model<0 || model>4) break;
                 ci->playermodel = model;
                 if (ci->spy) break;
                 QUEUE_MSG;
