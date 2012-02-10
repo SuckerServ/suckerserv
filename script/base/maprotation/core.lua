@@ -137,7 +137,7 @@ local function load_from_lists(var_prefix)
         
         for _, mapname in pairs(provisional) do
             
-            if supported_maps[mapname] then
+            if supported_map(mapname) then
                 rotation[#rotation + 1] = mapname
             else
                 server.log_error(string.format("Excluding unknown map %s in %s maps rotation.", mapname, varname))

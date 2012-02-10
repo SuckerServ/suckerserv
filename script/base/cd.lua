@@ -51,7 +51,7 @@ local function log_action_global(cheat_str, points, _max_points)
 end      
 
 local function is_known_map(map)
-    return supported_maps[map] ~= nil
+    return supported_map(map)
 end
 
 local function admin_msg(msg)

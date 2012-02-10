@@ -37,7 +37,7 @@ local function mapvote(cn, map, mode)
         return
     end
     
-    if deny_unknown_map and not supported_maps[map] then
+    if deny_unknown_map and not supported_map(map) then
         server.player_msg(cn, string.format(server.mapvote_rejected_unknownmap, map))
         return -1
     end
