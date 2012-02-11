@@ -48,6 +48,7 @@ server.event_handler("started", function()
     server.reload_maprotation()
     
     require("geoip").load_geoip_database(server.geoip_db_file)
+    geoip.load_geocity_database(server.geocity_db_file)
     
     server.log_status(server.server_start_message)
 end)
