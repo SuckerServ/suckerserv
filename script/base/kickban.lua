@@ -106,7 +106,11 @@ server.event_handler("clearbans_request", function()
 end)
 
 server.event_handler("kick_request", function(admin_cn, admin_name, bantime, target, reason)
-    server.kick(target, bantime, admin_name, reason)
+    if server.player_priv_code(admin_cn) > server.player_priv_code(target) then
+        server.kick(target, bantime, admin_name, reason)
+    else
+        server.player_msg(admin_cn, server.command_permission_denied_message)
+    end
 end)
 
 server.event_handler("started", function()

@@ -30,10 +30,14 @@ end
 
 local function is_user(name, domain_id)
 
-    local tab = mysql.row(mysql.exec(connection, string.format("SELECT name FROM users WHERE domain_id = %i AND name = '%s'", domain_id, mysql.escape_string(name))))
+    local tab = mysql.row(mysql.exec(connection, string.format("SELECT name, domain_id FROM users WHERE name = '%s'", mysql.escape_string(name))))
     if tab
     then
-        return true
+        for domain in ipairs(tab.domain_id:split(",")) do
+            if domain == domain_id then
+                return true
+            end
+        end
     end
     
     return
@@ -41,10 +45,14 @@ end
 
 local function pubkey(name, domain_id)
 
-    local tab = mysql.row(mysql.exec(connection, string.format("SELECT pubkey FROM users WHERE domain_id = %i AND name = '%s'", domain_id, mysql.escape_string(name))))
+    local tab = mysql.row(mysql.exec(connection, string.format("SELECT pubkey, domain_id FROM users WHERE domain_id = %i AND name = '%s'", mysql.escape_string(name))))
     if tab
     then
-        return tab.pubkey
+        for domain in ipairs(tab.domain_id:split(",")) do
+            if domain == domain_id then
+                return tab.pubkey
+            end
+        end
     end
     
     return
@@ -56,10 +64,14 @@ local function list_users(domain_id, no_key)
     
     if no_key
     then
-	for tab in mysql.rows(mysql.exec(connection, string.format("SELECT name FROM users WHERE domain_id = %i", domain_id)))
-	do
-	    users[tab.name] = true
-	end
+        for tab in mysql.rows(mysql.exec(connection, string.format("SELECT name, domain_id FROM users")))
+        do
+            for domain in ipairs(tab.domain_id:split(",")) do
+                if domain == domain_id then
+                    users[tab.name] = true
+                end
+            end
+        end
     else
 	for tab in mysql.rows(mysql.exec(connection, string.format("SELECT name, pubkey FROM users WHERE domain_id = %i", domain_id)))
 	do
