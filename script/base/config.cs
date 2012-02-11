@@ -5,6 +5,7 @@ global motd "Running Hopmod"
 global show_country_message 1
 
 global geoip_db_file "share/GeoIP.dat"
+global geocity_db_file "share/GeoLiteCity.dat"
 
 global allow_mapvote 1
 global mapvote_disallow_unknown_map 0

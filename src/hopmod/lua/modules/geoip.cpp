@@ -19,7 +19,7 @@ static int load_geocity_database(lua_State * L)
 {
     const char * filename = luaL_checkstring(L, 1);
     if(GeoCity) GeoIP_delete(GeoCity);
-    GeoCity = GeoIP_open(filename, GEOIP_MEMORY_CACHE);
+    GeoCity = GeoIP_open(filename, GEOIP_STANDARD);
     lua_pushboolean(L, GeoCity != NULL);
     return 1;
 }
@@ -45,8 +45,8 @@ static int ip_to_country_code(lua_State * L)
 static int ip_to_city(lua_State * L)
 {
     if(!GeoCity) return luaL_error(L, "missing GeoCity database");
-	char *city = GeoIP_record_by_addr(GeoCity, luaL_checkstring(L, 1))->city;
-    lua_pushstring(L, city);
+    GeoIPRecord *r = GeoIP_record_by_addr(GeoCity, luaL_checkstring(L, 1));
+    lua_pushstring(L, (r && r->city ? r->city : ""));
     return 1;
 }
 
