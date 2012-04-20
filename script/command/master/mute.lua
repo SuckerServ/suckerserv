@@ -22,5 +22,6 @@ return function(cn,tcn,time)
     end
 
     server.mute(tcn,time)
-	server.player_msg(cn, string.format(player_mute_admin_message, tcn))
+
+    server.player_msg(cn, string.format(server.player_mute_admin_message, tcn))
 end
