@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-PROJECT="$(tput bold ; tput setaf 3)SuckerServ-v5$(tput sgr0)"
+export REVISION=`svn log -l1 -q | cut --delimiter=" " -f1 -s | cut -c2-`
+PROJECT="$(tput bold ; tput setaf 3)SuckerServ-v5 $(tput setaf 2)r$REVISION$(tput sgr0)"
 THREADS=`cat /proc/cpuinfo | grep processor | wc -l`
 ARG_LENGTH=$#
 if [ $ARG_LENGTH -gt 2 -o "$1" == "--help" ]; then

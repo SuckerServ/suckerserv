@@ -160,7 +160,11 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "lua_stack_size", get_lua_stack_size);
     
     bind_function(L, T, "enet_time_set", enet_time_set);
-    bind_function(L, T, "enet_time_get", server::enet_time_get_);
+    bind_function(L, T, "enet_time_get", (int (*)())enet_time_get);
+    
+    bind_function(L, T, "revision", server::revision);
+    bind_function(L, T, "version", server::version);
+
 }
 
 template<int Constant>

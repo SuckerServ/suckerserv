@@ -114,11 +114,17 @@
             }
 			
             case EXT_HOPMOD:
-			{
+                        {
                 putint(p, EXT_NO_ERROR);
-                putint(p, extcmd); 
+#ifdef REVISION
+                putint(p, REVISION);
+#else
+                putint(p, -1);
+#endif
+                defformatstring(s)("%s %s", __DATE__, __TIME__);
+                sendstring(s, p);
                 break;
-            }	
+            }   
 
             case EXT_PLAYERSTATS:
             {
