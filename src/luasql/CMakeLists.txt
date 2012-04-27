@@ -2,7 +2,7 @@ set(MYSQL_DIR "/usr/local/mysql" CACHE STRING "Directory of MySQL installation")
 
 set(LUASQL_MYSQL_LIBRARY luasql_mysql CACHE INTERNAL "luasql_mysql library")
 
-include_directories(${LUA_INCLUDE_DIR} ${MYSQL_DIR}/include /usr/include/mysql)
+include_directories(${LUA_INCLUDE_DIRS} ${MYSQL_DIR}/include /usr/include/mysql)
 link_directories(${MYSQL_DIR}/lib)
 
 set(SOURCES
