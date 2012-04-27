@@ -148,14 +148,38 @@ void getstring(char *text, ucharbuf &p, int len)
     while(*t++);
 }
 
+//HOPMOD
+static inline bool is_bad_char(uchar c)
+{
+    return c == '\r' || c == '\n' || (c >= 11 && c <= 13);
+}
+//END HOPMOD
+
 void filtertext(char *dst, const char *src, bool whitespace, int len)
 {
     for(int c = *src; c; c = *++src)
     {
-        if(c == '\f') { 
+        if(c == '\f')
+        { 
             if(!*++src) break;
             continue;
         }
+        //HOPMOD
+        bool f = false;
+        while(c)
+        {
+            if(is_bad_char(c)) f = true;
+            else break;
+            c = *++src;
+        }
+        if(f)
+        {
+            *dst++ = ' ';
+            if(!--len) break;
+            if(!is_bad_char(c)) *src--;
+            continue;
+        }
+        //END HOPMOD
         if(c == ' ' ? whitespace : isprint(c)) //NEW c == ' ' instead "isspace(c) to skip whitespaces: TAB LF VT FF CR
         {
             *dst++ = c;
