@@ -54,7 +54,10 @@
         putint(q, (currentmaster == ci->clientnum ? ci->privilege : PRIV_NONE)); 
         putint(q, ci->state.state);
         uint ip = getclientip(ci->clientnum);
+        q.put((uchar*)&ip, 3);
         /* hopmod extension */
+        if(ext_admin_client || ext_hopmod_request)
+            putint(q, !ext_admin_client ? -1 : (ip >> 24) & 0xFF); // send last byte as signed integer, -1 on error
         if(ext_hopmod_request)
         {
             putint(q, EXT_HOPMOD);
@@ -66,7 +69,6 @@
             putint(q, ci->state.hits);
             putint(q, ci->state.misses);
             putint(q, ci->state.shots);
-            q.put((uchar*)&ip, ext_admin_client ? 4 : 3);
             if(ext_admin_client)
             {
                 putint(q, (totalmillis - ci->connectmillis)/1000);
@@ -139,11 +141,12 @@
                     putint(p, EXT_HOPMOD);
                     putint(p, EXT_HOPMOD_VERSION);
                     putint(p, revision());
+                    sendstring(version(), p);
                 }
-                sendstring(version(), p);
                 break;
             }
-
+    
+            /* hopmod extension */
             case EXT_HOPMOD:
             {
                 putint(p, EXT_NO_ERROR);
