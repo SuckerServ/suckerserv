@@ -119,16 +119,16 @@
             case EXT_UPTIME:
             {
                 putint(p, totalsecs); //in seconds
-				/* hopmod extension */
-				putint(p, 0);
-				putint(p, EXT_HOPMOD);
+                /* hopmod extension */
+                putint(p, 0);
+                putint(p, EXT_HOPMOD);
                 putint(p, revision());
                 sendstring(version(), p);
                 break;
             }
-			
+
             case EXT_HOPMOD:
-			{
+            {
                 putint(p, EXT_NO_ERROR);
                 putint(p, revision());
                 sendstring(version(), p);
@@ -140,7 +140,7 @@
                 int cn = getint(req); //a special player, -1 for all
                 
                 /* hopmod extension */
-				if(ext_admin_pass[0] && req.remaining())
+                if(ext_admin_pass[0] && req.remaining())
                 {
                     char text[MAXSTRLEN];
                     getstring(text, req, MAXSTRLEN);

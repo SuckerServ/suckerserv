@@ -451,10 +451,10 @@ namespace server
             if(flooding && activity && sendwarning)
             {
                 defformatstring(blockedinfo)(RED "[Flood Protection] You are blocked from %s for another %i second%s.", 
-					activity, 
-					remaining,
-					remaining != 1 ? "s" : ""
-				);
+                    activity, 
+                    remaining,
+                    remaining != 1 ? "s" : ""
+                    );
                 sendprivtext(blockedinfo);
             }
             return flooding;
