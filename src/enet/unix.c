@@ -54,21 +54,21 @@ enet_deinitialize (void)
 enet_uint32
 enet_time_get (void)
 {
-    struct timeval timeVal;
+    struct timespec tp;
+    
+    clock_gettime(CLOCK_MONOTONIC, &tp);
 
-    gettimeofday (& timeVal, NULL);
-
-    return timeVal.tv_sec * 1000 + timeVal.tv_usec / 1000 - timeBase;
+    return ((tp.tv_sec * 1000) + (tp.tv_nsec / 1000000)) - timeBase;
 }
 
 void
 enet_time_set (enet_uint32 newTimeBase)
 {
-    struct timeval timeVal;
-
-    gettimeofday (& timeVal, NULL);
+    struct timespec tp;
     
-    timeBase = timeVal.tv_sec * 1000 + timeVal.tv_usec / 1000 - newTimeBase;
+    clock_gettime(CLOCK_MONOTONIC, &tp);
+    
+    timeBase = ((tp.tv_sec * 1000) + (tp.tv_nsec / 1000000)) - newTimeBase;
 }
 
 int
@@ -217,6 +217,14 @@ enet_socket_set_option (ENetSocket socket, ENetSocketOption option, int value)
 
         case ENET_SOCKOPT_SNDBUF:
             result = setsockopt (socket, SOL_SOCKET, SO_SNDBUF, (char *) & value, sizeof (int));
+            break;
+
+        case ENET_SOCKOPT_RCVTIMEO:
+            result = setsockopt (socket, SOL_SOCKET, SO_RCVTIMEO, (char *) & value, sizeof (int));
+            break;
+
+        case ENET_SOCKOPT_SNDTIMEO:
+            result = setsockopt (socket, SOL_SOCKET, SO_SNDTIMEO, (char *) & value, sizeof (int));
             break;
 
         default:
