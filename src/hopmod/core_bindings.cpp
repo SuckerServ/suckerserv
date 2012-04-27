@@ -164,7 +164,7 @@ void bind_core_functions(lua_State * L, int T)
     
     bind_function(L, T, "revision", server::revision);
     bind_function(L, T, "version", server::version);
-
+    bind_function(L, T, "filtertext", server::extfiltertext);
 }
 
 template<int Constant>

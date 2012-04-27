@@ -33,7 +33,7 @@ local function run(cn)
 	        server.setadmin(cn)
 	        
 	        server.msg(string.format(server.claimadmin_message, server.player_displayname(cn), user_id))
-		admin_log(string.format("%s playing as %s(%i) used auth to claim admin.", user_id, server.player_name(cn), cn))
+		server.admin_log(string.format("%s playing as %s(%i) used auth to claim admin.", user_id, server.player_name(cn), cn))
 	    end)
     end
 end

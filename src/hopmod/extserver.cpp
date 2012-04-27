@@ -1113,6 +1113,13 @@ const char *version()
     return buf;
 }
 
+const char *extfiltertext(const char *src)
+{
+    static string dst; 
+    filtertext(dst, src);
+    return dst;
+}
+
 void player_nospawn(int cn, int no_spawn)
 {
     clientinfo *ci = getinfo(cn);
