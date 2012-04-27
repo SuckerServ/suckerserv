@@ -484,7 +484,7 @@ class anticheat
     
     void reset_jumphack()
     {
-        jumphack = 0;
+        jumphack = 0; jumppads = 0;
         lastjumphack_dist = jumphack_dist = 0;
     }
 
