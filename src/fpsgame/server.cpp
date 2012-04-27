@@ -1623,7 +1623,8 @@ namespace server
             loopv(clients)
             {
                 clientinfo *oi = clients[i];
-                if(ci && oi->clientnum==ci->clientnum && !oi->spy) continue;
+                if(oi->spy) continue;
+                if(ci && oi->clientnum==ci->clientnum) continue;
                 putint(p, oi->clientnum);
                 putint(p, oi->state.state);
                 putint(p, oi->state.frags);
