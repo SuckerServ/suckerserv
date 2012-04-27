@@ -190,6 +190,8 @@ namespace server
     extern int sv_newmap_hit_length;
     extern int sv_spec_hit_length;
     
+    extern string ext_admin_pass;
+    
     void crash_handler(int signal);
     void restore_server(const char * filename);
     

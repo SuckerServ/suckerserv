@@ -446,11 +446,15 @@ namespace server
         
         bool check_flooding(freqlimit & hit, const char * activity = NULL, bool sendwarning = true)
         {
-            uint remaining = hit.next(totalmillis);
+            int remaining = hit.next(totalsecs);
             bool flooding = remaining > 0;
             if(flooding && activity && sendwarning)
             {
-                defformatstring(blockedinfo)(RED "[Flood Protection] You are blocked from %s for another %i seconds.", activity, static_cast<int>(std::ceil(remaining/1000.0)));
+                defformatstring(blockedinfo)(RED "[Flood Protection] You are blocked from %s for another %i second%s.", 
+					activity, 
+					remaining,
+					remaining != 1 ? "s" : ""
+				);
                 sendprivtext(blockedinfo);
             }
             return flooding;
@@ -624,6 +628,8 @@ namespace server
         {
             ci->spy = false;
             sendf(-1, 1, "ri2s2i", N_INITCLIENT, ci->clientnum, ci->name, ci->team, ci->playermodel);
+            extern void sendresume(clientinfo *ci);
+            sendresume(ci);
             event_connect(event_listeners(), boost::make_tuple(ci->clientnum, ci->spy));
             ci->connectmillis = totalmillis;
             ci->sendprivtext(RED "You've left the spy-mode.");
@@ -633,6 +639,12 @@ namespace server
             defformatstring(admin_info)(RED "ADMIN-INFO: %s left spy-mode.", ci->name);
             loopv(clients) if (clients[i] != ci && clients[i]->privilege >= PRIV_ADMIN) clients[i]->sendprivtext(admin_info);            
         }
+    }
+    
+    inline int spy_cn(clientinfo *ci)
+    {
+        if(ci && ci->spy) return ci->clientnum;
+        return -1;
     }
     
     int spy_count()
@@ -1572,7 +1584,7 @@ namespace server
             putint(p, N_PAUSEGAME);
             putint(p, 1);
         }
-        if(ci)
+        if(ci && !ci->spy)
         {
             putint(p, N_SETTEAM);
             putint(p, ci->clientnum);
@@ -1586,7 +1598,7 @@ namespace server
                 ci->state.state = CS_DEAD;
                 putint(p, N_FORCEDEATH);
                 putint(p, ci->clientnum);
-                sendf(-1, 1, "ri2x", N_FORCEDEATH, ci->clientnum, ci->clientnum);
+                sendf(spy_cn(ci), 1, "ri2x", N_FORCEDEATH, ci->clientnum, ci->clientnum);
             }
             else
             {
@@ -1603,15 +1615,15 @@ namespace server
             putint(p, N_SPECTATOR);
             putint(p, ci->clientnum);
             putint(p, 1);
-            sendf(-1, 1, "ri3x", N_SPECTATOR, ci->clientnum, 1, ci->clientnum);
+            sendf(spy_cn(ci), 1, "ri3x", N_SPECTATOR, ci->clientnum, 1, ci->clientnum);
         }
-        if(!ci || clients.length()>1)
+        if(!ci || clients.length() - spy_count() > 1)
         {
             putint(p, N_RESUME);
             loopv(clients)
             {
                 clientinfo *oi = clients[i];
-                if(ci && oi->clientnum==ci->clientnum) continue;
+                if(ci && oi->clientnum==ci->clientnum && !oi->spy) continue;
                 putint(p, oi->clientnum);
                 putint(p, oi->state.state);
                 putint(p, oi->state.frags);
@@ -1641,7 +1653,7 @@ namespace server
     void sendresume(clientinfo *ci)
     {
         gamestate &gs = ci->state;
-        sendf(-1, 1, "ri3i9vi", N_RESUME, ci->clientnum,
+        sendf(spy_cn(ci), 1, "ri3i9vi", N_RESUME, ci->clientnum,
             gs.state, gs.frags, gs.flags, gs.quadmillis,
             gs.lifesequence,
             gs.health, gs.maxhealth,

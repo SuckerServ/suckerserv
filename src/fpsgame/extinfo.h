@@ -30,6 +30,8 @@
     --------------
     B:C:default: 0 command EXT_ACK EXT_VERSION EXT_ERROR
 */
+    static bool ext_admin_client = false;
+    extern string ext_admin_pass;    
 
     void extinfoplayer(ucharbuf &p, clientinfo *ci)
     {
@@ -50,7 +52,14 @@
         putint(q, (currentmaster == ci->clientnum ? ci->privilege : PRIV_NONE)); 
         putint(q, ci->state.state);
         uint ip = getclientip(ci->clientnum);
-        q.put((uchar*)&ip, 3);
+        /* hopmod extension */
+        q.put((uchar*)&ip, ext_admin_client ? 4 : 3);
+        if(ext_admin_client)
+        {
+            putint(q, (totalmillis - ci->connectmillis)/1000);
+            q.put(mcrc != (uint)ci->mapcrc ? 1 : 0);
+            q.put(ci->spy ? 1 : 0);
+        }
         sendserverinforeply(q);
     }
 
@@ -110,26 +119,39 @@
             case EXT_UPTIME:
             {
                 putint(p, totalsecs); //in seconds
-                break;
-            }
-			
-            case EXT_HOPMOD:
-            {
-                putint(p, EXT_NO_ERROR);
+				/* hopmod extension */
+				putint(p, 0);
+				putint(p, EXT_HOPMOD);
                 putint(p, revision());
                 sendstring(version(), p);
                 break;
             }
+			
+            case EXT_HOPMOD:
+			{
+                putint(p, EXT_NO_ERROR);
+                putint(p, revision());
+                sendstring(version(), p);
+                break;
+            }	
 
             case EXT_PLAYERSTATS:
             {
                 int cn = getint(req); //a special player, -1 for all
                 
+                /* hopmod extension */
+				if(ext_admin_pass[0] && req.remaining())
+                {
+                    char text[MAXSTRLEN];
+                    getstring(text, req, MAXSTRLEN);
+                    ext_admin_client = !strcmp(ext_admin_pass, text);
+                }
+
                 clientinfo *ci = NULL;
                 if(cn >= 0)
                 {
                     loopv(clients) if(clients[i]->clientnum == cn) { ci = clients[i]; break; }
-                    if(!ci || ci->spy)
+                    if(!ci || (ci->spy && !ext_admin_client))
                     {
                         putint(p, EXT_ERROR); //client requested by id was not found
                         sendserverinforeply(p);
@@ -142,11 +164,12 @@
                 ucharbuf q = p; //remember buffer position
                 putint(q, EXT_PLAYERSTATS_RESP_IDS); //send player ids following
                 if(ci) putint(q, ci->clientnum);
-                else loopv(clients) if(!clients[i]->spy) putint(q, clients[i]->clientnum);
+                else loopv(clients) if(!clients[i]->spy || (clients[i]->spy && ext_admin_client)) putint(q, clients[i]->clientnum);
                 sendserverinforeply(q);
             
                 if(ci) extinfoplayer(p, ci);
-                else loopv(clients) if(!clients[i]->spy) extinfoplayer(p, clients[i]);
+                else loopv(clients) if(!clients[i]->spy || (clients[i]->spy && ext_admin_client)) extinfoplayer(p, clients[i]);
+                ext_admin_client = false; //hopmod extension
                 return;
             }
 

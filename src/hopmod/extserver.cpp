@@ -13,6 +13,8 @@ int sv_remip_hit_length = 0;
 int sv_newmap_hit_length = 0;
 int sv_spec_hit_length = 0;
 
+string ext_admin_pass = "";
+
 struct disconnect_info
 {
     int cn;
