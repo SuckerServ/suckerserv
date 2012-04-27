@@ -254,9 +254,9 @@ namespace server
     
     extern int gamemillis, nextexceeded;
 
-	#define anticheat_class
+    #define anticheat_class
     #include "anticheat.h"
-	#undef anticheat_class
+    #undef anticheat_class
 
     struct clientinfo
     {
@@ -455,7 +455,7 @@ namespace server
                     activity, 
                     remaining,
                     remaining != 1 ? "s" : ""
-                    );
+                );
                 sendprivtext(blockedinfo);
             }
             return flooding;
@@ -1307,10 +1307,10 @@ namespace server
     }
 
     #define anticheat_parsepacket
-	#include "anticheat.h"
-	#undef anticheat_parsepacket
-	
-	int checktype(int type, clientinfo *ci, clientinfo *cq, packetbuf &p)
+    #include "anticheat.h"
+    #undef anticheat_parsepacket
+    
+    int checktype(int type, clientinfo *ci, clientinfo *cq, packetbuf &p)
     {
         if(ci && ci->local) return type;
         // only allow edit messages in coop-edit mode
@@ -1325,7 +1325,7 @@ namespace server
                 if(type != N_POS && ++ci->overflow >= 200) return -2;
             }
         }
-		if(anti_cheat_enabled) anti_cheat_parsepacket(type, ci, cq, p);
+        if(anti_cheat_enabled) anti_cheat_parsepacket(type, ci, cq, p);
         return type;
     }
 
@@ -2218,7 +2218,7 @@ namespace server
             checkvotes(true);
         }
 
-		anti_cheat_serverupdate();
+        anti_cheat_serverupdate();
 
         update_hopmod();
         
@@ -2292,6 +2292,7 @@ namespace server
 
     void clientdisconnect(int n,int reason) 
     {
+        clientinfo *ci = (clientinfo *)getinfo(n);
         if(ci->spy) spies.remove(ci->clientnum - spycn);
 
         const char * disc_reason_msg = "normal";
@@ -2758,7 +2759,7 @@ namespace server
             {
                 int gunselect = getint(p);
                 if(!cq || cq->state.state!=CS_ALIVE) break;
-				if(gunselect<GUN_FIST || gunselect>GUN_PISTOL) break;
+                if(gunselect<GUN_FIST || gunselect>GUN_PISTOL) break;
                 cq->state.gunselect = gunselect;
                 QUEUE_AI;
                 QUEUE_MSG;
@@ -2768,7 +2769,7 @@ namespace server
             case N_SPAWN:
             {
                 int ls = getint(p), gunselect = getint(p);
-				if(gunselect<GUN_FIST || gunselect>GUN_PISTOL) break;
+                if(gunselect<GUN_FIST || gunselect>GUN_PISTOL) break;
                 if(!cq || (cq->state.state!=CS_ALIVE && cq->state.state!=CS_DEAD) || ls!=cq->state.lifesequence || cq->state.lastspawn<0) break;
                 if(!cq->mapcrc && cq->state.aitype == AI_NONE)
                 {
@@ -3011,7 +3012,6 @@ namespace server
             case N_ITEMLIST:
             {
                 int n;
-                
                 if((ci->state.state==CS_SPECTATOR && !ci->privilege && !ci->local) || !notgotitems || strcmp(ci->clientmap, smapname)) { while(getint(p)>=0 && !p.overread()) getint(p); break; }
                 while((n = getint(p))>=0 && n<MAXENTS && !p.overread())
                 {
@@ -3075,9 +3075,9 @@ namespace server
                     ci->maploaded = gamemillis;
                     event_maploaded(event_listeners(), boost::make_tuple(ci->clientnum));
                 }
-
-				ci->lastpingupdate = totalmillis;
-				ci->clientmillis = clientmillis;
+                
+                ci->lastpingupdate = totalmillis;
+                ci->clientmillis = clientmillis;
                 
                 sendf(sender, 1, "i2", N_PONG, clientmillis);
                 break;
