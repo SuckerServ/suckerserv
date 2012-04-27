@@ -690,8 +690,8 @@ void anti_cheat_parsepacket(int type, clientinfo *ci, clientinfo *cq, packetbuf 
         {      
             int sound = getint(p);
 
-            if(sound != S_JUMP && sound != S_LAND && sound != S_NOAMMO 
-                && (m_capture && sound != S_ITEMAMMO)) 
+            if(sound != S_JUMP && sound != S_LAND && 
+               sound != S_NOAMMO && (m_capture ? sound != S_ITEMAMMO : true))
             {
                 ac->unknown_sound(sound);
                 break;
