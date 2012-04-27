@@ -47,6 +47,7 @@ static int ip_to_city(lua_State * L)
     if(!GeoCity) return luaL_error(L, "missing GeoCity database");
     GeoIPRecord *r = GeoIP_record_by_addr(GeoCity, luaL_checkstring(L, 1));
     lua_pushstring(L, (r && r->city ? r->city : ""));
+    if(r) GeoIPRecord_delete(r);
     return 1;
 }
 
@@ -81,4 +82,3 @@ void open_geoip(lua_State * L)
 
 } //namespace module
 } //namespace lua
-
