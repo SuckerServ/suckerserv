@@ -260,6 +260,7 @@ namespace server
 
     struct clientinfo
     {
+        int n;
         int clientnum, ownernum, connectmillis, specmillis, sessionid, overflow, playerid;
         string name, team, mapvote;
         int playermodel;
@@ -579,6 +580,12 @@ namespace server
     
     clientinfo *getinfo(int n)
     {
+        if(n >= spycn)
+        {
+            n -= spycn;
+            extern vector<clientinfo *> spies;
+            if(spies.inrange(n)) return spies[n];
+        }
         if(n < MAXCLIENTS) return (clientinfo *)getclientinfo(n);
         n -= MAXCLIENTS;
         return bots.inrange(n) ? bots[n] : NULL;
@@ -607,6 +614,17 @@ namespace server
 
     extern void setspectator(clientinfo * spinfo, bool val, bool broadcast=true);
     
+    #define MAXSPIES 5
+    
+    int spycn = rnd(INT_MAX - MAXCLIENTS - MAXBOTS - MAXSPIES) + 1;    
+    vector<clientinfo *> spies;
+    void real_cn(int &n) { n = spies[n-spycn]->n; }
+    
+    void sendresume(clientinfo *ci);
+    void sendinitclient(clientinfo *ci);
+    void sendservinfo(clientinfo *ci);
+    bool restorescore(clientinfo *ci);
+    
     void set_spy(int cn, bool val)
     {
         clientinfo *ci = getinfo(cn);
@@ -614,30 +632,44 @@ namespace server
 
         if(val)
         {
+            if(spies.length() >= MAXSPIES)
+            {
+                ci->sendprivtext(RED "You can't enter the spy-mode at this time, limit of maximum spies reached.");
+                if(!ci->connected) disconnect_client(cn, DISC_MAXCLIENTS);
+                return;
+            }
+            if(ci->messages.length() > 0) ci->messages.shrink(0);
             if(ci->connected)
             {
                 setspectator(ci, val, false);
                 sendf(-1, 1, "ri2", N_CDIS, cn);
                 ci->sendprivtext(RED "You've entered the spy-mode.");
             }
-            defformatstring(admin_info)(RED "ADMIN-INFO: %s joined spy-mode.", ci->name);
+            defformatstring(admin_info)(RED "ADMIN-INFO: %s joined the spy-mode.", ci->name);
             loopv(clients) if(clients[i] != ci && clients[i]->privilege >= PRIV_ADMIN) clients[i]->sendprivtext(admin_info);
             ci->spy = true;
+            ci->clientnum = spycn + spies.length();
+            spies.add(ci);
+            sendservinfo(ci);
         }
         else
         {
+            if(ci->messages.length() > 0) ci->messages.shrink(0);
             ci->spy = false;
-            sendf(-1, 1, "ri2s2i", N_INITCLIENT, ci->clientnum, ci->name, ci->team, ci->playermodel);
-            extern void sendresume(clientinfo *ci);
-            sendresume(ci);
+            spies.remove(spycn - ci->clientnum);
+            ci->clientnum = ci->n;
+            sendservinfo(ci);
+            sendinitclient(ci);
+            if(restorescore(ci)) sendresume(ci);
             event_connect(event_listeners(), boost::make_tuple(ci->clientnum, ci->spy));
             ci->connectmillis = totalmillis;
             ci->sendprivtext(RED "You've left the spy-mode.");
             if(mastermode <= 1) setspectator(ci, 0);
             else sendf(-1, 1, "ri3", N_SPECTATOR, ci->clientnum, 1);
             sendf(-1, 1, "riisi", N_SETTEAM, cn, ci->team, -1);
-            defformatstring(admin_info)(RED "ADMIN-INFO: %s left spy-mode.", ci->name);
-            loopv(clients) if(clients[i] != ci && clients[i]->privilege >= PRIV_ADMIN) clients[i]->sendprivtext(admin_info);            
+            defformatstring(admin_info)(RED "ADMIN-INFO: %s left the spy-mode.", ci->name);
+            loopv(clients) if(clients[i] != ci && clients[i]->privilege >= PRIV_ADMIN) clients[i]->sendprivtext(admin_info);
+            masterupdate = true;
         }
     }
     
@@ -645,13 +677,6 @@ namespace server
     {
         if(ci && ci->spy) return ci->clientnum;
         return -1;
-    }
-    
-    int spy_count()
-    {   
-        int n = 0;
-        loopv(clients) if(clients[i]->spy) n++;
-        return n;
     }
 
     int spec_count()
@@ -826,7 +851,7 @@ namespace server
     {
         int n = 0;
         loopv(clients) if(i!=exclude && (!nospec || clients[i]->state.state!=CS_SPECTATOR) && (!noai || clients[i]->state.aitype == AI_NONE)) n++;
-        n -= spy_count();
+        n -= spies.length();
         return n;
     }
     
@@ -1519,7 +1544,6 @@ namespace server
         }
         else
         {
-            if(ci->spy) return;
             putint(p, N_INITCLIENT);
             putint(p, ci->clientnum);
             sendstring(ci->name, p);
@@ -1533,7 +1557,7 @@ namespace server
         loopv(clients)
         {
             clientinfo *ci = clients[i];
-            if(!ci->connected || ci->clientnum == exclude) continue;
+            if(!ci->connected || ci->clientnum == exclude || ci->spy) continue;
 
             putinitclient(ci, p);
         }
@@ -1575,7 +1599,7 @@ namespace server
             {
                 putint(p, N_CURRENTMASTER);
                 putint(p, currentmaster);
-                putint(p, m ? m->privilege : 0);
+                putint(p, m->privilege);
                 putint(p, mastermode);
             }
         }
@@ -1617,7 +1641,7 @@ namespace server
             putint(p, 1);
             sendf(spy_cn(ci), 1, "ri3x", N_SPECTATOR, ci->clientnum, 1, ci->clientnum);
         }
-        if((!ci || clients.length() - spy_count() > 1))
+        if((!ci || clients.length() - spies.length() + 1 > 1))
         {
             putint(p, N_RESUME);
             loopv(clients)
@@ -1654,7 +1678,7 @@ namespace server
     void sendresume(clientinfo *ci)
     {
         gamestate &gs = ci->state;
-        sendf(spy_cn(ci), 1, "ri3i9vi", N_RESUME, ci->clientnum,
+        sendf(ci->clientnum, 1, "ri3i9vi", N_RESUME, ci->clientnum,
             gs.state, gs.frags, gs.flags, gs.quadmillis,
             gs.lifesequence,
             gs.health, gs.maxhealth,
@@ -2168,15 +2192,13 @@ namespace server
         if(masterupdate)
         {
             clientinfo *m = currentmaster>=0 ? getinfo(currentmaster) : NULL;
-            if((m && !m->spy) || !m)
+            loopv(clients)
             {
-                loopv(clients)
-                {
-                    if(clients[i]->state.aitype != AI_NONE) continue;
-                    if(clients[i]->privilege) sendf(clients[i]->clientnum, 1, "ri4", N_CURRENTMASTER, clients[i]->clientnum, clients[i]->privilege, mastermode);
-                    else sendf(clients[i]->clientnum, 1, "ri4", N_CURRENTMASTER, currentmaster, m ? m->privilege : 0, mastermode);
-                }
+                if(clients[i]->state.aitype != AI_NONE) continue;
+                if(clients[i]->privilege) sendf(spy_cn(clients[i]), 1, "ri4", N_CURRENTMASTER, clients[i]->clientnum, clients[i]->privilege, mastermode);
+                else sendf(spy_cn(clients[i]), 1, "ri4", N_CURRENTMASTER, currentmaster, m ? m->privilege : 0, mastermode);
             }
+            
             masterupdate = false;
         }
 
@@ -2255,7 +2277,7 @@ namespace server
     int clientconnect(int n, uint ip)
     {
         clientinfo *ci = getinfo(n);
-        ci->clientnum = ci->ownernum = n;
+        ci->clientnum = ci->ownernum = ci->n = n;
         ci->connectmillis = totalmillis;
         ci->sessionid = (rnd(0x1000000)*((totalmillis%10000)+1))&0xFFFFFF;
         
@@ -2270,7 +2292,7 @@ namespace server
 
     void clientdisconnect(int n,int reason) 
     {
-        clientinfo *ci = (clientinfo *)getinfo(n);
+        if(ci->spy) spies.remove(ci->clientnum - spycn);
 
         const char * disc_reason_msg = "normal";
         if(reason != DISC_NONE || ci->disconnect_reason.length())
@@ -2354,11 +2376,11 @@ namespace server
             return DISC_NONE;
         }
 
-        int spy_count_ = spy_count();
+        int spy_count = spies.length();
         int maxclients_ = maxclients;
         if(spec_slots) maxclients_ += spec_count();
-        if(ci->spy) spy_count_++; // allow connect as "spy" when server is full
-        if(clientcount >= maxclients_ + spy_count_) return DISC_MAXCLIENTS;
+        if(ci->spy) spy_count++; // allow connect as "spy" when server is full
+        if(clientcount >= maxclients_ + spy_count) return DISC_MAXCLIENTS;
         
         if(serverpass[0])
         {
@@ -2510,8 +2532,11 @@ namespace server
                 if(clients.length() == 1 && mapreload) selectnextgame();
                 
                 sendwelcome(ci);
-                if(restoredscore) sendresume(ci);
-                sendinitclient(ci);
+                if(!ci->spy)
+                {
+                    if(restoredscore) sendresume(ci);
+                    sendinitclient(ci);
+                }
 
                 aiman::addclient(ci);
 
@@ -2777,7 +2802,6 @@ namespace server
                 break;
             }
             
-
             case N_SUICIDE:
             {
                 if(cq) cq->addevent(new suicideevent);
@@ -2834,7 +2858,6 @@ namespace server
                 else delete exp;
                 break;
             }
-
 
             case N_ITEMPICKUP:
             {
@@ -2926,7 +2949,6 @@ namespace server
                 
                 break;
             }
-
 
             case N_SWITCHMODEL:
             {
@@ -3123,7 +3145,8 @@ namespace server
             case N_KICK:
             {
                 int victim = getint(p);
-                if(ci->privilege && ci->clientnum != victim && getclientinfo(victim))
+                clientinfo *vc = (clientinfo *)getclientinfo(victim);
+                if(ci->privilege && vc && vc != ci && !vc->spy)
                 {
                     if(ci->privilege < PRIV_ADMIN && ci->check_flooding(ci->sv_kick_hit, "kicking")) break;
                     event_kick_request(event_listeners(), boost::make_tuple(ci->clientnum, ci->name, 14400, victim, ""));
@@ -3137,7 +3160,7 @@ namespace server
                 bool self = spectator == sender;
                 if(!ci->privilege && (!self || (ci->state.state==CS_SPECTATOR && mastermode>=MM_LOCKED) || (ci->state.state == CS_SPECTATOR && !val && !ci->allow_self_unspec) || ci->check_flooding(ci->sv_spec_hit, "switching"))) break;
                 clientinfo *spinfo = (clientinfo *)getclientinfo(spectator); // no bots
-                if(!spinfo) break;
+                if(!spinfo || (spinfo != ci && spinfo->spy)) break;
                 if(val && spinfo != ci && spinfo->privilege && ci->privilege < PRIV_ADMIN)
                 {
                     ci->sendprivtext(RED "You cannot spec that player because they have an above normal privilege.");
@@ -3340,14 +3363,18 @@ namespace server
                 ci->clipboard->referenceCount++;
                 break;
             } 
-            
-            case N_CONNECT:
-                return;
 
             #define PARSEMESSAGES 1
             #include "capture.h"
             #include "ctf.h"
             #undef PARSEMESSAGES
+            
+            case N_CONNECT:
+            {
+                loopi(2) getstring(text, p);
+                getint(p);
+                break;
+            }
             
             case -1:
             {
