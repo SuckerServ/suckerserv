@@ -141,7 +141,7 @@
                 putint(p, revision());
                 sendstring(version(), p);
                 break;
-            }	
+            }
 
             case EXT_PLAYERSTATS:
             {
@@ -163,6 +163,7 @@
                     {
                         putint(p, EXT_ERROR); //client requested by id was not found
                         sendserverinforeply(p);
+                        ext_admin_client = false; //hopmod extension
                         return;
                     }
                 }
