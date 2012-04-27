@@ -1584,7 +1584,7 @@ namespace server
             putint(p, N_PAUSEGAME);
             putint(p, 1);
         }
-        if(ci && !ci->spy)
+        if(ci)
         {
             putint(p, N_SETTEAM);
             putint(p, ci->clientnum);
@@ -1617,7 +1617,7 @@ namespace server
             putint(p, 1);
             sendf(spy_cn(ci), 1, "ri3x", N_SPECTATOR, ci->clientnum, 1, ci->clientnum);
         }
-        if(!ci || clients.length() - spy_count() > 1)
+        if((!ci || clients.length() - spy_count() > 1))
         {
             putint(p, N_RESUME);
             loopv(clients)
@@ -1664,7 +1664,6 @@ namespace server
 
     void sendinitclient(clientinfo *ci)
     {
-        if(ci->spy) return;
         packetbuf p(MAXTRANS, ENET_PACKET_FLAG_RELIABLE);
         putinitclient(ci, p);
         sendpacket(-1, 1, p.finalize(), ci->clientnum);
@@ -2166,17 +2165,20 @@ namespace server
             }
         }
         
-        if(masterupdate) 
-        { 
+        if(masterupdate)
+        {
             clientinfo *m = currentmaster>=0 ? getinfo(currentmaster) : NULL;
-            loopv(clients)
+            if(m && !m->spy)
             {
-                if(clients[i]->state.aitype != AI_NONE) continue;
-                if(clients[i]->privilege) sendf(clients[i]->clientnum, 1, "ri4", N_CURRENTMASTER, clients[i]->clientnum, clients[i]->privilege, mastermode);
-                else sendf(clients[i]->clientnum, 1, "ri4", N_CURRENTMASTER, currentmaster, m ? m->privilege : 0, mastermode);
+                loopv(clients)
+                {
+                    if(clients[i]->state.aitype != AI_NONE) continue;
+                    if(clients[i]->privilege) sendf(clients[i]->clientnum, 1, "ri4", N_CURRENTMASTER, clients[i]->clientnum, clients[i]->privilege, mastermode);
+                    else sendf(clients[i]->clientnum, 1, "ri4", N_CURRENTMASTER, currentmaster, m ? m->privilege : 0, mastermode);
+                }
             }
-            masterupdate = false; 
-        } 
+            masterupdate = false;
+        }
 
         if(gamemillis > next_timeupdate)
         {
