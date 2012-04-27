@@ -1098,7 +1098,20 @@ void player_respawn(int cn)
     try_respawn(ci, ci);
 }
 
-int enet_time_get_() { return (int)enet_time_get(); }
+int revision()
+{
+#ifdef REVISION
+    return REVISION;
+#endif
+    return -1;
+}
+
+const char *version()
+{
+    static char buf[40];
+    formatstring(buf)("%s %s", __TIME__, __DATE__);
+    return buf;
+}
 
 void player_nospawn(int cn, int no_spawn)
 {

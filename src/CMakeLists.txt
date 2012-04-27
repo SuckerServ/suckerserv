@@ -45,7 +45,7 @@ include_directories(
     ${FUNGU_INCLUDE_DIRS}
     ${OPENSSL_INCLUDE_DIR})
 
-add_definitions(-Wall -fsigned-char -DSTANDALONE ${LSQLITE3_DEFINITIONS})
+add_definitions(-Wall -fsigned-char -DSTANDALONE -DREVISION=$ENV{REVISION} ${LSQLITE3_DEFINITIONS})
 
 set(SAUERTOOLS_SOURCES
     shared/tools.cpp
