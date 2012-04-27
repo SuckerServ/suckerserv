@@ -53,6 +53,14 @@
         putint(q, ci->state.state);
         uint ip = getclientip(ci->clientnum);
         /* hopmod extension */
+        putint(q, EXT_HOPMOD);
+        putint(q, ci->state.suicides);
+        putint(q, ci->state.shotdamage);
+        putint(q, ci->state.damage);
+        putint(q, ci->state.explosivedamage);
+        putint(q, ci->state.hits);
+        putint(q, ci->state.misses);
+        putint(q, ci->state.shots);
         q.put((uchar*)&ip, ext_admin_client ? 4 : 3);
         if(ext_admin_client)
         {
