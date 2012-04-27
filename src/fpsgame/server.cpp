@@ -2168,7 +2168,7 @@ namespace server
         if(masterupdate)
         {
             clientinfo *m = currentmaster>=0 ? getinfo(currentmaster) : NULL;
-            if(m && !m->spy)
+            if((m && !m->spy) || !m)
             {
                 loopv(clients)
                 {
