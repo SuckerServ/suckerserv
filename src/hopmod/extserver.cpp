@@ -1100,7 +1100,7 @@ void player_respawn(int cn)
 
 int revision()
 {
-#ifdef REVISION
+#if defined(REVISION) && (REVISION + 0)
     return REVISION;
 #endif
     return -1;
