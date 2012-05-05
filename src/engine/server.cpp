@@ -284,6 +284,7 @@ void sendpacket(int n, int chan, ENetPacket *packet, int exclude)
         return;
     }
     if(n >= server::spycn) server::real_cn(n);
+    ASSERT(n >= 0 && n < MAXCLIENTS);
     switch(clients[n]->type)
     {
         case ST_TCPIP:
