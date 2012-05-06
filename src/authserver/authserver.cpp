@@ -1,20 +1,16 @@
 // Original source code copied from engine/master.cpp found in Sauerbraten's source tree.
 
+#include <boost/thread.hpp>
+#include <boost/unordered_map.hpp>
+
 #include "cube.h"
 #include "hopmod/hopmod.hpp"
-#include "hopmod/utils.hpp"
-#include "hopmod/signals.hpp"
 
 #include "hopmod/lua/modules.hpp"
 #include "hopmod/main_io_service.hpp"
 
 #include <enet/time.h>
-#include <signal.h>
 #include <iostream>
-
-#include <boost/thread.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/shared_ptr.hpp>
 
 #ifdef HAS_LSQLITE3
 extern "C"{
