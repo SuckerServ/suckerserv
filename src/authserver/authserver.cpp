@@ -1,5 +1,8 @@
 // Original source code copied from engine/master.cpp found in Sauerbraten's source tree.
 
+#include <boost/thread.hpp>
+#include <boost/unordered_map.hpp>
+
 #include "cube.h"
 #include "hopmod/hopmod.hpp"
 #include "hopmod/string_var.hpp"
@@ -9,11 +12,7 @@
 #include "hopmod/main_io_service.hpp"
 
 #include <enet/time.h>
-#include <signal.h>
 #include <iostream>
-
-#include <boost/unordered_map.hpp>
-#include <boost/shared_ptr.hpp>
 
 #include <fungu/script.hpp>
 using namespace fungu;
