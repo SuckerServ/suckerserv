@@ -1325,7 +1325,7 @@ namespace server
                 if(type != N_POS && ++ci->overflow >= 200) return -2;
             }
         }
-        if(anti_cheat_enabled) anti_cheat_parsepacket(type, ci, cq, p);
+        if(anti_cheat_enabled && ci) anti_cheat_parsepacket(type, ci, cq, p);
         return type;
     }
 

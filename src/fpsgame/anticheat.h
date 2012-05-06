@@ -826,6 +826,11 @@ void anti_cheat_parsepacket(int type, clientinfo *ci, clientinfo *cq, packetbuf 
                 while((n = getint(p))>=0 && n<MAXENTS && !p.overread())
                 {
                     int item_type = getint(p);
+                    if(!sents.inrange(n))
+                    {
+                        ac->modified_map_items();
+                        return;
+                    }
                     if(sents[n].type != item_type)
                     {
                         ac->modified_map_items();
