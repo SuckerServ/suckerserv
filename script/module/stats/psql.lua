@@ -1,4 +1,4 @@
-local luasql = require("luasql_mysql")
+local luasql = require("luasql_postgres")
 
 local servername
 local connection
@@ -21,7 +21,7 @@ end
 local function execute_statement(statement)
     local cursor, errorinfo = connection:execute(statement)
     if not cursor then
-        server.log_error(string.format("Buffering stats data because of a MySQL stats failure: %s", errorinfo))
+        server.log_error(string.format("Buffering stats data because of a pSQL stats failure: %s", errorinfo))
         connection:close()
         connection = nil
     end
@@ -32,14 +32,14 @@ local function install_db(connection, settings)
 
     local schema = readWholeFile(settings.schema)
 
-    for statement in string.gmatch(schema, "CREATE TABLE[^;]+") do
+    for statement in string.gmatch(schema, "CREATE[^;]+") do
         local cursor, err = execute_statement(statement)
         if not cursor then error(err) end
     end
     
     local triggers = readWholeFile(settings.triggers)
     
-    for statement in string.gmatch(triggers, "CREATE TRIGGER[^~]+") do
+    for statement in string.gmatch(triggers, "CREATE[^~]+") do
         local cursor, err = execute_statement(statement)
         if not cursor then error(err) end
     end
@@ -47,11 +47,13 @@ local function install_db(connection, settings)
 end
 
 local function open(settings)
-    
-    connection = luasql.mysql():connect(settings.database, settings.username, settings.password, settings.hostname, settings.port)
-    
+
+--    env = assert(luasql.postgres())
+--    connection = assert(env:connect(settings.database, settings.username, settings.password, settings.hostname, settings.port))
+    connection = luasql.postgres():connect(settings.database, settings.username, settings.password, settings.hostname, settings.port)
+
     if not connection then
-        server.log_error(string.format("couldn't connect to MySQL server at %s:%s", settings.hostname, settings.port))
+        server.log_error(string.format("couldn't connect to pSQL server at %s:%s", settings.hostname, settings.port))
         return nil
     end
     
@@ -69,7 +71,7 @@ end
 local function insert_game(game)
 
     local insert_game_sql = [[INSERT INTO games (servername, datetime, duration, gamemode, mapname, players, bots, finished) 
-        VALUES ('%s', from_unixtime(%i), %i, '%s', '%s', %i, %i, %i)]]
+        VALUES ('%s', to_timestamp(%i), %i, '%s', '%s', %i, %i, %i)]]
     
     if not execute_statement(string.format(
         insert_game_sql,
@@ -82,7 +84,7 @@ local function insert_game(game)
         game.bots,
         game.finished and 1 or 0)) then return nil end
     
-    local cursor = execute_statement("SELECT last_insert_id()")
+    local cursor = execute_statement("SELECT currval('gamesid')")
     if not cursor then return nil end
     return cursor:fetch()
 end
@@ -99,7 +101,7 @@ local function insert_team(game_id, team)
         team.win and 1 or 0,
         team.draw and 1 or 0)) then return nil end
     
-    local cursor = execute_statement("SELECT last_insert_id()")
+    local cursor = execute_statement("SELECT currval('teamsid')")
     if not cursor then return nil end
     return cursor:fetch()
 end
@@ -136,19 +138,22 @@ local function insert_player(game_id, player)
     return cursor ~= nil
 end
 
-local function mysql_commit_game(game, players, teams)
+local function psql_commit_game(game, players, teams)
     
     if not connection and not open(open_settings) then
+       server.log_error(string.format("psql not connection and not open"))
        return false
     end
     
     if not execute_statement("START TRANSACTION") then 
+        server.log_error(string.format("psql not execute start transaction"))
         return false
     end
 
     local game_id = insert_game(game)
 
     if not game_id then 
+        server.log_error(string.format("psql not game_id"))
         return false
     end
 
@@ -156,6 +161,7 @@ local function mysql_commit_game(game, players, teams)
         local team_id = insert_team(game_id, team)
         
         if not team_id then
+            server.log_error(string.format("psql not team_id"))
             return false
         end
         
@@ -166,11 +172,13 @@ local function mysql_commit_game(game, players, teams)
 
     for id, player in pairs(players) do
         if not insert_player(game_id, player) then 
+            server.log_error(string.format("psql not insert_player"))
             return false
         end
     end
 
     if not execute_statement("COMMIT") then
+        server.log_error(string.format("psql not execute commit"))
         return false
     end
     
@@ -184,7 +192,7 @@ local function commit_game(game, players, teams)
     end
     
     while #queue > 0 do
-        if mysql_commit_game(queue[1][1], queue[1][2], queue[1][3]) then
+        if psql_commit_game(queue[1][1], queue[1][2], queue[1][3]) then
             table.remove(queue, 1)
         else
             queue_current_game()
@@ -192,10 +200,11 @@ local function commit_game(game, players, teams)
         end
     end
     
-    if not mysql_commit_game(game, players, teams) then
+    if not psql_commit_game(game, players, teams) then
         queue_current_game()
     end
 end
+
 
 local function player_totals(name)
 	player_totals = execute_statement(string.format("SELECT * FROM playertotals WHERE name = '%s'", name))
@@ -267,3 +276,4 @@ local function player_stats_by_period(name, period)
 end
 
 return {open = open, commit_game = commit_game, player_totals = player_totals, find_names_by_ip = find_names_by_ip, player_ranking = player_ranking, player_stats_by_period = player_stats_by_period, player_ranking_by_period = player_ranking_by_period}
+
