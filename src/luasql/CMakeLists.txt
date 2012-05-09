@@ -1,5 +1,4 @@
 set(MYSQL_DIR "/usr/local/mysql" CACHE STRING "Directory of MySQL installation")
-set(POSTGRES_DIR "/usr/local/postgres" CACHE STRING "Directory of PostGreSQL installation")
 
 set(LUASQL_MYSQL_LIBRARY luasql_mysql CACHE INTERNAL "luasql_mysql library")
 set(LUASQL_POSTGRES_LIBRARY luasql_postgres CACHE INTERNAL "luasql_postgres library")
@@ -21,19 +20,20 @@ install(TARGETS
         ARCHIVE DESTINATION
             ${INSTALL_ARCHIVE_DIR})
 
-include_directories(${LUA_INCLUDE_DIRS} ${POSTGRES_DIR}/include /usr/include/postgresql)
-link_directories(${POSTGRES_DIR}/lib)
+# Find PostgreSQL
+find_package(PostgreSQL)
 
-set(SOURCES
-    luasql.c
-    ls_postgres.c)
+IF(POSTGRESQL_FOUND)
+	include_directories(${LUA_INCLUDE_DIRS} ${POSTGRESQL_INCLUDE_DIRS})
 
-add_library(${LUASQL_POSTGRES_LIBRARY} SHARED luasql.c ls_postgres.c)
-target_link_libraries(${LUASQL_POSTGRES_LIBRARY} -lpq ${LUA_LIBRARY})
+	add_library(${LUASQL_POSTGRES_LIBRARY} SHARED luasql.c ls_postgres.c)
+	target_link_libraries(${LUASQL_POSTGRES_LIBRARY} ${LUA_LIBRARY} ${POSTGRESQL_LIBRARIES})
 
-install(TARGETS
-            ${LUASQL_POSTGRES_LIBRARY}
-        LIBRARY DESTINATION
-            ${INSTALL_LIBRARY_DIR}
-        ARCHIVE DESTINATION
-            ${INSTALL_ARCHIVE_DIR})
+	install(TARGETS
+			${LUASQL_POSTGRES_LIBRARY}
+		LIBRARY DESTINATION
+			${INSTALL_LIBRARY_DIR}
+		ARCHIVE DESTINATION
+			${INSTALL_ARCHIVE_DIR})
+
+ENDIF()
