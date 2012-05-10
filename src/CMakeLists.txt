@@ -47,6 +47,7 @@ set(SAUERTOOLS_SOURCES
     hopmod/net/address_prefix.cpp)
 
 add_library(sauertools STATIC ${SAUERTOOLS_SOURCES})
+target_link_libraries(sauertools -lrt)
 
 set(LUA_MODULES_SOURCES
     hopmod/lua/crypto.cpp
