@@ -1,4 +1,21 @@
+CREATE OR REPLACE FUNCTION make_plpgsql()
+RETURNS VOID
+LANGUAGE SQL
+AS $$
 CREATE LANGUAGE plpgsql;
+$$;
+ 
+SELECT
+    CASE
+    WHEN EXISTS(
+        SELECT 1
+        FROM pg_catalog.pg_language
+        WHERE lanname='plpgsql'
+    )
+    THEN NULL
+    ELSE make_plpgsql() END;
+ 
+DROP FUNCTION make_plpgsql();
 
 CREATE OR REPLACE FUNCTION delegatr()
   RETURNS "trigger" AS '
@@ -19,7 +36,7 @@ CREATE OR REPLACE FUNCTION updplaytotals()
   DECLARE
   curtime timestamp := now();
   BEGIN
-    if exists(select 1 from playertotals where name = new.name) then
+    if not exists(select 1 from playertotals where name = new.name) then
             INSERT INTO playertotals (name, first_game) VALUES(new.name, curtime);
     end if;
     UPDATE playertotals SET
@@ -65,7 +82,7 @@ BEGIN
         shots = shots - old.shots,
         wins = wins - old.win,
         games = games - 1,
-        withdraws = withdraws - (old.finished = 0)
+        withdraws = ( CASE WHEN old.finished=0 THEN withdraws - 1 ELSE withdraws END )
         WHERE name = old.name;
 RETURN NEW;
 END;

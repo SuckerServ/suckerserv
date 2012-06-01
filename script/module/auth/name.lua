@@ -115,7 +115,7 @@ end
 
 server.event_handler("maploaded", function(cn)
     server.sleep(1000, function()
-        if not server.player_vars(cn).reserved_name then
+        if server.valid_cn(cn) and server.player_vars(cn).reserved_name then
             check_name(cn)
         end
     end)
