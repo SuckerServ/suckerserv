@@ -54,21 +54,21 @@ enet_deinitialize (void)
 enet_uint32
 enet_time_get (void)
 {
-    struct timespec tp;
-    
-    clock_gettime(CLOCK_MONOTONIC, &tp);
+    struct timeval timeVal;
 
-    return ((tp.tv_sec * 1000) + (tp.tv_nsec / 1000000)) - timeBase;
+    gettimeofday (& timeVal, NULL);
+
+    return timeVal.tv_sec * 1000 + timeVal.tv_usec / 1000 - timeBase;
 }
 
 void
 enet_time_set (enet_uint32 newTimeBase)
 {
-    struct timespec tp;
+    struct timeval timeVal;
+
+    gettimeofday (& timeVal, NULL);
     
-    clock_gettime(CLOCK_MONOTONIC, &tp);
-    
-    timeBase = ((tp.tv_sec * 1000) + (tp.tv_nsec / 1000000)) - newTimeBase;
+    timeBase = timeVal.tv_sec * 1000 + timeVal.tv_usec / 1000 - newTimeBase;
 }
 
 int
