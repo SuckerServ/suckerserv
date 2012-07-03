@@ -1,6 +1,6 @@
 #include <lua.hpp>
-#include "../../geoip/GeoIP.h"
-#include "../../geoip/GeoIPCity.h"
+#include "GeoIP.h"
+#include "GeoIPCity.h"
 #include "module.hpp"
 
 static GeoIP * geoip = NULL;
