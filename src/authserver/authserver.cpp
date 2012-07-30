@@ -3,6 +3,8 @@
 #include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
 
+#include <signal.h>
+
 #include "cube.h"
 #include "hopmod/hopmod.hpp"
 
