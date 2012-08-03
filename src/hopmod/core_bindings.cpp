@@ -110,6 +110,7 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "setmaster", server::set_player_master);
     bind_function(L, T, "setadmin", server::set_player_admin);
     bind_function(L, T, "update_server_info", server::updateservinfo);
+    bind_function(L, T, "editvar", server::editvar);
     bind_function(L, T, "setspy", server::set_spy);
     bind_function(L, T, "set_invisible_admin", server::set_player_private_admin);
     bind_function(L, T, "set_invisible_master", server::set_player_private_master);
