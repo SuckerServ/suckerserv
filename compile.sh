@@ -39,8 +39,13 @@ fi
 echo "$STRCOMPILE $PROJECT using $(tput bold ; tput setaf 4)$THREADS$(tput sgr0) $STRTHREADS ($BUILDTYPE build)"
 cmake $COMPILEFLAGS ..
 [[ "$?" != "0" ]] && echo "$(tput bold ; tput setaf 1)CMAKE FAILED$(tput sgr0)" && exit 1
-make -j$THREADS install
-[[ "$?" != "0" ]] && echo "$(tput bold ; tput setaf 1)MAKE INSTALL FAILED$(tput sgr0)" && exit 1
+if `echo "$COMPILEFLAGS" | grep -q "DEBUG"`; then
+  make -j$THREADS install
+  [[ "$?" != "0" ]] && echo "$(tput bold ; tput setaf 1)MAKE INSTALL FAILED$(tput sgr0)" && exit 1
+else
+  make -j$THREADS install/strip
+  [[ "$?" != "0" ]] && echo "$(tput bold ; tput setaf 1)MAKE INSTALL/STRIP FAILED$(tput sgr0)" && exit 1
+fi
 
 # Give right execution permissions to executables
 cd ../bin
