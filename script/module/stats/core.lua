@@ -141,15 +141,15 @@ function internal.addPlayer(cn)
     
     -- Get the auth name from the name protection module if it's loaded and the player is authed, so no need to request a second time the authkey
     if server.name_protection_loaded and auth_domain == server.name_reservation_domain then
-        if not server.player_vars(cn).reserved_name then
+        if server.valid_cn(cn) and not server.player_vars(cn).reserved_name then
             server.sleep(2000, function()
-                if server.player_vars(cn).reserved_name == t.name then
+                if server.valid_cn(cn) and server.player_vars(cn).reserved_name == t.name then
                     t.auth_name = t.name
                     return t
                 end
             end)
         else
-            if server.player_vars(cn).reserved_name == t.name then
+            if server.valid_cn(cn) and server.player_vars(cn).reserved_name == t.name then
                 t.auth_name = t.name
                 return t
             end
