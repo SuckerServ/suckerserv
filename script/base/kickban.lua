@@ -63,11 +63,22 @@ function server.unban(ipmask)
     server.log(log_message)
     server.log_status(log_message)
     
-	server.set_ip_var(ipmask, "ban_name", nil)    
+    server.set_ip_var(ipmask, "ban_name", nil)    
     server.set_ip_var(ipmask, "ban_expire", nil)
     server.set_ip_var(ipmask, "ban_admin", nil)
     server.set_ip_var(ipmask, "ban_reason", nil)
     server.set_ip_var(ipmask, "ban_time", nil)
+    server.set_ip_var(ipmask, "is_gban", nil)
+end
+
+function server.clearbans()
+    for ipmask, vars in pairs(server.ip_vars()) do
+        if not (vars.is_gban or false) then server.unban(ipmask) end
+    end
+
+    temporary_bans = {}
+
+    server.msg(server.clearbans_message)
 end
 
 local function is_banned(ipmask)
@@ -95,15 +106,7 @@ server.event_handler("connecting", function(cn, hostname, name, password, reserv
     end
 end)
 
-server.event_handler("clearbans_request", function()    
-    for ipmask, vars in pairs(server.ip_vars()) do
-        if not (vars.is_gban or false) then server.unban(ipmask) end
-    end
-    
-    temporary_bans = {}
-    
-    server.msg(server.clearbans_message)
-end)
+server.event_handler("clearbans_request", server.clearbans())
 
 server.event_handler("kick_request", function(admin_cn, admin_name, bantime, target, reason)
     if server.player_priv_code(admin_cn) > server.player_priv_code(target) then
