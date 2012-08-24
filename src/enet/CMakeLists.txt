@@ -12,7 +12,7 @@ include(CheckTypeSize)
 check_function_exists(gethostbyaddr_r GETHOSTBYADDR_R_FUNCTION_FOUND)
 check_function_exists(gethostbyname_r GETHOSTBYNAME_R_FUNCTION_FOUND)
 check_function_exists(poll            POLL_FUNCTION_FOUND)
-check_function_exists(fnctl           FCNTL_FUNCTION_FOUND)
+check_function_exists(fcntl           FCNTL_FUNCTION_FOUND)
 check_function_exists(inet_pton       INET_PTON_FUNCTION_FOUND)
 check_function_exists(inet_ntop       INET_NTOP_FUNCTION_FOUND)
 
