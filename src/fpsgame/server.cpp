@@ -546,6 +546,8 @@ namespace server
     string slotpass = "";
     stream *mapdata = NULL;
     
+    int hide_and_seek = 0; //MOD
+    
     vector<uint> allowedips;
     
     vector<clientinfo *> connects, clients, bots;
