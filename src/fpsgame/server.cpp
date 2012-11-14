@@ -3119,18 +3119,7 @@ namespace server
                         {
                             break;
                         }
-                        event_setmastermode(event_listeners(), boost::make_tuple(ci->clientnum, mastermodename(mastermode), mastermodename(mm)));
-                        mastermode = mm;
-                        mastermode_owner = ci->clientnum;
-                        mastermode_mtime = totalmillis;
-                        allowedips.shrink(0);
-                        if(mm>=MM_PRIVATE)
-                        {
-                            loopv(clients) allowedips.add(getclientip(clients[i]->clientnum));
-                        }
-                        sendf(-1, 1, "rii", N_MASTERMODE, mastermode);
-                        //defformatstring(s)("mastermode is now %s (%d)", mastermodename(mastermode), mastermode);
-                        //sendservmsg(s);
+                        set_mastermode(mm);
                     }
                     else
                     {

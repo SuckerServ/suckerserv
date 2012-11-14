@@ -184,7 +184,7 @@ namespace server
     void recorddemo(const char *);
     void enddemorecord();
     void calc_player_ranks();
-    void script_set_mastermode(int);
+    void set_mastermode(int);
     int get_mastermode();
     void add_allowed_ip(const char *);
     bool compare_admin_password(const char *);
