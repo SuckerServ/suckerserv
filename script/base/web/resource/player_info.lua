@@ -23,6 +23,7 @@ local function player(p)
     output.teamkills = p:teamkills()
     output.misses = p:misses()
     output.shots = p:shots()
+    output.accuracy = p:accuracy2()
     
     if(output.status == "spectator") then
         output.team = nil

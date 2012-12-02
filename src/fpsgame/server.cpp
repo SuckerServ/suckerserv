@@ -541,6 +541,8 @@ namespace server
     string slotpass = "";
     stream *mapdata = NULL;
     
+    int hide_and_seek = 0; //MOD
+    
     vector<uint> allowedips;
     
     vector<clientinfo *> connects, clients, bots;
@@ -2539,7 +2541,6 @@ namespace server
             case N_POS:
             {
                 int pcn = getuint(p); 
-                bool falling = false;
                 p.get(); 
                 uint flags = getuint(p);
                 clientinfo *cp = getinfo(pcn);
@@ -2559,7 +2560,6 @@ namespace server
 
                 if(flags&(1<<4))
                 {
-                    falling = true;
                     p.get(); if(flags&(1<<5)) p.get();
                     if(flags&(1<<6)) loopk(2) p.get();
                 }

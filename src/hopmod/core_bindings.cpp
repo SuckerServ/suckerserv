@@ -110,6 +110,7 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "setmaster", server::set_player_master);
     bind_function(L, T, "setadmin", server::set_player_admin);
     bind_function(L, T, "update_server_info", server::updateservinfo);
+    bind_function(L, T, "editvar", server::editvar);
     bind_function(L, T, "setspy", server::set_spy);
     bind_function(L, T, "set_invisible_admin", server::set_player_private_admin);
     bind_function(L, T, "set_invisible_master", server::set_player_private_master);
@@ -389,6 +390,7 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "ctf_teamkill_penalty", server::ctftkpenalty);
     bind_var(L, T, "specslots", server::spec_slots);
     bind_var(L, T, "cheatdetection", server::anti_cheat_enabled);
+    bind_var(L, T, "hide_and_seek", server::hide_and_seek);
     
     bind_var(L, T, "flood_protect_text", server::sv_text_hit_length);
     bind_var(L, T, "flood_protect_sayteam", server::sv_sayteam_hit_length);

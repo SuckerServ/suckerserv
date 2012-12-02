@@ -1127,4 +1127,11 @@ void updateservinfo(int cn, const char* servername)
     sendf(ci->clientnum, 1, "ri5s", N_SERVINFO, ci->clientnum, PROTOCOL_VERSION, ci->sessionid, 0, servername);
 }
 
+void editvar(int cn, const char *var, int value) 
+{
+    clientinfo *ci = getinfo(cn);
+    if (!ci) return;
+    sendf(cn, 1, "ri5si", N_CLIENT, cn, 100/*should be safe*/, N_EDITVAR, ID_VAR, var, value);
+}
+
 #endif

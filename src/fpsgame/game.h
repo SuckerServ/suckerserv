@@ -356,6 +356,10 @@ static const struct guninfo { short sound, attackdelay, damage, spread, projspee
 
 #include "ai.h"
 
+namespace server {
+    extern int hide_and_seek; //MOD
+}
+
 // inherited by fpsent and server clients
 struct fpsstate
 {
@@ -476,9 +480,14 @@ struct fpsstate
         {
             armourtype = A_GREEN;
             armour = 100;
-            loopi(5) baseammo(i+1);
-            gunselect = GUN_CG;
-            ammo[GUN_CG] /= 2;
+            if (server::hide_and_seek) { //MOD
+                loopi(5) baseammo(i+1, 10);
+                gunselect = GUN_GL;
+            } else {
+                loopi(5) baseammo(i+1);
+                gunselect = GUN_CG;
+                ammo[GUN_CG] /= 2;
+            }
         }
         else if(m_ctf || m_collect)
         {
