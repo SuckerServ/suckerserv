@@ -47,8 +47,7 @@ function writer_open(filename)
 end
 
 function write(object, ...)
-    arg.n = nil
-    object._file:write(format_array(arg) .. ",\n")
+    object._file:write(format_array({...}) .. ",\n")
 end
 
 function format_string(value)

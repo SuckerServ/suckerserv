@@ -6,7 +6,7 @@ local usage = "#specmsg <text>"
 
 return function(cn, ...)
 
-    local text = table.concat(arg, " ")
+    local text = table.concat({...}, " ")
     
     if not text then
         return false, usage

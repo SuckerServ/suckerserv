@@ -10,6 +10,8 @@ using namespace boost::asio;
 
 static void shutdown_from_signal(int i)
 {
+    extern void delclients();
+    delclients();
     server::shutdown();
 }
 
@@ -438,6 +440,11 @@ client &addclient()
     return *c;
 }
 
+void delclients()
+{
+    while(clients.length()) delete clients.remove(0);
+}
+
 int localclients = 0, nonlocalclients = 0;
 
 bool hasnonlocalclients() { return nonlocalclients!=0; }
@@ -764,6 +771,7 @@ void rundedicatedserver()
 bool servererror(bool dedicated, const char *desc)
 {
     printf("servererror: %s\n", desc); 
+    delclients();
     server::shutdown();
     return false;
 }

@@ -156,7 +156,7 @@ end
 
 function Underscore.funcs.invoke(list, function_name, ...)
 	local args = {...}
-	Underscore.funcs.each(list, function(i) i[function_name](i, unpack(args)) end)
+	Underscore.funcs.each(list, function(i) i[function_name](i, table.unpack(args)) end)
 	return list
 end
 

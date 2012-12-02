@@ -13,7 +13,7 @@ function EventEmitter:emit(event_name, ...)
     local listeners = self._listeners[event_name]
     if not listeners then return end
     for _, listener in pairs(listeners) do
-        local pcall_status, error_message = pcall(listener, unpack(arg))
+        local pcall_status, error_message = pcall(listener, table.unpack({...}))
         if not pcall_status then
             
             if type(error_message) == "table" then
@@ -36,7 +36,7 @@ function EventEmitter:once(event_name, callback)
     
     local function once_handler(...)
         self:remove_listener(event_name, once_handler)
-        callback(unpack(arg))
+        callback(table.unpack({...}))
     end
     
     self:on(event_name, once_handler)

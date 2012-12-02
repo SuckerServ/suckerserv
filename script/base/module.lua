@@ -18,7 +18,7 @@ local function execute_module_script(filename, environment)
     
     setfenv(chunk, environment)
     
-    return (function(...) return unpack(arg) end)(pcall(chunk))
+    return (function(...) return table.unpack({...}) end)(pcall(chunk))
 end
 
 function server.unload(name)

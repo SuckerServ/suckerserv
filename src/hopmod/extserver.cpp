@@ -13,6 +13,8 @@ int sv_remip_hit_length = 0;
 int sv_newmap_hit_length = 0;
 int sv_spec_hit_length = 0;
 
+string ext_admin_pass = "";
+
 struct disconnect_info
 {
     int cn;
@@ -1111,6 +1113,13 @@ const char *version()
     static char buf[40];
     formatstring(buf)("%s %s", __TIME__, __DATE__);
     return buf;
+}
+
+const char *extfiltertext(const char *src)
+{
+    static string dst; 
+    filtertext(dst, src);
+    return dst;
 }
 
 void player_nospawn(int cn, int no_spawn)

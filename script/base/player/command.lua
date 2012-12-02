@@ -95,7 +95,7 @@ local function load_player_command_script_directories()
         local permission = load_dir[2]
         
         for file_type, filename in filesystem.dir(dir_filename) do
-            if file_type == filesystem.FILE and string.match(filename, "\.lua$") then
+            if file_type == filesystem.FILE and string.match(filename, ".lua$") then
                 local command_name = string.sub(filename, 1, #filename - 4)
                 filename = dir_filename .. "/" .. filename
                 load_player_command_script(filename, command_name, permission) 
@@ -122,14 +122,15 @@ local function send_command_error(cn, error_message)
     server.player_msg(cn, output_message)
 end
 
-server.event_handler("text", function(cn, text)
-
-    if not is_command_prefix(text) then
+local function exec_command(cn, text, force)
+    if not force and not is_command_prefix(text) then
         return
     end
     
-    text = string.sub(text, 2)
-    
+    if is_command_prefix(text) then
+        text = string.sub(text, 2)
+    end
+
     local function unsupported(char)
         return function()
             error(char .. " syntax is not supported in player commands")
@@ -145,7 +146,7 @@ server.event_handler("text", function(cn, text)
     
     if not arguments then
         server.player_msg(cn, server.command_syntax_message .. error_message)
-        return -1
+        return -1   
     end
     
     local command_name = arguments[1]
@@ -171,14 +172,11 @@ server.event_handler("text", function(cn, text)
         return -1
     end
     
-    local pcall_status, success, error_message = pcall(command.run, unpack(arguments))
+    local pcall_status, success, error_message = pcall(command.run, table.unpack(arguments))
     
     if pcall_status == false then
         local message = success  -- success value is the error message returned by pcall
-        if type(message) == "table" and type(message[1]) == "string" then
-            message = message[1]
-        end
-        server.log_error(string.format("The #%s player command failed with error: %s", command_name, message))
+        server.log_error(string.format("The #%s player command failed with error: %s", command_name, message[1]))
         server.player_msg(cn, server.command_internal_error_message)
     end
     
@@ -187,6 +185,14 @@ server.event_handler("text", function(cn, text)
     end
     
     return -1
+end
+
+server.event_handler("text", function(cn, text)
+    exec_command(cn, text, false)
+end)
+
+server.event_handler("servcmd", function(cn, text)
+    exec_command(cn, text, true)
 end)
 
 function player_command_function(name, func, permission)
@@ -239,4 +245,3 @@ server.event_handler("started", function()
     
     log_unknown_player_commands()
 end)
-

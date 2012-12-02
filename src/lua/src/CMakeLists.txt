@@ -37,6 +37,9 @@ set(LUA_SOURCES
     lstate.c
     ltable.c
     lvm.c
+    lctype.c
+    lbitlib.c
+    lcorolib.c
 )
 
 add_library(${LUA_LIBRARY} SHARED ${LUA_SOURCES})
@@ -57,3 +60,4 @@ install(TARGETS
         ARCHIVE DESTINATION
             ${INSTALL_ARCHIVE_DIR})
 
+add_definitions(-DLUA_COMPAT_MODULE)

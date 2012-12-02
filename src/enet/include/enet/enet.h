@@ -50,7 +50,9 @@ typedef enum _ENetSocketOption
    ENET_SOCKOPT_BROADCAST = 2,
    ENET_SOCKOPT_RCVBUF    = 3,
    ENET_SOCKOPT_SNDBUF    = 4,
-   ENET_SOCKOPT_REUSEADDR = 5
+   ENET_SOCKOPT_REUSEADDR = 5,
+   ENET_SOCKOPT_RCVTIMEO  = 6,
+   ENET_SOCKOPT_SNDTIMEO  = 7
 } ENetSocketOption;
 
 enum
@@ -541,4 +543,3 @@ extern size_t enet_protocol_command_size (enet_uint8);
 #endif
 
 #endif /* __ENET_ENET_H__ */
-

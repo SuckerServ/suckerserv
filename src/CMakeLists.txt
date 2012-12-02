@@ -82,7 +82,7 @@ include_directories(
     ${OPENSSL_INCLUDE_DIR}
     ${GEOIP_INCLUDE_DIRS})
 
-add_definitions(-Wall -fsigned-char -DSTANDALONE -DREVISION=$ENV{REVISION} ${LSQLITE3_DEFINITIONS})
+add_definitions(-Wall -fsigned-char -DSTANDALONE -DREVISION=$ENV{REVISION} -DLUA_COMPAT_ALL ${LSQLITE3_DEFINITIONS})
 
 
 set(SAUERTOOLS_SOURCES

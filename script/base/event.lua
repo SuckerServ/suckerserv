@@ -49,7 +49,7 @@ local function trigger_event(event_id, ...)
     local prevent_default = false
     
     for _, listener in pairs(listeners) do
-        local pcall_status, result = pcall(listener, unpack(arg))
+        local pcall_status, result = pcall(listener, table.unpack({...}))
         if not pcall_status then
             server.log_event_error(event_id, result or "unknown error")
         else
@@ -65,7 +65,7 @@ local function create_event(event_id)
     event[event_id] = {}
     
     return function(...)
-        trigger_event(event_id, unpack(arg))
+        trigger_event(event_id, table.unpack({...}))
     end
 end
 

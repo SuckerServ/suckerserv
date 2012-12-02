@@ -86,7 +86,7 @@ end
 function table.missing_fields(t, ...)
     table.remove(arg)
     local missing = {}
-    for index in ipairs(arg) do
+    for index in ipairs({...}) do
         if not t[arg[index]] then
             missing[#missing + 1] = name
         end        

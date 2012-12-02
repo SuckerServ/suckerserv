@@ -9,7 +9,7 @@ return function(cn, ...)
 
 	local code = ""
 
-	for _, item in ipairs(arg) do
+	for _, item in ipairs({...}) do
 		item = tostring(item)
 		if #item > 0 then
 			if #code > 0 then

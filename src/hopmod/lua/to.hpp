@@ -18,7 +18,7 @@ typename WrapperClass::target_type * to(lua_State * L, int index)
     
     void * ptr = lua_touserdata(L, index);
     if(!ptr || !lua_getmetatable(L, index)) 
-        luaL_typerror(L, index, WrapperClass::CLASS_NAME);
+        luaL_typeerror(L, index, WrapperClass::CLASS_NAME);
     
     do
     {
@@ -30,7 +30,7 @@ typename WrapperClass::target_type * to(lua_State * L, int index)
         }
     }while(lua_getmetatable(L, -1));
     
-    luaL_typerror(L, index, WrapperClass::CLASS_NAME);
+    luaL_typeerror(L, index, WrapperClass::CLASS_NAME);
     return NULL;
 }
 

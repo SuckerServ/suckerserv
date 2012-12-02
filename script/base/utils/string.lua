@@ -95,7 +95,7 @@ end
 
 function print_list(...)
     local output = ""
-    for _, item in ipairs(arg) do
+    for _, item in ipairs({...}) do
         item = tostring(item)
         if #item > 0 then
             if #output > 0 then output = output .. ", " end
@@ -158,7 +158,7 @@ function strSplit(str, delim, maxNb)
     local pat = "(.-)" .. delim .. "()"
     local nb = 0
     local lastPos
-    for part, pos in string.gfind(str, pat) do
+    for part, pos in string.gmatch(str, pat) do
         nb = nb + 1
         result[nb] = part
         lastPos = pos

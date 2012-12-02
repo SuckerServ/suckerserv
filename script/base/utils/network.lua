@@ -59,6 +59,8 @@ function check_ip(ip)
     return { 0, blocks }
 end
 
+--[[
+
 function ip2long(ip_addr)
     local blocks = check_ip(ip_addr)[2] or error("Invalid IP-Address")
     return (blocks[1] << 24) | (blocks[2] << 16) | (blocks[3] << 8 ) | blocks[4]
@@ -85,3 +87,5 @@ end
 -- examples: 
 --  ip_inrange("192.168.63.255", "192.168.0.0/18") --> true
 --  ip_inrange("192.168.64.0", "192.168.0.0/18")   --> false
+
+--]]

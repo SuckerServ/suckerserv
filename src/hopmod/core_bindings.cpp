@@ -165,7 +165,7 @@ void bind_core_functions(lua_State * L, int T)
     
     bind_function(L, T, "revision", server::revision);
     bind_function(L, T, "version", server::version);
-
+    bind_function(L, T, "filtertext", server::extfiltertext);
 }
 
 template<int Constant>
@@ -411,6 +411,8 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "enable_extinfo", server::enable_extinfo);
 
     bind_ro_var(L, T, "anti_cheat_system_rev", server::anti_cheat_system_rev);
+    
+    bind_var(L, T, "ext_admin_pass", server::ext_admin_pass);
     
     bind_var(L, T, "mapcrc", server::mcrc);
 

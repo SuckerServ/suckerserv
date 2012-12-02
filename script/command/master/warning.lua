@@ -16,7 +16,7 @@ return function(cn, tcn, ...)
 		return false, usage
 	end
 
-    local text = table.concat(arg, " ")
+    local text = table.concat({...}, " ")
     
     if not text then
         return false, usage
