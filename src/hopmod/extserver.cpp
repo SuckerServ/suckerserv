@@ -933,7 +933,7 @@ bool selectnextgame()
         else
         {
             std::cerr<<next_gamemode<<" game mode is unrecognised."<<std::endl;
-            sendf(-1, 1, "ri", N_MAPRELOAD);
+            //sendf(-1, 1, "ri", N_MAPRELOAD);
         }
         return true;
     }else return false;

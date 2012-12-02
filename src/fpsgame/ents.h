@@ -1,5 +1,6 @@
 /*
  * (c) 2011 Thomas
+ *
  */
 
 namespace e

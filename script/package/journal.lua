@@ -56,7 +56,7 @@ end
 
 function format_array(values)
     local formatted_values = {}
-    for index = 1, table.maxn(values) do
+    for index = 1, #values do
         formatted_values[#formatted_values + 1] = format_value(values[index])
     end
     return "{" .. table.concat(formatted_values, ",") .. "}"

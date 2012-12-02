@@ -136,6 +136,7 @@ class anticheat
         jumpdist = 0;
         last_fall_loc = 0;
         spawns = 0;
+        jumppads = 0;
         lastgun = -1;
         exceed_position = 0;
         ignore_exceed = 0;

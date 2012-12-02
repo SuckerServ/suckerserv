@@ -367,6 +367,7 @@ extern ENetPacket *sendfile(int cn, int chan, stream *file, const char *format =
 extern void sendpacket(int cn, int chan, ENetPacket *packet, int exclude = -1);
 extern void flushserver(bool force);
 extern int getnumclients();
+extern int getservermtu();
 extern uint getclientip(int n);
 extern void putint(ucharbuf &p, int n);
 extern void putint(packetbuf &p, int n);

@@ -78,11 +78,12 @@ static inline T min(T a, T b)
 {
     return a < b ? a : b;
 }
-template<class T>
-static inline T clamp(T a, T b, T c)
+template<class T, class U>
+static inline T clamp(T a, U b, U c)
 {
-    return max(b, min(a, c));
+    return max(T(b), min(a, T(c)));
 }
+
 
 #define rnd(x) ((int)(randomMT()&0xFFFFFF)%(x))
 #define rndscale(x) (float((randomMT()&0xFFFFFF)*double(x)/double(0xFFFFFF)))
@@ -121,6 +122,7 @@ static inline T clamp(T a, T b, T c)
 #endif
 
 #define strcasecmp _stricmp
+#define strncasecmp _strnicmp
 #define PATHDIV '\\'
 
 #else
@@ -214,7 +216,16 @@ struct databuf
         len += read;
         return read;
     }
+    
+    void offset(int n)
+    {
+        n = min(n, maxlen);
+        buf += n;
+        maxlen -= n;
+        len = max(len-n, 0);
+    }
 
+    bool empty() const { return len==0; }
     int length() const { return len; }
     int remaining() const { return maxlen-len; }
     bool overread() const { return (flags&OVERREAD)!=0; }
@@ -324,7 +335,6 @@ static inline void insertionsort(T *buf, int n)
     insertionsort(buf, buf+n, compareless<T>);
 }
 
-#if 0 //hopmod
 template<class T, class F>
 static inline void quicksort(T *start, T *end, F fun)
 {
@@ -366,8 +376,8 @@ static inline void quicksort(T *start, T *end, F fun)
 
     insertionsort(start, end, fun);
 }
-#endif
 
+#if 0
 //hopmod
 template<class T, class U>
 static inline void quicksort(T *buf, int n, int (__cdecl *func)(U *, U *))
@@ -375,6 +385,7 @@ static inline void quicksort(T *buf, int n, int (__cdecl *func)(U *, U *))
     qsort(buf, n, sizeof(T), (int (__cdecl *)(const void *,const void *))func);
 }
 //end hopmod
+#endif
 
 template<class T, class F>
 static inline void quicksort(T *buf, int n, F fun)
@@ -1070,6 +1081,7 @@ struct stream
     virtual offset rawtell() { return tell(); }
     virtual bool seek(offset pos, int whence = SEEK_SET) { return false; }
     virtual offset size();
+    virtual offset rawsize() { return size(); }
     virtual int read(void *buf, int len) { return 0; }
     virtual int write(const void *buf, int len) { return 0; }
     virtual int getchar() { uchar c; return read(&c, 1) == 1 ? c : -1; }
@@ -1079,11 +1091,13 @@ struct stream
     virtual bool putline(const char *str) { return putstring(str) && putchar('\n'); }
     virtual int printf(const char *fmt, ...);
     virtual uint getcrc() { return 0; }
-
+    
+    template<class T> int put(const T *v, int n) { return write(v, n*sizeof(T))/sizeof(T); } 
     template<class T> bool put(T n) { return write(&n, sizeof(n)) == sizeof(n); }
     template<class T> bool putlil(T n) { return put<T>(lilswap(n)); }
     template<class T> bool putbig(T n) { return put<T>(bigswap(n)); }
-
+    
+    template<class T> int get(T *v, int n) { return read(v, n*sizeof(T))/sizeof(T); }
     template<class T> T get() { T n; return read(&n, sizeof(n)) == sizeof(n) ? n : 0; }
     template<class T> T getlil() { return lilswap(get<T>()); }
     template<class T> T getbig() { return bigswap(get<T>()); }
@@ -1091,6 +1105,20 @@ struct stream
 #ifndef STANDALONE
     SDL_RWops *rwops();
 #endif
+};
+
+template<class T>
+struct streambuf
+{
+    stream *s;
+
+    streambuf(stream *s) : s(s) {}
+    
+    T get() { return s->get<T>(); }
+    int get(T *vals, int numvals) { return s->get(vals, numvals); }
+    void put(const T &val) { s->put(&val, 1); }
+    void put(const T *vals, int numvals) { s->put(vals, numvals); } 
+    int length() { return s->size(); }
 };
 
 enum

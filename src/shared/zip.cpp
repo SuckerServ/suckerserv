@@ -156,7 +156,7 @@ static bool readzipdirectory(const char *archname, FILE *f, int entries, int off
         f.size = hdr.uncompressedsize;
         f.compressedsize = hdr.compression ? hdr.compressedsize : 0;
 #ifndef STANDALONE
-        if(dbgzip) //(CON_DEBUG, "file %s, size %d, compress %d, flags %x", archname, name, hdr.uncompressedsize, hdr.compression, hdr.flags);
+        if(dbgzip) conoutf(CON_DEBUG, "file %s, size %d, compress %d, flags %x", archname, name, hdr.uncompressedsize, hdr.compression, hdr.flags);
 #endif
 
         src += hdr.namelength + hdr.extralength + hdr.commentlength;
@@ -210,7 +210,7 @@ static void mountzip(ziparchive &arch, vector<zipfile> &files, const char *mount
 {
     string packagesdir = "packages/";
     path(packagesdir);
-    int striplen = stripdir ? strlen(stripdir) : 0;
+    int striplen = stripdir ? (int)strlen(stripdir) : 0;
     if(!mountdir && !stripdir) loopv(files)
     {
         zipfile &f = files[i];
@@ -264,27 +264,27 @@ bool addzip(const char *name, const char *mount = NULL, const char *strip = NULL
     string pname;
     copystring(pname, name);
     path(pname);
-    int plen = strlen(pname);
+    int plen = (int)strlen(pname);
     if(plen < 4 || !strchr(&pname[plen-4], '.')) concatstring(pname, ".zip");
 
     ziparchive *exists = findzip(pname);
     if(exists) 
     {
-        //(CON_ERROR, "already added zip %s", pname);
+        conoutf(CON_ERROR, "already added zip %s", pname);
         return true;
     }
  
     FILE *f = fopen(findfile(pname, "rb"), "rb");
     if(!f) 
     {
-        //(CON_ERROR, "could not open file %s", pname);
+        conoutf(CON_ERROR, "could not open file %s", pname);
         return false;
     }
     zipdirectoryheader h;
     vector<zipfile> files;
     if(!findzipdirectory(f, h) || !readzipdirectory(pname, f, h.entries, h.offset, h.size, files))
     {
-        //(CON_ERROR, "could read directory in zip %s", pname);
+        conoutf(CON_ERROR, "could not read directory in zip %s", pname);
         fclose(f);
         return false;
     }
@@ -295,25 +295,29 @@ bool addzip(const char *name, const char *mount = NULL, const char *strip = NULL
     mountzip(*arch, files, mount, strip);
     archives.add(arch);
 
-    //("added zip %s", pname);
+    conoutf("added zip %s", pname);
     return true;
 } 
      
 bool removezip(const char *name)
 {
-    const char *pname = path(name, true);
+    string pname;
+    copystring(pname, name);
+    path(pname);
+    int plen = (int)strlen(pname);
+    if(plen < 4 || !strchr(&pname[plen-4], '.')) concatstring(pname, ".zip");
     ziparchive *exists = findzip(pname);
     if(!exists)
     {
-        //(CON_ERROR, "zip %s is not loaded", pname);
+        conoutf(CON_ERROR, "zip %s is not loaded", pname);
         return false;
     }
     if(exists->openfiles)
     {
-        //(CON_ERROR, "zip %s has open files", pname);
+        conoutf(CON_ERROR, "zip %s has open files", pname);
         return false;
     }
-    //("removed zip %s", exists->name);
+    conoutf("removed zip %s", exists->name);
     archives.removeobj(exists); 
     delete exists;
     return true;
@@ -331,8 +335,9 @@ struct zipstream : stream
     z_stream zfile;
     uchar *buf;
     int reading;
+    bool ended;
 
-    zipstream() : arch(NULL), info(NULL), buf(NULL), reading(-1)
+    zipstream() : arch(NULL), info(NULL), buf(NULL), reading(-1), ended(false)
     {
         zfile.zalloc = NULL;
         zfile.zfree = NULL;
@@ -356,9 +361,8 @@ struct zipstream : stream
             if(fseek(arch->data, reading, SEEK_SET) >= 0) arch->owner = this;
             else return;
         }
-        else if(ftell(arch->data) != reading) *(int *)0 = 0;
         uint remaining = info->offset + info->compressedsize - reading;
-        int n = arch->owner == this ? fread(zfile.next_in + zfile.avail_in, 1, min(size, remaining), arch->data) : 0;
+        int n = arch->owner == this ? (int)fread(zfile.next_in + zfile.avail_in, 1, min(size, remaining), arch->data) : 0;
         zfile.avail_in += n;
         reading += n;
     }
@@ -379,6 +383,7 @@ struct zipstream : stream
         arch = a;
         info = f;
         reading = f->offset;
+        ended = false;
         if(f->compressedsize) buf = new uchar[BUFSIZE];
         return true;
     }
@@ -387,7 +392,7 @@ struct zipstream : stream
     {
         if(reading < 0) return;
 #ifndef STANDALONE
-        if(dbgzip) //(CON_DEBUG, info->compressedsize ? "%s: zfile.total_out %d, info->size %d" : "%s: reading %d, info->size %d", info->name, info->compressedsize ? zfile.total_out : reading - info->offset, info->size);
+        if(dbgzip) conoutf(CON_DEBUG, info->compressedsize ? "%s: zfile.total_out %d, info->size %d" : "%s: reading %d, info->size %d", info->name, info->compressedsize ? zfile.total_out : reading - info->offset, info->size);
 #endif
         if(info->compressedsize) inflateEnd(&zfile);
         reading = -1;
@@ -400,11 +405,11 @@ struct zipstream : stream
         if(arch) { arch->owner = NULL; arch->openfiles--; arch = NULL; }
     }
 
-    long size() { return info->size; }
-    bool end() { return reading < 0; }
-    long tell() { return reading >= 0 ? (info->compressedsize ? zfile.total_out : reading - info->offset) : -1; }
+    offset size() { return info->size; }
+    bool end() { return reading < 0 || ended; }
+    offset tell() { return reading >= 0 ? (info->compressedsize ? zfile.total_out : reading - info->offset) : -1; }
 
-    bool seek(long pos, int whence)
+    bool seek(offset pos, int whence)
     {
         if(reading < 0) return false;
         if(!info->compressedsize)
@@ -416,11 +421,12 @@ struct zipstream : stream
                 case SEEK_SET: pos += info->offset; break;
                 default: return false;
             } 
-            pos = clamp(pos, long(info->offset), long(info->offset + info->size));
+            pos = clamp(pos, offset(info->offset), offset(info->offset + info->size));
             arch->owner = NULL;
-            if(fseek(arch->data, pos, SEEK_SET) < 0) return false;
+            if(fseek(arch->data, int(pos), SEEK_SET) < 0) return false;
             arch->owner = this;
             reading = pos;
+            ended = false;
             return true;
         }
  
@@ -432,18 +438,19 @@ struct zipstream : stream
             default: return false;
         }
 
-        if(pos >= (long)info->size)
+        if(pos >= (offset)info->size)
         {
             reading = info->offset + info->compressedsize;
             zfile.next_in += zfile.avail_in;
             zfile.avail_in = 0;
             zfile.total_in = info->compressedsize; 
             arch->owner = NULL;
+            ended = false;
             return true;
         }
 
         if(pos < 0) return false;
-        if(pos >= (long)zfile.total_out) pos -= zfile.total_out;
+        if(pos >= (offset)zfile.total_out) pos -= zfile.total_out;
         else 
         {
             if(zfile.next_in && zfile.total_in <= uint(zfile.next_in - buf))
@@ -464,11 +471,12 @@ struct zipstream : stream
         uchar skip[512];
         while(pos > 0)
         {
-            int skipped = min(pos, (long)sizeof(skip));
-            if(read(skip, skipped) != skipped) { stopreading(); return false; }
+            int skipped = (int)min(pos, (offset)sizeof(skip));
+            if(read(skip, skipped) != skipped) return false;
             pos -= skipped;
         }
 
+        ended = false;
         return true;
     }
 
@@ -484,9 +492,9 @@ struct zipstream : stream
                 arch->owner = this;
             }
               
-            int n = fread(buf, 1, min(len, int(info->size + info->offset - reading)), arch->data);
+            int n = (int)fread(buf, 1, min(len, int(info->size + info->offset - reading)), arch->data);
             reading += n;
-            if(n < len) stopreading();
+            if(n < len) ended = true;
             return n;
         }
 
@@ -498,10 +506,14 @@ struct zipstream : stream
             int err = inflate(&zfile, Z_NO_FLUSH);
             if(err != Z_OK) 
             {
+                if(err == Z_STREAM_END) ended = true;
+                else
+                {
 #ifndef STANDALONE
-                if(err != Z_STREAM_END && dbgzip) //(CON_DEBUG, "inflate error: %s", err);
+                    if(dbgzip) conoutf(CON_DEBUG, "inflate error: %s", err);
 #endif
-                stopreading(); 
+                    stopreading(); 
+                }
                 break; 
             }
         }
@@ -526,7 +538,7 @@ stream *openzipfile(const char *name, const char *mode)
 
 int listzipfiles(const char *dir, const char *ext, vector<char *> &files)
 {
-    int extsize = ext ? (int)strlen(ext)+1 : 0, dirsize = strlen(dir), dirs = 0;
+    int extsize = ext ? (int)strlen(ext)+1 : 0, dirsize = (int)strlen(dir), dirs = 0;
     loopvrev(archives)
     {
         ziparchive *arch = archives[i];
@@ -554,4 +566,3 @@ int listzipfiles(const char *dir, const char *ext, vector<char *> &files)
 ICOMMAND(addzip, "sss", (const char *name, const char *mount, const char *strip), addzip(name, mount[0] ? mount : NULL, strip[0] ? strip : NULL));
 ICOMMAND(removezip, "s", (const char *name), removezip(name));
 #endif
-
