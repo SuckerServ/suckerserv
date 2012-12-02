@@ -43,8 +43,6 @@ global map_rotation_type "standard"
 global small_single_game 5
 global small_team_game 5
 
-exec "script/base/maprotation/maps.cs"
-
 global default_gamemode "ffa"
 global default_game_on_empty 0
 
