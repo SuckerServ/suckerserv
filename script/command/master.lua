@@ -25,16 +25,13 @@ local function run(cn)
             
             local admin_present = server.master ~= -1 and server.player_priv_code(server.master) == server.PRIV_ADMIN
             
-            if not admin_present then
-                
-                if (server.player_priv_code(cn) > 0) then
-                    server.unsetpriv(cn)
-                end
+            if not admin_present and not server.current_master_global_authed then
                 
                 server.setmaster(cn)
                 
                 server.msg(string.format(server.claimmaster_message, server.player_displayname(cn), user_id))
                 server.log(string.format("%s playing as %s(%i) used auth to claim master.", user_id, server.player_name(cn), cn))
+                server.admin_log(string.format("%s playing as %s(%i) used auth to claim master.", user_id, server.player_name(cn), cn))
             else
                 server.player_msg(cn, string.format(server.master_already_message))
             end

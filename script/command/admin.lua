@@ -26,14 +26,11 @@ local function run(cn)
 		        return
 	        end
 	        
-	        if server.player_priv_code(cn) > 0 then
-		        server.unsetpriv(cn)
-	        end
-	        
 	        server.setadmin(cn)
 	        
 	        server.msg(string.format(server.claimadmin_message, server.player_displayname(cn), user_id))
-		server.admin_log(string.format("%s playing as %s(%i) used auth to claim admin.", user_id, server.player_name(cn), cn))
+            server.log(string.format("%s playing as %s(%i) used auth to claim admin.", user_id, server.player_name(cn), cn))
+            server.admin_log(string.format("%s playing as %s(%i) used auth to claim admin.", user_id, server.player_name(cn), cn))
 	    end)
     end
 end

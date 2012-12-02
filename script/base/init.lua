@@ -40,7 +40,6 @@ server.module("base/auth/init")
 server.module("base/mapvote")
 server.module("base/register_server")
 server.module("base/web/init")
-server.module("base/teamkills")
 server.module("base/global_bans")
 
 server.event_handler("started", function()

@@ -123,7 +123,7 @@ void player_rename(int cn, const char * newname, bool public_rename)
 {
     char safenewname[MAXNAMELEN + 1];
     filtertext(safenewname, newname, false, MAXNAMELEN);
-    if(!safenewname[0]) copystring(safenewname, "unnamed");
+    if(!safenewname[0]) copystring(safenewname, "unnamed", MAXNAMELEN + 1);
     
     clientinfo * ci = get_ci(cn);
     

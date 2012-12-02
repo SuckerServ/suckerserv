@@ -207,7 +207,6 @@ namespace server
         int maxhealth, frags, flags, deaths, suicides, teamkills, shotdamage, explosivedamage, damage, hits, misses, shots;
         int timeplayed;
         float effectiveness;
-        int state;
         int disconnecttime;
         
         void save(gamestate &gs)
@@ -226,7 +225,6 @@ namespace server
             hits = gs.hits;
             misses = gs.misses;
             shots = gs.shots;
-            state = gs.state;
             disconnecttime = gs.disconnecttime;
         }
 
@@ -247,7 +245,6 @@ namespace server
             gs.hits = hits;
             gs.misses = misses;
             gs.shots = shots;
-            gs.state = state;
             gs.disconnecttime = disconnecttime;
         }
     };
@@ -1312,7 +1309,7 @@ namespace server
     #include "anticheat.h"
     #undef anticheat_parsepacket
     
-    int checktype(int type, clientinfo *ci, clientinfo *cq, packetbuf &p)
+    int checktype(int type, clientinfo *ci, clientinfo *cq, packetbuf &p) //NEW (thomas): clientinfo *cq, packetbuf &p
     {
         if(ci && ci->local) return type;
         // only allow edit messages in coop-edit mode
@@ -1327,7 +1324,8 @@ namespace server
                 if(type != N_POS && ++ci->overflow >= 200) return -2;
             }
         }
-        if(anti_cheat_enabled && ci) anti_cheat_parsepacket(type, ci, cq, p);
+        
+        anti_cheat_parsepacket(type, ci, cq, p);
         return type;
     }
 
