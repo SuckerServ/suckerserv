@@ -84,9 +84,10 @@ function table.wrapped_index(t, index, offset)
 end
 
 function table.missing_fields(t, ...)
+    local arg = {...}
     table.remove(arg)
     local missing = {}
-    for index in ipairs({...}) do
+    for index in ipairs(arg) do
         if not t[arg[index]] then
             missing[#missing + 1] = name
         end        

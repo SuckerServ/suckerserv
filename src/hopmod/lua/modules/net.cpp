@@ -103,7 +103,7 @@ void * lua_aux_checkobject(lua_State * L, int narg, const char * tname)
     
     while(1)
     {
-        if(lua_equal(L, -1, -2)) return lua_touserdata(L, narg);
+        if(lua_compare(L, -1, -2, LUA_OPEQ)) return lua_touserdata(L, narg);
         else
         {
             lua_getmetatable(L, -1);

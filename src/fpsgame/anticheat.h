@@ -13,7 +13,7 @@ int anti_cheat_system_rev = 3;
 	
 void cheat(int cn, int cheat, int info1, const char *info2)
 {
-	if (!anti_cheat_enabled) return;
+    if (!anti_cheat_enabled) return;
     
     if (anti_cheat_add_log_to_demo && demorecord)
     {
@@ -667,6 +667,9 @@ void anti_cheat_parsepacket(int type, clientinfo *ci, clientinfo *cq, packetbuf 
     #if PROTOCOL_VERSION != AC_PROTOCOL_VERSION
     throw;
     #endif
+    
+    if (!anti_cheat_enabled)
+        return;
  
     clientinfo *ca = cq ? cq : ci;
     anticheat *ac = &ca->ac;
@@ -738,7 +741,7 @@ void anti_cheat_parsepacket(int type, clientinfo *ci, clientinfo *cq, packetbuf 
             ac_check_sender;
             
             ac = &ca->ac; 
-            if (!ac->initialized) return;
+            if (!ac->initialized) break;
             
             p.get();
             uint flags = getuint(p);
@@ -862,12 +865,12 @@ void anti_cheat_parsepacket(int type, clientinfo *ci, clientinfo *cq, packetbuf 
             if (smode != &ctfmode && ac->lastspawn > -1 && totalmillis - ac->lastspawn >= 2000)
             {
                 ac->impossible(3, -1);
-                return;
+                break;
             }
             
             ac->is_player_invisible();
             int i = getint(p), version = getint(p);
-            if (ctfmode.notgotflags || !ctfmode.flags.inrange(i) || ca->state.state!=CS_ALIVE || !ca->team[0]) return;
+            if (ctfmode.notgotflags || !ctfmode.flags.inrange(i) || ca->state.state!=CS_ALIVE || !ca->team[0]) break;
 
             ctfservmode::flag &f = ctfmode.flags[i];
             

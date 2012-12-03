@@ -100,6 +100,9 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "player_freeze", server::player_freeze);
     bind_function(L, T, "player_unfreeze", server::player_unfreeze);
     bind_function(L, T, "player_connection_time", server::player_connection_time);
+    bind_function(L, T, "player_has_joined_game", server::player_has_joined_game);
+    bind_function(L, T, "player_join_game", server::player_join_game);
+    bind_function(L, T, "player_reject_join_game", server::player_reject_join_game);
     bind_function(L, T, "disconnect", server::disconnect);
     bind_function(L, T, "force_spec", server::player_force_spec);
     bind_function(L, T, "unforce_spec", server::player_unforce_spec);
@@ -108,6 +111,7 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "player_forgive_tk", server::player_forgive_tk);
     bind_function(L, T, "unsetmaster", server::unsetmaster);
     bind_function(L, T, "setmaster", server::set_player_master);
+    bind_function(L, T, "setauth", server::set_player_auth);
     bind_function(L, T, "setadmin", server::set_player_admin);
     bind_function(L, T, "update_server_info", server::updateservinfo);
     bind_function(L, T, "editvar", server::editvar);
@@ -115,6 +119,7 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "set_invisible_admin", server::set_player_private_admin);
     bind_function(L, T, "set_invisible_master", server::set_player_private_master);
     bind_function(L, T, "unsetpriv", server::unset_player_privilege);
+    bind_function(L, T, "hasmaster", server::hasmaster);
 
     bind_function(L, T, "send_auth_request", server::send_auth_request);
     bind_function(L, T, "send_auth_challenge_to_client", server::send_auth_challenge);
@@ -355,7 +360,7 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "servername", server::serverdesc);
     bind_ro_var(L, T, "map", server::smapname);
     bind_var(L, T, "server_password", server::serverpass);
-    bind_ro_var(L, T, "master", server::currentmaster);
+    bind_var(L, T, "server_auth_domain", server::serverauth);
     bind_prop(L, T, "timeleft", server::get_minutes_left, server::set_minutes_left);
     bind_prop(L, T, "seconds_left", server::get_seconds_left, server::set_seconds_left);
     bind_var(L, T, "intermission", server::interm);
@@ -416,6 +421,6 @@ void bind_core_variables(lua_State * L, int T)
     
     bind_var(L, T, "mapcrc", server::mcrc);
 
-    bind_prop<int>(L, T, "mastermode", server::get_mastermode, server::script_set_mastermode);
+    bind_prop<int>(L, T, "mastermode", server::get_mastermode, server::set_mastermode);
 }
 

@@ -112,7 +112,7 @@ local function process_irc_command(data)
 		end
 		
 		local code = string.gsub(tmp, "code:", "")
-		local tmp_tonumber = tonumber; tonumber = function(str) local num = tmp_tonumber(str); if num == nil then return -1 else return num end end; local tmp_os_exec = os.execute; os.execute = nil; local pcallret, success, errmsg = pcall(loadstring(check_inject(code))); os.execute = tmp_os_exec; tonumber = tmp_tonumber
+		local tmp_tonumber = tonumber; tonumber = function(str) local num = tmp_tonumber(str); if num == nil then return -1 else return num end end; local tmp_os_exec = os.execute; os.execute = nil; local pcallret, success, errmsg = pcall(load(check_inject(code))); os.execute = tmp_os_exec; tonumber = tmp_tonumber
 				
 		if success ~= nil then
 			sendmsg("command failed.")
@@ -328,6 +328,7 @@ end)
 
 --> MapBattle Listener
 server.event_handler("intermission", function() -- shows wich maps are selected
+    if not mapbattle then return end
     server.sleep(mapbattle.delay+500, function()
         if server.playercount < 1 then return end
         sendmsg(string.format(irc_color_pink("MAPBATTLE: ")..irc_color_green("MAP1: ")..irc_color_blue("%s ")..irc_color_green("or MAP2: ")..irc_color_blue("%s"), mapbattle.maps[1], mapbattle.maps[2]))
@@ -335,7 +336,7 @@ server.event_handler("intermission", function() -- shows wich maps are selected
 end)
 
 server.event_handler("text", function(cn, msg) -- shows wich maps people in-game votes
-    if mapbattle.map_changed or not mapbattle.running or table_count(server.players(), cn) ~= 1 then return end
+    if not mapbattle or mapbattle.map_changed or not mapbattle.running or table_count(server.players(), cn) ~= 1 then return end
     if msg ~= "1" and msg ~= "2" then return end
     sendmsg(string.format(irc_color_pink("MAPBATTLE: ")..irc_color_blue("%s (%i) ")..irc_color_green("voted for ")..irc_color_blue("%s"), server.player_name(cn), cn, mapbattle.maps[tonumber(msg)]))
 end)

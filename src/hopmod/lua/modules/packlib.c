@@ -53,7 +53,7 @@ static int l_unpack(lua_State *L) 		/* unpack(s,f,[init]) */
  const char *s=luaL_checkstring(L,1);
  const char *f=luaL_checkstring(L,2);
  int i=luaL_optnumber(L,3,1)-1;
- size_t len=lua_strlen(L,1);
+ size_t len=lua_rawlen(L,1);
  int n;
  for (n=0; f[n]; n++)
  {

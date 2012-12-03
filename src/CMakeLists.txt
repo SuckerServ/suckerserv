@@ -1,4 +1,4 @@
-find_package(ENet 1.3.4)
+find_package(ENet 1.3.5)
 
 if(ENET_FOUND)
     set(ENET_INCLUDE_DIRS ${ENET_INCLUDE_DIR})    
@@ -7,14 +7,14 @@ else(ENET_FOUND)
 endif(ENET_FOUND)
 
 
-find_package(Lua5.1)
+find_package(Lua5.2)
 
-if(LUA5.1_FOUND)
+if(LUA5.2_FOUND)
     set(LUA_INCLUDE_DIRS ${LUA5.1_INCLUDE_DIR})
     set(LUA_LIBRARY ${LUA5.1_LIBRARY})
-else(LUA5.1_FOUND)
+else(LUA5.2_FOUND)
     add_subdirectory(lua)
-endif(LUA5.1_FOUND)
+endif(LUA5.2_FOUND)
 
 
 find_package(Boost 1.35.0 COMPONENTS signals system thread)
@@ -29,14 +29,22 @@ else(Boost_FOUND)
 endif(Boost_FOUND)
 
 
+find_package(OpenSSL)
+
+
 find_package(GeoIP)
 
-if(GeoIP_FOUND)
-    set(GEOIP_INCLUDE_DIRS ${GeoIP_INCLUDE_DIRS})
-    set(GEOIP_LIBRARY ${GeoIP_LIBRARY})
-else(GeoIP_FOUND)
-    add_subdirectory(geoip)
-endif(GeoIP_FOUND)
+option(WITH_GEOIP "Enable GeoIP support" ON)
+
+if(WITH_GEOIP)
+    add_definitions(-DWITH_GEOIP)
+    if(GeoIP_FOUND)
+        set(GEOIP_INCLUDE_DIRS ${GeoIP_INCLUDE_DIRS})
+        set(GEOIP_LIBRARY ${GeoIP_LIBRARY})
+    else(GeoIP_FOUND)
+        add_subdirectory(geoip)
+    endif(GeoIP_FOUND)
+endif(WITH_GEOIP)
 
 
 add_subdirectory(fungu)
@@ -56,17 +64,16 @@ if(NOT ${ZLIB_EXISTS})
     message(FATAL_ERROR "missing required library: ZLIB")
 endif(NOT ${ZLIB_EXISTS})
 
+option(WITH_OPENSSL "Enable SSL support" ON)
 
-find_package(OpenSSL)
-
-if(OPENSSL_FOUND)
+if(WITH_OPENSSL AND OPENSSL_FOUND AND OPENSSL_INCLUDE_DIR)
     set(LUA_NET_SSL_SOURCES
         hopmod/lua/modules/net/ssl_context.cpp
         hopmod/lua/modules/net/ssl_tcp_stream.cpp)
     add_definitions(-DKSSL_DEBUG)
-else(OPENSSL_FOUND)
+else(WITH_OPENSSL AND OPENSSL_FOUND AND OPENSSL_INCLUDE_DIR)
     add_definitions(-DDISABLE_SSL -DWITHOUT_OPENSSL)
-endif(OPENSSL_FOUND)
+endif(WITH_OPENSSL AND OPENSSL_FOUND AND OPENSSL_INCLUDE_DIR)
 
 
 include_directories(
@@ -82,8 +89,12 @@ include_directories(
     ${OPENSSL_INCLUDE_DIR}
     ${GEOIP_INCLUDE_DIRS})
 
-add_definitions(-Wall -fsigned-char -DSTANDALONE -DREVISION=$ENV{REVISION} -DLUA_COMPAT_ALL ${LSQLITE3_DEFINITIONS})
+add_definitions(-Wall -fsigned-char -DSTANDALONE -DREVISION=$ENV{REVISION} -DLUA_COMPAT_MODULE ${LSQLITE3_DEFINITIONS})
 
+
+IF(NOT CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+    add_definitions( -O3)
+ENDIF(NOT CMAKE_BUILD_TYPE STREQUAL "DEBUG")
 
 set(SAUERTOOLS_SOURCES
     shared/tools.cpp

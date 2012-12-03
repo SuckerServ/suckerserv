@@ -18,19 +18,19 @@ typename WrapperClass::target_type * to(lua_State * L, int index)
     
     void * ptr = lua_touserdata(L, index);
     if(!ptr || !lua_getmetatable(L, index)) 
-        luaL_typeerror(L, index, WrapperClass::CLASS_NAME);
+        luaL_argerror(L, index, lua_pushfstring(L, "%s expected, got %s", WrapperClass::CLASS_NAME, luaL_typename(L, index)));
     
     do
     {
         lua_remove(L, lua_gettop(L) - 1);
-        if(lua_equal(L, -1, class_mt_index))
+        if(lua_compare(L, -1, class_mt_index, LUA_OPEQ))
         {
             lua_pop(L, 2);
             return reinterpret_cast<typename WrapperClass::target_type *>(ptr);
         }
     }while(lua_getmetatable(L, -1));
     
-    luaL_typeerror(L, index, WrapperClass::CLASS_NAME);
+    luaL_argerror(L, index, lua_pushfstring(L, "%s expected, got %s", WrapperClass::CLASS_NAME, luaL_typename(L, index)));
     return NULL;
 }
 

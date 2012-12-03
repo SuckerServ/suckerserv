@@ -1,5 +1,7 @@
 --[[
+
     A player command to raise privilege to master
+
 ]]
 
 local function init() end
@@ -23,21 +25,11 @@ local function run(cn)
                 return
             end
             
-            local admin_present = server.master ~= -1 and server.player_priv_code(server.master) == server.PRIV_ADMIN
-            
-            if not admin_present then
+            server.setmaster(cn)
                 
-                if (server.player_priv_code(cn) > 0) then
-                    server.unsetpriv(cn)
-                end
-                
-                server.setmaster(cn)
-                
-                server.msg(string.format(server.claimmaster_message, server.player_displayname(cn), user_id))
-                server.log(string.format("%s playing as %s(%i) used auth to claim master.", user_id, server.player_name(cn), cn))
-            else
-                server.player_msg(cn, string.format(server.master_already_message))
-            end
+            server.msg(string.format(server.claimmaster_message, server.player_displayname(cn), user_id))
+            server.log(string.format("%s playing as %s(%i) used auth to claim master.", user_id, server.player_name(cn), cn))
+            server.admin_log(string.format("%s playing as %s(%i) used auth to claim master.", user_id, server.player_name(cn), cn))
         end)
     end
 end

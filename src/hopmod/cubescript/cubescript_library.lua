@@ -299,7 +299,7 @@ local function make_function(parameters, body)
     
     local lua_code = generate_code(ast)
     
-    local create_lua_function, error_message = loadstring("return " .. lua_code,
+    local create_lua_function, error_message = load("return " .. lua_code,
         "function defined at " .. env.current_location())
     if not create_lua_function then error(error_message) end
     

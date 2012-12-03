@@ -22,6 +22,7 @@ namespace server
     extern string serverdesc;
     extern string smapname;
     extern string serverpass;
+    extern string serverauth;
     extern string adminpass;
     extern string slotpass;
     extern int currentmaster;
@@ -101,6 +102,9 @@ namespace server
     int player_clientmillis(int);
     int player_timetrial(int);
     int player_connection_time(int);
+    bool player_has_joined_game(int);
+    void player_join_game(int);
+    void player_reject_join_game(int);
     int player_timeplayed(int);
     int player_win(int);
     void player_force_spec(int);
@@ -110,8 +114,10 @@ namespace server
     void spec_all();
     int player_bots(int);
     int player_pos(lua_State *);
+    bool hasmaster();
     void unsetmaster();
     bool set_player_master(int);
+    void set_player_auth(int);
     void set_player_admin(int);
     void player_forgive_tk(int);
     void player_slay(int);
@@ -162,7 +168,7 @@ namespace server
     void recorddemo(const char *);
     void enddemorecord();
     void calc_player_ranks();
-    void script_set_mastermode(int);
+    void set_mastermode(int);
     int get_mastermode();
     void add_allowed_ip(const char *);
     bool compare_admin_password(const char *);

@@ -387,7 +387,7 @@ static bool lua_isusertype(lua_State * L, int index, const char * tname)
     lua_getmetatable(L, index);
     luaL_getmetatable(L, tname);
     
-    int equal = lua_equal(L, -1, -2);
+    int equal = lua_compare(L, -1, -2, LUA_OPEQ);
     lua_pop(L, 2);
     
     return equal == 1;
