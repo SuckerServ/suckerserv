@@ -12,6 +12,7 @@ auth.directory.domain{
 
 server.current_master_global_authed = nil
 server.current_master_global_auth_user = nil
+
 local banned = list_to_set(table_unique(server.parse_list(server.masterauth_banned)))
 
 auth.listener("", function(cn, user_id, domain, status)
@@ -39,7 +40,7 @@ end)
 
 server.event_handler("connect", function(cn)
     if server.current_master_authed then
-        server.player_msg(cn, string.format(server.claimmaster_message, server.player_displayname(cn), server.current_master_global_auth_user))
+        server.player_msg(cn, string.format(server.claimmaster_message, server.player_displayname(server.current_master_authed), server.current_master_global_auth_user))
     end
 end)
 server.event_handler("disconnect", function(cn)
