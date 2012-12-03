@@ -93,7 +93,7 @@ local function check_balance(option)
 	then
 	    if not search_dead_player
 	    then
-		check_already_dead_player(fuller_team())
+		check_already_dead_players(fuller_team())
 	    end
 	    
 	elseif search_dead_player

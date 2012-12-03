@@ -50,17 +50,17 @@ end
 
 local disconnect = server.event_handler("disconnect", function(cn)
     if not running then return; end
-    if players[server.player_id(cn)] then
+    if players[tostring(server.player_id(cn))] then
         server.pausegame(true)
-        players[server.player_id(cn)] = "not_loaded"
+        players[tostring(server.player_id(cn))] = "not_loaded"
     end
 end)
 
 local active = server.event_handler("maploaded", function(cn)
 
     if not running then return; end
-	if not players[server.player_id(cn)] then return; end
-    players[server.player_id(cn)] = "loaded"
+	if not players[tostring(server.player_id(cn))] then return; end
+    players[tostring(server.player_id(cn))] = "loaded"
 
     if not runned then
         server.player_nospawn(cn, 1)
@@ -140,7 +140,7 @@ return function(cn, map, mode, lockteams)
     gamecount = 0
 
     for _, cn in ipairs(server.players()) do
-        players[server.player_id(cn)] = "not_loaded"
+        players[tostring(server.player_id(cn))] = "not_loaded"
     end
 
     server.mastermode = 2
