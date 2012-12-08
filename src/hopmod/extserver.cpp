@@ -658,10 +658,7 @@ void set_player_privilege(int cn, int priv_code, bool public_priv = false)
     int old_priv = player->privilege;
     player->privilege = priv_code;
     
-    if(!public_priv)
-    {
-        player->hide_privilege = true;
-    }
+    player->hide_privilege = !public_priv;
     
     const char * change = (old_priv < player->privilege ? "raised" : "lowered");
     defformatstring(msg)("The server has %s your privilege to %s.", change, privname(priv_code));
