@@ -49,22 +49,6 @@ bool dir_exists(const char * name)
     else return false;
 }
 
-freqlimit::freqlimit(int length)
- :m_length(length),
-  m_hit(0)
-{
-    
-}
-
-unsigned int freqlimit::next(unsigned int time)
-{
-    if(time >= m_hit)
-    {
-        m_hit = time + m_length;
-        return 0;
-    }else return m_hit - time; 
-}
-
 static std::vector<const char *> info_files;
 
 bool info_file(const char * filename, const char * format, ...)

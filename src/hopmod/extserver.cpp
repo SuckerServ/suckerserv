@@ -3,15 +3,38 @@
 */
 #ifdef INCLUDE_EXTSERVER_CPP
 
-int sv_text_hit_length = 0;
-int sv_sayteam_hit_length = 0;
-int sv_mapvote_hit_length = 0;
-int sv_switchname_hit_length = 0;
-int sv_switchteam_hit_length = 0;
-int sv_kick_hit_length = 0;
-int sv_remip_hit_length = 0;
-int sv_newmap_hit_length = 0;
-int sv_spec_hit_length = 0;
+namespace message{
+    
+    namespace resend_time{
+        
+        int text = 0;
+        int sayteam = 0;
+        int mapvote = 0;
+        int switchname = 0;
+        int switchteam = 0;
+        int kick = 0;
+        int remip = 0;
+        int newmap = 0;
+        int spec = 0;
+
+    } //namespace resend_time
+    
+    bool limit(clientinfo * ci, int * millis, int resend_time, const char * message_type = NULL)
+    {
+        int wait = totalmillis - *millis;
+        
+        if(wait >= resend_time){
+            *millis = totalmillis;
+        }
+        else{
+            defformatstring(error_message)(RED "Rejected %s message (wait %i seconds before resending)!", message_type, static_cast<int>(std::ceil((resend_time - wait)/1000.0)));
+            ci->sendprivtext(error_message);
+        }
+        
+        return wait < resend_time;
+    }
+    
+} //namespace message
 
 string ext_admin_pass = "";
 

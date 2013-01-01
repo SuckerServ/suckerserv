@@ -14,16 +14,6 @@ private:
     timespec m_start;
 };
 
-class freqlimit
-{
-public:
-    freqlimit(int length);
-    unsigned int next(unsigned int time);
-private:
-    int m_length;
-    unsigned int m_hit;
-};
-
 bool file_exists(const char *);
 bool dir_exists(const char *);
 
