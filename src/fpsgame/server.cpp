@@ -3448,9 +3448,8 @@ namespace server
         return attr.length() && attr[0]==PROTOCOL_VERSION;
     }
     
-    #define INCLUDE_EXTSERVER_CPP
-    #include "extserver.cpp"
-    #undef INCLUDE_EXTSERVER_CPP
+    #include "hopmod/server_functions.cpp"
     
     #include "aiman.h"
+    
 } //namespace server

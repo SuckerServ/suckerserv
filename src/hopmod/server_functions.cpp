@@ -1,7 +1,3 @@
-/*
-    This file is included from and is a part of "fpsgame/server.cpp".
-*/
-#ifdef INCLUDE_EXTSERVER_CPP
 
 namespace message{
     
