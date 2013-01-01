@@ -75,3 +75,20 @@ void cleanup_info_files_on_shutdown(int type)
 {
     cleanup_info_files();
 }
+
+namespace hopmod{
+
+int revision()
+{
+#if defined(REVISION) && (REVISION + 0)
+    return REVISION;
+#endif
+    return -1;
+}
+
+const char * build_date()
+{
+    return __DATE__;
+}
+
+} //namespace hopmod

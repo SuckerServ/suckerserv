@@ -163,9 +163,12 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "enet_time_set", enet_time_set);
     bind_function(L, T, "enet_time_get", (int (*)())enet_time_get);
     
-    bind_function(L, T, "revision", server::revision);
-    bind_function(L, T, "version", server::version);
     bind_function(L, T, "filtertext", server::extfiltertext);
+
+    bind_function(L, T, "revision", hopmod::revision);
+    bind_function(L, T, "version", hopmod::build_date);
+    bind_function(L, T, "build_date", hopmod::build_date);
+    
 }
 
 template<int Constant>

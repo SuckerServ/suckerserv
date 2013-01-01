@@ -202,9 +202,6 @@ namespace server
     
     extern string ext_admin_pass;
     
-    void crash_handler(int signal);
-    void restore_server(const char * filename);
-    
     void sendservmsg(const char *);
     
     void send_auth_challenge(int,int,const char *,const char *);

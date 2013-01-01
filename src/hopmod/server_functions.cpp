@@ -1119,21 +1119,6 @@ void player_respawn(int cn)
     try_respawn(ci, ci);
 }
 
-int revision()
-{
-#if defined(REVISION) && (REVISION + 0)
-    return REVISION;
-#endif
-    return -1;
-}
-
-const char *version()
-{
-    static char buf[40];
-    formatstring(buf)("%s %s", __TIME__, __DATE__);
-    return buf;
-}
-
 const char *extfiltertext(const char *src)
 {
     static string dst; 

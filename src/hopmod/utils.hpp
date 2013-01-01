@@ -30,5 +30,10 @@ void cleanup_info_files_on_shutdown(int);
 #define MAGENTA "\f5"
 #define ORANGE "\f6"
 
+namespace hopmod{
+int revision();
+const char * build_date();
+} //namespace hopmod
+
 #endif
 
