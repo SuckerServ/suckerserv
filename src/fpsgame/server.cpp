@@ -5,7 +5,7 @@
 #include "game.h"
 
 #include "hopmod/hopmod.hpp"
-#include "hopmod/extapi.hpp"
+#include "hopmod/server_functions.hpp"
 lua::event_environment & event_listeners();
 
 #include <boost/lexical_cast.hpp>

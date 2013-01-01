@@ -1,7 +1,5 @@
-#ifndef HOPMOD_EXTAPI_HPP
-#define HOPMOD_EXTAPI_HPP
-
-#include "utils.hpp"
+#ifndef HOPMOD_SERVER_FUNCTIONS_HPP
+#define HOPMOD_SERVER_FUNCTIONS_HPP
 
 extern "C"{
 #include <lua.h>

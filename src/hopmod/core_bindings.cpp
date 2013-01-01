@@ -1,7 +1,7 @@
 #include "cube.h"
 #include "game.h"
 #include "hopmod.hpp"
-#include "extapi.hpp"
+#include "server_functions.hpp"
 extern bool reloaded; // Defined in startup.cpp
 
 /* Forward declaration of Lua value io functions */
