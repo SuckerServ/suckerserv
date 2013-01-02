@@ -49,31 +49,38 @@ bool dir_exists(const char * name)
     else return false;
 }
 
-static std::vector<const char *> info_files;
+static std::vector<const char *> temp_files;
 
-bool info_file(const char * filename, const char * format, ...)
+void temp_file(const char * filename)
+{
+    temp_files.push_back(filename);
+}
+
+void temp_file_printf(const char * filename, const char * format, ...)
 {
     FILE * file = fopen(filename, "w");
-    if(!file) return false;
+    if(!file) return;
+    
+    temp_file(filename);
+    
     va_list args;
     va_start (args, format);
     vfprintf(file, format, args);
     va_end(args);
+    
     fclose(file);
-    info_files.push_back(filename);
-    return true;
 }
 
-void cleanup_info_files()
+void delete_temp_files()
 {
-    for(std::vector<const char *>::const_iterator it = info_files.begin(); it != info_files.end(); it++)
+    for(std::vector<const char *>::const_iterator it = temp_files.begin(); it != temp_files.end(); it++)
         unlink(*it);
-    info_files.clear();
+    temp_files.clear();
 }
 
-void cleanup_info_files_on_shutdown(int type)
+void delete_temp_files_on_shutdown(int type)
 {
-    cleanup_info_files();
+    delete_temp_files();
 }
 
 namespace hopmod{
