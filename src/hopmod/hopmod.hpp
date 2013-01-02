@@ -7,7 +7,6 @@
 
 void init_hopmod();
 void reload_hopmod();
-void update_hopmod();
 void restart_now();
 
 // Scripting functions

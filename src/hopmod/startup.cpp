@@ -65,11 +65,6 @@ void reload_hopmod()
     get_main_io_service().post(reload_hopmod_now);
 }
 
-void update_hopmod()
-{
-    
-}
-
 namespace server{
 
 void started()
