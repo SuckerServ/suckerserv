@@ -51,7 +51,7 @@
         putint(q, ci->state.health);
         putint(q, ci->state.armour);
         putint(q, ci->state.gunselect);
-        putint(q, (!ci->hide_privilege ? ci->privilege : PRIV_NONE));
+        putint(q, ci->privilege);
         putint(q, ci->state.state);
         uint ip = getclientip(ci->clientnum);
         q.put((uchar*)&ip, 3);
@@ -77,6 +77,14 @@
         }
         sendserverinforeply(q);
     }
+    
+    static inline void extinfoteamscore(ucharbuf &p, const char *team, int score)
+    {
+        sendstring(team, p);
+        putint(p, score);
+        if(!smode || !smode->extinfoteam(team, p))
+            putint(p,-1); //no bases follow
+    }
 
     void extinfoteams(ucharbuf &p)
     {
@@ -86,39 +94,17 @@
         if(!m_teammode) return;
 
         vector<teamscore> scores;
-
-        //most taken from scoreboard.h
-        if(smode && smode->hidefrags()) 
+        if(smode && smode->hidefrags()) smode->getteamscores(scores);
+        loopv(clients)
         {
-            smode->getteamscores(scores);
-            loopv(clients) if(clients[i]->team[0])
+            clientinfo *ci = clients[i];
+            if(ci->state.state!=CS_SPECTATOR && ci->team[0] && scores.htfind(ci->team) < 0)
             {
-                clientinfo *ci = clients[i];
-                teamscore *ts = NULL;
-                loopvj(scores) if(!strcmp(scores[j].team, ci->team)) { ts = &scores[j]; break; }
-                if(!ts) scores.add(teamscore(ci->team, 0));
+                if(smode && smode->hidefrags()) scores.add(teamscore(ci->team, 0));
+                else { teaminfo *ti = teaminfos.access(ci->team); scores.add(teamscore(ci->team, ti ? ti->frags : 0)); }
             }
         }
-        else
-        {
-            loopv(clients) if(clients[i]->team[0])
-            {
-                clientinfo *ci = clients[i];
-                teamscore *ts = NULL;
-                loopvj(scores) if(!strcmp(scores[j].team, ci->team)) { ts = &scores[j]; break; }
-                if(!ts) scores.add(teamscore(ci->team, ci->state.frags));
-                else ts->score += ci->state.frags;
-            }
-        }
-
-        loopv(scores)
-        {
-            sendstring(scores[i].team, p);
-            putint(p, scores[i].score);
-
-            if(!smode || !smode->extinfoteam(scores[i].team, p))
-                putint(p,-1); //no bases follow
-        }
+        loopv(scores) extinfoteamscore(p, scores[i].team, scores[i].score);
     }
 
     void extserverinforeply(ucharbuf &req, ucharbuf &p)
@@ -139,18 +125,9 @@
                 {
                     putint(p, EXT_HOPMOD);
                     putint(p, EXT_HOPMOD_VERSION);
-                    putint(p, revision());
-                    sendstring(version(), p);
+                    putint(p, hopmod::revision());
+                    sendstring(hopmod::build_date(), p);
                 }
-                break;
-            }
-			
-            /* hopmod extension */
-            case EXT_HOPMOD:
-            {
-                putint(p, EXT_NO_ERROR);
-                putint(p, revision());
-                sendstring(version(), p);
                 break;
             }
 

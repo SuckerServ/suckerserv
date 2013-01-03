@@ -394,13 +394,14 @@ extern bool haslocalclients();
 extern void sendserverinforeply(ucharbuf &p);
 extern bool requestmaster(const char *req);
 extern bool requestmasterf(const char *fmt, ...);
+extern bool isdedicatedserver();
 extern void stopgameserver(int);
 
 // client
 extern void sendclientpacket(ENetPacket *packet, int chan);
 extern void flushclient();
 extern void disconnect(bool async = false, bool cleanup = true);
-extern bool isconnected(bool attempt = false);
+extern bool isconnected(bool attempt = false, bool local = true);
 extern const ENetAddress *connectedpeer();
 extern bool multiplayer(bool msg = true);
 extern void neterr(const char *s, bool disc = true);

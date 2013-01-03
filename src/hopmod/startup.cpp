@@ -1,6 +1,6 @@
 #include "cube.h"
 #include "hopmod.hpp"
-#include "extapi.hpp"
+#include "server_functions.hpp"
 #include "main_io_service.hpp"
 #include <signal.h>
 #include <iostream>
@@ -18,9 +18,9 @@ void init_hopmod()
     main_thread = boost::this_thread::get_id();
 
     signal_shutdown.connect(boost::bind(&shutdown_lua));
-    signal_shutdown.connect(&cleanup_info_files_on_shutdown);
+    signal_shutdown.connect(&delete_temp_files_on_shutdown);
     
-    info_file("log/sauer_server.pid", "%i\n", getpid());
+    temp_file_printf("log/sauer_server.pid", "%i\n", getpid());
     
     init_lua();
     
@@ -65,17 +65,12 @@ void reload_hopmod()
     get_main_io_service().post(reload_hopmod_now);
 }
 
-void update_hopmod()
-{
-    
-}
-
 namespace server{
 
 void started()
 {
     event_started(event_listeners(), boost::make_tuple());
-    if(!server::smapname[0]) selectnextgame();
+    if(!server::smapname[0]) rotatemap();
 }
 
 static void initiate_shutdown()

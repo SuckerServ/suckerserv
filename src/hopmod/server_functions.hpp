@@ -12,6 +12,8 @@ extern "C"{
 
 namespace server
 {
+    struct clientinfo;
+    
     namespace aiman
     {
         extern int botlimit;
@@ -56,8 +58,26 @@ namespace server
     
     extern int spectator_delay;
     
-    int revision();
-    const char *version();
+    namespace message{
+        
+        namespace resend_time{
+            
+            extern int text;
+            extern int sayteam;
+            extern int mapvote;
+            extern int switchname;
+            extern int switchteam;
+            extern int kick;
+            extern int remip;
+            extern int newmap;
+            extern int spec;
+            
+        } //namespace resend_time
+        
+        bool limit(clientinfo *, int * millis, int resend_time, const char * message_type);
+        
+    } //namespace message
+    
     const char *extfiltertext(const char *src);
     
     void started();
@@ -148,6 +168,8 @@ namespace server
     int team_size(const char *);
     
     void pausegame(bool);
+    void pausegame(bool, clientinfo *);
+    
     void kick(int cn,int time,const std::string & admin,const std::string & reason);
     void disconnect(int cn, int code, std::string reason);
     void changetime(int remaining);
@@ -182,25 +204,11 @@ namespace server
     int lua_bot_list(lua_State *);
     int lua_client_list(lua_State *);
 
-    bool selectnextgame();
+    bool rotatemap();
     
     void suicide(int);
     
-    // Flood protection vars
-    extern int sv_text_hit_length;
-    extern int sv_sayteam_hit_length;
-    extern int sv_mapvote_hit_length;
-    extern int sv_switchname_hit_length;
-    extern int sv_switchteam_hit_length;
-    extern int sv_kick_hit_length;
-    extern int sv_remip_hit_length;
-    extern int sv_newmap_hit_length;
-    extern int sv_spec_hit_length;
-    
     extern string ext_admin_pass;
-    
-    void crash_handler(int signal);
-    void restore_server(const char * filename);
     
     void sendservmsg(const char *);
     
@@ -209,7 +217,6 @@ namespace server
     
     bool send_item(int item_code, int recipient);
     
-    struct clientinfo;
     void try_respawn(clientinfo * ci, clientinfo * cq);
     
 } //namespace server

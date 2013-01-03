@@ -9,19 +9,25 @@ struct collectservmode : servmode
 struct collectclientmode : clientmode
 #endif
 {
-    static const int BASERADIUS = 32;
-    static const int BASEHEIGHT = 24;
+    static const int BASERADIUS = 16;
+    static const int BASEHEIGHT = 16;
     static const int MAXBASES = 20;
     static const int TOKENRADIUS = 16;
     static const int TOKENLIMIT = 5;
+    static const int UNOWNEDTOKENLIMIT = 15;
     static const int TOKENDIST = 16;
-    static const int SCORELIMIT = 50;
+    static const int SCORELIMIT = 30;
+    static const int RESPAWNSECS = 5;
+    static const int EXPIRETOKENTIME = 10000;
+    static const int STEALTOKENTIME = 5000;
 
     struct base
     {
         int id, team;
         vec o;
-#ifndef SERVMODE
+        int laststeal;
+#ifdef SERVMODE
+#else
         vec tokenpos;
         string info;
         entitylight light;
@@ -33,6 +39,7 @@ struct collectclientmode : clientmode
         {
             o = vec(0, 0, 0);
             team = 0;
+            laststeal = 0;
         }
     };
 
@@ -166,8 +173,6 @@ struct collectclientmode : clientmode
     }
 
 #ifdef SERVMODE
-    static const int EXPIRETOKENTIME = 10000;
-
     bool notgotbases;
 
     collectservmode() : notgotbases(false) {}
@@ -248,11 +253,44 @@ struct collectclientmode : clientmode
     void leavegame(clientinfo *ci, bool disconnecting = false)
     {
         ci->state.tokens = 0;
+        if(disconnecting)
+        {
+            int team = collectteambase(ci->team), totalfriendly = 0, totalenemy = 0;
+            loopvrev(tokens)
+            {
+                token &t = tokens[i];
+                if(t.dropper == ci->clientnum) t.dropper = INT_MIN; else if(t.dropper > INT_MIN) continue;
+                if(t.team == team ? ++totalfriendly > UNOWNEDTOKENLIMIT : ++totalenemy > UNOWNEDTOKENLIMIT)
+                {
+                    packetbuf p(300, ENET_PACKET_FLAG_RELIABLE);
+                    putint(p, N_EXPIRETOKENS);
+                    putint(p, t.id);
+                    tokens.removeunordered(i);
+                    while(--i >= 0)
+                    {
+                        token &t = tokens[i];
+                        if(t.dropper == ci->clientnum) t.dropper = INT_MIN; else if(t.dropper > INT_MIN) continue;
+                        if(t.team == team ? ++totalfriendly > UNOWNEDTOKENLIMIT : ++totalenemy > UNOWNEDTOKENLIMIT)
+                        {
+                            putint(p, t.id);
+                            tokens.removeunordered(i);
+                        }
+                    }
+                    putint(p, -1);
+                    sendpacket(-1, 1, p.finalize());
+                }
+            }
+        }
     }
 
     void died(clientinfo *ci, clientinfo *actor)
     {
         droptokens(ci, !actor || isteam(actor->team, ci->team));
+    }
+
+    bool canspawn(clientinfo *ci, bool connecting)
+    {
+        return connecting || !ci->state.lastdeath || lastmillis-ci->state.lastdeath >= RESPAWNSECS*1000;
     }
 
     bool canchangeteam(clientinfo *ci, const char *oldteam, const char *newteam)
@@ -264,18 +302,36 @@ struct collectclientmode : clientmode
     {
     }
 
-    void deposittokens(clientinfo *ci, int i)
+    void deposittokens(clientinfo *ci, int basenum)
     {
-        if(notgotbases || !bases.inrange(i) || ci->state.state!=CS_ALIVE || !ci->team[0] || ci->state.tokens <= 0) return;
-        base &b = bases[i];
+        if(notgotbases || !bases.inrange(basenum) || ci->state.state!=CS_ALIVE || !ci->team[0]) return;
+        base &b = bases[basenum];
         if(!collectbaseteam(b.team)) return;
         int team = collectteambase(ci->team);
         if(b.team==team) return;
-        ci->state.flags += ci->state.tokens;
-        int score = addscore(team, ci->state.tokens);
-        sendf(-1, 1, "ri7", N_DEPOSITTOKENS, ci->clientnum, i, ci->state.tokens, team, score, ci->state.flags);
-        ci->state.tokens = 0;
-        if(score >= SCORELIMIT) startintermission();
+        if(ci->state.tokens > 0)
+        {
+            b.laststeal = gamemillis;
+            ci->state.flags += ci->state.tokens;
+            int score = addscore(team, ci->state.tokens);
+            sendf(-1, 1, "ri7", N_DEPOSITTOKENS, ci->clientnum, basenum, ci->state.tokens, team, score, ci->state.flags);
+            ci->state.tokens = 0;
+            if(score >= SCORELIMIT) startintermission();
+        }
+        else 
+        {
+            if(gamemillis < b.laststeal + STEALTOKENTIME) return;
+            if(totalscore(b.team) <= 0) return;
+            int stolen = 0;
+            loopv(tokens) if(tokens[i].dropper == -1 - basenum) stolen++;
+            if(stolen < TOKENLIMIT)
+            {
+                b.laststeal = gamemillis;
+                int score = addscore(b.team, -1);
+                token &t = droptoken(b.o, rnd(360), team, lastmillis, -1 - basenum);
+                sendf(-1, 1, "ri9i3", N_STEALTOKENS, ci->clientnum, team, basenum, b.team, score, int(t.o.x*DMF), int(t.o.y*DMF), int(t.o.z*DMF), t.id, t.yaw, -1);
+            }
+        }
     }
 
     void taketoken(clientinfo *ci, int id)
@@ -350,7 +406,6 @@ struct collectclientmode : clientmode
 };
 #else
     static const int TOKENHEIGHT = 5;
-    static const int RESPAWNSECS = 5;
 
     void preload()
     {
@@ -358,15 +413,16 @@ struct collectclientmode : clientmode
         preloadmodel("base/blue");
         preloadmodel("skull/red");
         preloadmodel("skull/blue");
+        static const int sounds[] = { S_FLAGDROP, S_FLAGSCORE, S_FLAGFAIL };
+        loopi(sizeof(sounds)/sizeof(sounds[0])) preloadsound(sounds[i]);
     }
 
-    void drawblip(fpsent *d, float x, float y, float s, const vec &pos)
+    void drawblip(fpsent *d, float x, float y, float s, const vec &pos, float size = 0.05f)
     {
         float scale = calcradarscale();
         vec dir = d->o;
         dir.sub(pos).div(scale);
-        float size = 0.05f,
-              xoffset = -size,
+        float xoffset = -size,
               yoffset = -size,
               dist = dir.magnitude2(), maxdist = 1 - 0.05f - 0.05f;
         if(dist >= maxdist) dir.mul(maxdist/dist);
@@ -374,7 +430,7 @@ struct collectclientmode : clientmode
         drawradar(x + s*0.5f*(1.0f + dir.x + xoffset), y + s*0.5f*(1.0f + dir.y + yoffset), size*s);
     }
 
-    void drawblip(fpsent *d, float x, float y, float s, int i)
+    void drawbaseblip(fpsent *d, float x, float y, float s, int i)
     {
         base &b = bases[i];
         settexture(b.team==collectteambase(player1->team) ? "packages/hud/blip_blue.png" : "packages/hud/blip_red.png", 3);
@@ -421,8 +477,17 @@ struct collectclientmode : clientmode
         {
             base &b = bases[i];
             if(!collectbaseteam(b.team)) continue;
-            drawblip(d, x, y, s, i);
+            drawbaseblip(d, x, y, s, i);
         }
+        int team = collectteambase(d->team);
+        settexture(team == collectteambase(player1->team) ? "packages/hud/blip_red_skull.png" : "packages/hud/blip_blue_skull.png", 3);
+        loopv(players)
+        {
+            fpsent *o = players[i];
+            if(o != d && o->state == CS_ALIVE && o->tokens > 0 && collectteambase(o->team) != team)
+                drawblip(d, x, y, s, o->o, 0.07f);
+        }
+        drawteammates(d, x, y, s);
         if(d->state == CS_DEAD)
         {
             int wait = respawnwait(d);
@@ -451,7 +516,8 @@ struct collectclientmode : clientmode
             regular_particle_flame(PART_FLAME, vec(b.tokenpos.x, b.tokenpos.y, b.tokenpos.z - 4.5f), fradius, fheight, b.team==team ? 0x2020FF : 0x802020, 3, 2.0f);
             vec tokenpos(b.tokenpos);
             tokenpos.z -= theight.z/2 + sinf(lastmillis/100.0f)/20;
-            rendermodel(&b.light, b.team==team ? "skull/blue" : "skull/red", ANIM_MAPMODEL|ANIM_LOOP, tokenpos, lastmillis/10.0f, 0, MDL_SHADOW | MDL_CULL_VFC | MDL_CULL_OCCLUDED);
+            float alpha = player1->state == CS_ALIVE && player1->tokens <= 0 && lastmillis < b.laststeal + STEALTOKENTIME ? 0.5f : 1.0f; 
+            rendermodel(&b.light, b.team==team ? "skull/blue" : "skull/red", ANIM_MAPMODEL|ANIM_LOOP, tokenpos, lastmillis/10.0f, 0, MDL_SHADOW | MDL_CULL_VFC | MDL_CULL_OCCLUDED, NULL, NULL, 0, 0, alpha);
             formatstring(b.info)("%d", totalscore(b.team));
             vec above(b.tokenpos);
             above.z += TOKENHEIGHT;
@@ -561,6 +627,25 @@ struct collectclientmode : clientmode
         }
     }
 
+    void baseexplosion(int i, int team, const vec &loc)
+    {
+        int fcolor;
+        vec color;
+        if(team==collectteambase(player1->team)) { fcolor = 0x2020FF; color = vec(0.25f, 0.25f, 1); }
+        else { fcolor = 0x802020; color = vec(1, 0.25f, 0.25f); }
+        particle_fireball(loc, 30, PART_EXPLOSION, -1, fcolor, 4.8f);
+        adddynlight(loc, 35, color, 900, 100);
+        particle_splash(PART_SPARK, 150, 300, loc, fcolor, 0.24f);
+    }
+
+    void baseeffect(int i, int team, const vec &from, const vec &to, bool showfrom = true, bool showto = true)
+    {
+        if(showfrom) baseexplosion(i, team, from);
+        if(from==to) return;
+        if(showto) baseexplosion(i, team, to);
+        particle_flare(from, to, 600, PART_LIGHTNING, team==collectteambase(player1->team) ? 0x2222FF : 0xFF2222, 1.0f);
+    }
+
     void expiretoken(int id)
     {
         token *t = findtoken(id);
@@ -581,39 +666,78 @@ struct collectclientmode : clientmode
         d->tokens = total;
     }
         
-    void droptoken(fpsent *d, int id, const vec &o, int team, int yaw, int n)
+    token *droptoken(fpsent *d, int id, const vec &o, int team, int yaw, int n)
     {
         vec pos = movetoken(o, yaw);
-        if(pos.z < 0) return;
+        if(pos.z < 0) return NULL;
         token &t = droptoken(id, pos, team, lastmillis);
-        lightreaching(vec(o).add(vec(0, 0, TOKENHEIGHT)), t.light.color, t.light.dir, true); 
-        if(!n) playsound(S_ITEMSPAWN, &d->o);
+        lightreaching(vec(t.o).add(vec(0, 0, TOKENHEIGHT)), t.light.color, t.light.dir, true); 
+        if(!n) playsound(S_ITEMSPAWN, d ? &d->o : &pos);
+        if(d) 
+        {
+            if(!n)
+            {
+                particle_fireball(d->o, 4.8f, PART_EXPLOSION, 500, team==collectteambase(player1->team) ? 0x2020FF : 0x802020, 4.8f);
+                particle_splash(PART_SPARK, 50, 250, d->o, team==collectteambase(player1->team) ? 0x2020FF : 0x802020, 0.24f);
+            }
+            particle_flare(d->o, vec(t.o.x, t.o.y, t.o.z + 0.5f*(TOKENHEIGHT + 1)), 500, PART_LIGHTNING, team==collectteambase(player1->team) ? 0x2222FF : 0xFF2222, 1.0f); 
+        }
+        return &t;
     }
 
-    void deposittokens(fpsent *d, int i, int deposited, int team, int score, int flags)
+    void stealtoken(fpsent *d, int id, const vec &o, int team, int yaw, int n, int basenum, int enemyteam, int score)
     {
-        if(bases.inrange(i))
+        if(!n) setscore(enemyteam, score);
+        token *t = droptoken(NULL, id, o, team, yaw, n);
+        if(bases.inrange(basenum))
         {
-            base &b = bases[i];
-            playsound(S_FLAGSCORE, d != player1 ? &b.tokenpos : NULL);
+            base &b = bases[basenum];
+            if(!n)
+            {
+                b.laststeal = lastmillis;
+                conoutf(CON_GAMEINFO, "%s stole a skull from \fs%s team\fr", teamcolorname(d), enemyteam==collectteambase(player1->team) ? "\f1your" : "\f3the enemy");
+                playsound(S_FLAGDROP, &b.tokenpos);
+            }
+            if(t) particle_flare(b.tokenpos, vec(t->o.x, t->o.y, t->o.z + 0.5f*(TOKENHEIGHT + 1)), 500, PART_LIGHTNING, team==collectteambase(player1->team) ? 0x2222FF : 0xFF2222, 1.0f);
+        }
+    }
+
+    void deposittokens(fpsent *d, int basenum, int deposited, int team, int score, int flags)
+    {
+        if(bases.inrange(basenum))
+        {
+            base &b = bases[basenum];
+            b.laststeal = lastmillis;
+            //playsound(S_FLAGSCORE, d != player1 ? &b.tokenpos : NULL);
+            int n = 0;
+            loopv(bases)
+            {
+                base &h = bases[i];
+                if(h.team == team) baseeffect(i, team, h.tokenpos, b.tokenpos, !n++);  
+            }
         }
         d->tokens = 0;
         d->flags = flags;
         setscore(team, score);
+        
+        conoutf(CON_GAMEINFO, "%s collected %d %s for \fs%s team\fr", teamcolorname(d), deposited, deposited==1 ? "skull" : "skulls", team==collectteambase(player1->team) ? "\f1your" : "\f3the enemy");
+        playsound(team==collectteambase(player1->team) ? S_FLAGSCORE : S_FLAGFAIL);
+
+        if(score >= SCORELIMIT) conoutf(CON_GAMEINFO, "\fs%s team\fr collected %d skulls", team==collectteambase(player1->team) ? "\f1your" : "\f3the enemy", score);
     }
 
     void checkitems(fpsent *d)
     {
         if(d->state!=CS_ALIVE) return;
         vec o = d->feetpos();
-        if(d->tokens > 0) 
+        if(d->tokens > 0 || o != d->lastcollect) 
         {
             int team = collectteambase(d->team);
             loopv(bases)
             {
                 base &b = bases[i];
                 if(!collectbaseteam(b.team) || b.team == team) continue;
-                if(insidebase(b, o))
+                if(insidebase(b, o) && (d->tokens > 0 || !insidebase(b, d->lastcollect)))
                 {
                     addmsg(N_DEPOSITTOKENS, "rci", d, i);
                     d->tokens = 0;
@@ -638,8 +762,6 @@ struct collectclientmode : clientmode
     {
         findplayerspawn(d, -1, collectteambase(d->team));
     }
-
-    const char *prefixnextmap() { return "ctf_"; }
 
     bool aicheck(fpsent *d, ai::aistate &b)
     {
@@ -777,7 +899,24 @@ case N_DROPTOKENS:
         if(id < 0) break;
         int team = getint(p), yaw = getint(p);
         if(p.overread()) break;
-        if(o && m_collect) collectmode.droptoken(d, id, droploc, team, yaw, n);
+        if(o && m_collect) collectmode.droptoken(o, id, droploc, team, yaw, n);
+    }
+    break;
+}
+
+case N_STEALTOKENS:
+{
+    int ocn = getint(p), team = getint(p), basenum = getint(p), enemyteam = getint(p), score = getint(p);
+    fpsent *o = ocn==player1->clientnum ? player1 : newclient(ocn);
+    vec droploc;
+    loopk(3) droploc[k] = getint(p)/DMF;
+    for(int n = 0;; n++)
+    {
+        int id = getint(p);
+        if(id < 0) break;
+        int yaw = getint(p);
+        if(p.overread()) break;
+        if(o && m_collect) collectmode.stealtoken(o, id, droploc, team, yaw, n, basenum, enemyteam, score);
     }
     break;
 }

@@ -1,17 +1,35 @@
-/*
-    This file is included from and is a part of "fpsgame/server.cpp".
-*/
-#ifdef INCLUDE_EXTSERVER_CPP
+namespace message{
+    
+    namespace resend_time{
+        
+        int text = 0;
+        int sayteam = 0;
+        int mapvote = 0;
+        int switchname = 0;
+        int switchteam = 0;
+        int kick = 0;
+        int remip = 0;
+        int newmap = 0;
+        int spec = 0;
 
-int sv_text_hit_length = 0;
-int sv_sayteam_hit_length = 0;
-int sv_mapvote_hit_length = 0;
-int sv_switchname_hit_length = 0;
-int sv_switchteam_hit_length = 0;
-int sv_kick_hit_length = 0;
-int sv_remip_hit_length = 0;
-int sv_newmap_hit_length = 0;
-int sv_spec_hit_length = 0;
+    } //namespace resend_time
+    
+    bool limit(clientinfo * ci, int * millis, int resend_time, const char * message_type = NULL)
+    {
+        int wait = totalmillis - *millis;
+        
+        if(wait >= resend_time){
+            *millis = totalmillis;
+        }
+        else{
+            defformatstring(error_message)(RED "Rejected %s message (wait %i seconds before resending)!", message_type, static_cast<int>(std::ceil((resend_time - wait)/1000.0)));
+            ci->sendprivtext(error_message);
+        }
+        
+        return wait < resend_time;
+    }
+    
+} //namespace message
 
 string ext_admin_pass = "";
 
@@ -350,12 +368,6 @@ int player_clientmillis(int cn)
     return ci->clientmillis;
 }
 
-int player_timetrial(int cn)
-{ 
-    clientinfo * ci = get_ci(cn);
-    return ci->timetrial >= 0 ? ci->timetrial : -1;
-}
-
 int player_privilege_code(int cn)
 {
     return get_ci(cn)->privilege;
@@ -483,7 +495,6 @@ void changemap(const char * map,const char * mode = "",int mins = -1)
 {
     int gmode = (mode[0] ? modecode(mode) : gamemode);
     if(!m_mp(gmode)) gmode = gamemode;
-    sendf(-1, 1, "risii", N_MAPCHANGE, map, gmode, 1);
     changemap(map,gmode,mins);
 }
 
@@ -942,30 +953,6 @@ int lua_gamemodeinfo(lua_State * L)
     return 1;
 }
 
-bool selectnextgame()
-{
-    event_setnextgame(event_listeners(), boost::make_tuple());
-    if(next_gamemode[0] && next_mapname[0])
-    {
-        int next_gamemode_code = modecode(next_gamemode);
-        if(m_mp(next_gamemode_code))
-        {
-            mapreload = false;
-            sendf(-1, 1, "risii", N_MAPCHANGE, next_mapname, next_gamemode_code, 1);
-            changemap(next_mapname, next_gamemode_code, next_gametime);
-            next_gamemode[0] = '\0';
-            next_mapname[0] = '\0';
-            next_gametime = -1;
-        }
-        else
-        {
-            std::cerr<<next_gamemode<<" game mode is unrecognised."<<std::endl;
-            //sendf(-1, 1, "ri", N_MAPRELOAD);
-        }
-        return true;
-    }else return false;
-}
-
 void send_auth_challenge(int cn, int id, const char * domain, const char * challenge)
 {
     clientinfo * ci = get_ci(cn);
@@ -1112,14 +1099,14 @@ void try_respawn(clientinfo * ci, clientinfo * cq)
     {
         ci->mapcrc = -1;
     }
-    if(cq->state.lastdeath)
+    if(cq->state.deadflush)
     {
         if(event_respawnrequest(event_listeners(), boost::make_tuple(cq->clientnum, cq->state.lastdeath)))
         {
             return;
         }
         
-        flushevents(cq, cq->state.lastdeath + DEATHMILLIS);
+        flushevents(cq, cq->state.deadflush);
         cq->state.respawn();
     }
     cleartimedevents(cq);
@@ -1130,21 +1117,6 @@ void player_respawn(int cn)
 {
     clientinfo * ci = getinfo(cn);
     try_respawn(ci, ci);
-}
-
-int revision()
-{
-#if defined(REVISION) && (REVISION + 0)
-    return REVISION;
-#endif
-    return -1;
-}
-
-const char *version()
-{
-    static char buf[40];
-    formatstring(buf)("%s %s", __TIME__, __DATE__);
-    return buf;
 }
 
 const char *extfiltertext(const char *src)
@@ -1174,5 +1146,3 @@ void editvar(int cn, const char *var, int value)
     if (!ci) return;
     sendf(cn, 1, "ri5si", N_CLIENT, cn, 100/*should be safe*/, N_EDITVAR, ID_VAR, var, value);
 }
-
-#endif

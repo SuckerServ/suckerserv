@@ -15,11 +15,7 @@ typedef signed long long int llong;
 typedef unsigned long long int ullong;
 
 #ifdef _DEBUG
-#ifdef __GNUC__
-#define ASSERT(c) if(!(c)) { asm("int $3"); }
-#else
-#define ASSERT(c) if(!(c)) { __asm int 3 }
-#endif
+#define ASSERT(c) assert(c)
 #else
 #define ASSERT(c) if(c) {}
 #endif
@@ -667,6 +663,13 @@ template <class T> struct vector
         T e = removeunordered(0);
         if(ulen) downheap(0);
         return e;
+    }
+    
+    template<class K>
+    int htfind(const K &key)
+    {
+        loopi(ulen) if(htcmp(key, buf[i])) return i;
+        return -1;
     }
 };
 

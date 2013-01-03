@@ -4,6 +4,7 @@
 #include "cube.h"
 #include <signal.h>
 #include <boost/asio.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 using namespace boost::asio;
 #include <enet/time.h>
 #include <iostream>
@@ -268,7 +269,6 @@ void stopgameserver(int)
 }
 
 void process(ENetPacket *packet, int sender, int chan);
-//void disconnect_client(int n, int reason);
 
 int getservermtu() { return serverhost ? serverhost->mtu : -1; }
 void *getclientinfo(int i) { return !clients.inrange(i) || clients[i]->type==ST_EMPTY ? NULL : clients[i]->info; }
@@ -388,15 +388,14 @@ ENetPacket *sendfile(int cn, int chan, stream *file, const char *format, ...)
     return packet->referenceCount > 0 ? packet : NULL;
 }
 
+void delclient(client *c);
+
 void disconnect_client_now(int n, int reason)
 {
     if(!clients.inrange(n) || clients[n]->type!=ST_TCPIP) return;
     enet_peer_reset(clients[n]->peer);
     server::clientdisconnect(n, reason);
-    clients[n]->type = ST_EMPTY;
-    clients[n]->peer->data = NULL;
-    server::deleteclientinfo(clients[n]->info);
-    clients[n]->info = NULL;
+    delclient(clients[n]);
 }
 
 void disconnect_client(int n, int reason)
@@ -404,10 +403,7 @@ void disconnect_client(int n, int reason)
     if(!clients.inrange(n) || clients[n]->type!=ST_TCPIP) return;
     enet_peer_disconnect(clients[n]->peer, reason);
     server::clientdisconnect(n, reason);
-    clients[n]->type = ST_EMPTY;
-    clients[n]->peer->data = NULL;
-    server::deleteclientinfo(clients[n]->info);
-    clients[n]->info = NULL;
+    delclient(clients[n]);
 }
 
 void kicknonlocalclients(int reason)
@@ -429,29 +425,57 @@ void localclienttoserver(int chan, ENetPacket *packet)
     if(c) process(packet, c->num, chan);
 }
 
-client &addclient()
-{
-    loopv(clients) if(clients[i]->type==ST_EMPTY)
-    {
-        clients[i]->info = server::newclientinfo();
-        return *clients[i];
-    }
-    client *c = new client;
-    c->num = clients.length();
-    c->info = server::newclientinfo();
-    clients.add(c);
-    return *c;
-}
-
-void delclients()
-{
-    while(clients.length()) delete clients.remove(0);
-}
-
 int localclients = 0, nonlocalclients = 0;
 
 bool hasnonlocalclients() { return nonlocalclients!=0; }
 bool haslocalclients() { return localclients!=0; }
+
+client &addclient(int type)
+{
+    client *c = NULL;
+    loopv(clients) if(clients[i]->type==ST_EMPTY)
+    {
+        c = clients[i];
+        break;
+    }
+    if(!c)
+    {
+        c = new client;
+        c->num = clients.length();
+        clients.add(c);
+    }
+    c->info = server::newclientinfo();
+    c->type = type;
+    switch(type)
+    {
+        case ST_TCPIP: nonlocalclients++; break;
+        case ST_LOCAL: localclients++; break;
+    }
+    return *c;
+}
+
+void delclient(client *c)
+{
+    if(!c) return;
+    switch(c->type)
+    {
+        case ST_TCPIP: nonlocalclients--; if(c->peer) c->peer->data = NULL; break;
+        case ST_LOCAL: localclients--; break;
+        case ST_EMPTY: return;
+    }
+    c->type = ST_EMPTY;
+    c->peer = NULL;
+    if(c->info)
+    {
+        server::deleteclientinfo(c->info);
+        c->info = NULL;
+    }
+}
+
+void delclients()
+{
+    loopv(clients) delclient(clients[i]);
+}
 
 #ifdef STANDALONE
 bool resolverwait(const char *name, ENetAddress *address)
@@ -490,83 +514,22 @@ int serverport = server::serverport();
 int curtime = 0, lastmillis = 0, totalmillis = 0;
 #endif
 
-static void check_peer_timeout(ENetHost * host, ENetPeer * peer)
-{
-    /*
-        Most of the code in this function was copied from enet/protocol.c
-    */
-    
-    ENetOutgoingCommand * outgoingCommand;
-    ENetListIterator currentCommand, insertPosition;
-
-    currentCommand = enet_list_begin (& peer -> sentReliableCommands);
-    insertPosition = enet_list_begin (& peer -> outgoingReliableCommands);
-
-    while (currentCommand != enet_list_end (& peer -> sentReliableCommands))
-    {
-       outgoingCommand = (ENetOutgoingCommand *) currentCommand;
-
-       currentCommand = enet_list_next (currentCommand);
-        
-       if (ENET_TIME_DIFFERENCE (host -> serviceTime, outgoingCommand -> sentTime) < outgoingCommand -> roundTripTimeout)
-         continue;
-
-       if (peer -> earliestTimeout == 0 ||
-           ENET_TIME_LESS (outgoingCommand -> sentTime, peer -> earliestTimeout))
-         peer -> earliestTimeout = outgoingCommand -> sentTime;
-
-       if (peer -> earliestTimeout != 0 &&
-             (ENET_TIME_DIFFERENCE (host -> serviceTime, peer -> earliestTimeout) >= ENET_PEER_TIMEOUT_MAXIMUM ||
-               (outgoingCommand -> roundTripTimeout >= outgoingCommand -> roundTripTimeoutLimit &&
-                 ENET_TIME_DIFFERENCE (host -> serviceTime, peer -> earliestTimeout) >= ENET_PEER_TIMEOUT_MINIMUM)))
-       {
-            client *c = (client *)peer->data;
-            disconnect_client_now(c->num, DISC_TIMEOUT);
-            return;
-       }
-
-       if (outgoingCommand -> packet != NULL)
-         peer -> reliableDataInTransit -= outgoingCommand -> fragmentLength;
-          
-       ++ peer -> packetsLost;
-
-       outgoingCommand -> roundTripTimeout *= 2;
-
-       enet_list_insert (insertPosition, enet_list_remove (& outgoingCommand -> outgoingCommandList));
-
-       if (currentCommand == enet_list_begin (& peer -> sentReliableCommands) &&
-           ! enet_list_empty (& peer -> sentReliableCommands))
-       {
-          outgoingCommand = (ENetOutgoingCommand *) currentCommand;
-
-          peer -> nextTimeout = outgoingCommand -> sentTime + outgoingCommand -> roundTripTimeout;
-       }
-    }
-}
-
-static void check_timeouts()
-{
-    enet_host_flush(serverhost); // called for the serviceTime update
-    
-    for(ENetPeer * currentPeer = serverhost->peers; 
-        currentPeer < &serverhost->peers[serverhost->peerCount]; 
-        currentPeer++)
-    {
-        if (currentPeer -> state != ENET_PEER_STATE_CONNECTED)
-            continue;
-        
-        check_peer_timeout(serverhost, currentPeer);
-    }
-}
-
 uint totalsecs = 0;
 
-static void update_time_vars()
-{
-    int millis = (int)enet_time_get();
-    curtime = millis - totalmillis;
-    lastmillis = totalmillis = millis;
+void update_server(const boost::system::error_code & error);
+bool serverhost_service();
 
+static void update_time()
+{
+    int millis = (int)enet_time_get(), elapsed = millis - totalmillis;
+    static int timeerr = 0;
+    int scaledtime = server::scaletime(elapsed) + timeerr;
+    curtime = scaledtime/100;
+    timeerr = scaledtime%100;
+    if(server::ispaused()) curtime = 0;
+    lastmillis += curtime;
+    totalmillis = millis;
+    
     static int lastsec = 0;
     if(totalmillis - lastsec >= 1000) 
     {
@@ -576,28 +539,28 @@ static void update_time_vars()
     }
 }
 
-void update_server(const boost::system::error_code & error)
+void sched_next_update()
 {
-    if(error == boost::asio::error::operation_aborted || error) return;
+    boost::posix_time::time_duration expires_from_now = update_timer.expires_from_now();
     
-    localclients = nonlocalclients = 0;
-    loopv(clients) switch(clients[i]->type)
-    {
-        case ST_LOCAL: localclients++; break;
-        case ST_TCPIP: nonlocalclients++; break;
-    }
-    
-    if(nonlocalclients)
+    if(expires_from_now.is_special() || expires_from_now.is_negative())
     {
         update_timer.expires_from_now(boost::posix_time::milliseconds(5));
         update_timer.async_wait(update_server);
     }
+}
+
+void update_server(const boost::system::error_code & error = boost::system::error_code())
+{
+    if(error == boost::asio::error::operation_aborted || error) return;
     
-    update_time_vars();
+    if(nonlocalclients > 0) sched_next_update();
+    
+    update_time();
     
     server::serverupdate();
     
-    if(serverhost) check_timeouts();
+    if(serverhost) serverhost_service();
 }
 
 void serverhost_process_event(ENetEvent & event)
@@ -606,23 +569,18 @@ void serverhost_process_event(ENetEvent & event)
     {
         case ENET_EVENT_TYPE_CONNECT:
         {
-            client &c = addclient();
-            c.type = ST_TCPIP;
+            client &c = addclient(ST_TCPIP);
             c.peer = event.peer;
             c.peer->data = &c;
             char hn[1024];
             copystring(c.hostname, (enet_address_get_host_ip(&c.peer->address, hn, sizeof(hn))==0) ? hn : "unknown");
+            
             printf("client connected (%s)\n", c.hostname);
             
-            if(!nonlocalclients)
-            {
-                update_timer.cancel();
-                update_server(boost::system::error_code());
-            }
+            update_server();
             
             int reason = server::clientconnect(c.num, c.peer->address.host);
-            if(!reason) nonlocalclients++;
-            else disconnect_client(c.num, reason);
+            if(reason) disconnect_client(c.num, reason);
             break;
         }
         case ENET_EVENT_TYPE_RECEIVE:
@@ -640,11 +598,7 @@ void serverhost_process_event(ENetEvent & event)
             client *c = (client *)event.peer->data;
             if(!c) break;
             server::clientdisconnect(c->num,DISC_NONE);
-            nonlocalclients--;
-            c->type = ST_EMPTY;
-            event.peer->data = NULL;
-            server::deleteclientinfo(c->info);
-            c->info = NULL;
+            delclient(c);
             break;
         }
         default:
@@ -652,34 +606,35 @@ void serverhost_process_event(ENetEvent & event)
     }
 }
 
+void serverhost_receive(boost::system::error_code error,const size_t s);
 
-void serverhost_input(boost::system::error_code error,const size_t s);
-
-void service_serverhost()
+bool serverhost_service()
 {
     ENetEvent event;
-    
     int status;
     while((status = enet_host_service(serverhost, &event, 0)) == 1)
     {
         serverhost_process_event(event);
     }
     
+    if(status == -1) return false;
+    
     if(server::sendpackets()) enet_host_flush(serverhost); //treat EWOULDBLOCK as packet loss
     
-    if(status != -1) serverhost_socket.async_receive(null_buffers(), serverhost_input);
+    return true;
 }
 
-void serverhost_input(boost::system::error_code error,const size_t s)
+void serverhost_receive(boost::system::error_code error,const size_t s)
 {
     if(error) return;
-    service_serverhost();
+    if(serverhost_service())
+    {
+        serverhost_socket.async_receive(null_buffers(), serverhost_receive);
+    }
 }
 
 void serverinfo_input(int fd)
 {
-    if(!nonlocalclients) update_time_vars();
-    
     ENetBuffer buf;
     uchar pong[MAXTRANS];
     
@@ -742,8 +697,13 @@ void flushserver(bool force)
     if(server::sendpackets(force) && serverhost) enet_host_flush(serverhost);
 }
 
+static bool dedicatedserver = false;
+
+bool isdedicatedserver() { return dedicatedserver; }
+
 void rundedicatedserver()
 {
+    dedicatedserver = true;
     #ifdef WIN32
     SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
     #endif
@@ -754,8 +714,7 @@ void rundedicatedserver()
     fflush(stdout);
     fflush(stderr);
     
-    update_timer.expires_from_now(boost::posix_time::milliseconds(5));
-    update_timer.async_wait(update_server);
+    sched_next_update();
     
     netstats_timer.expires_from_now(boost::posix_time::minutes(1));
     netstats_timer.async_wait(netstats_handler);
@@ -820,7 +779,7 @@ bool setuplistenserver(bool dedicated)
     else enet_socket_set_option(lansock, ENET_SOCKOPT_NONBLOCK, 1);
     
     serverhost_socket.assign(ip::udp::v4(), serverhost->socket);
-    serverhost_socket.async_receive(null_buffers(), serverhost_input);
+    serverhost_socket.async_receive(null_buffers(), serverhost_receive);
     
     info_socket.assign(ip::udp::v4(), pongsock);
     info_socket.async_receive(null_buffers(), info_input_handler);

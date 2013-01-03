@@ -1,7 +1,7 @@
 #include "cube.h"
 #include "game.h"
 #include "hopmod.hpp"
-#include "extapi.hpp"
+#include "server_functions.hpp"
 extern bool reloaded; // Defined in startup.cpp
 
 /* Forward declaration of Lua value io functions */
@@ -85,7 +85,6 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "player_accuracy2", server::player_accuracy2);
     bind_function(L, T, "player_is_spy", server::player_is_spy);
     bind_function(L, T, "player_clientmillis", server::player_clientmillis);
-    bind_function(L, T, "player_timetrial", server::player_timetrial);
     bind_function(L, T, "player_timeplayed", server::player_timeplayed);
     bind_function(L, T, "player_win", server::player_win);
     bind_function(L, T, "player_slay", server::player_slay);
@@ -138,7 +137,7 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "teamsize", server::team_size);
     
     bind_function(L, T, "get_gamemode_info", server::lua_gamemodeinfo);
-    bind_function(L, T, "pausegame", server::pausegame);
+    bind_function(L, T, "pausegame", (void (*)(bool))server::pausegame);
     
     bind_function(L, T, "msg", server::sendservmsg);
 
@@ -168,8 +167,9 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "enet_time_set", enet_time_set);
     bind_function(L, T, "enet_time_get", (int (*)())enet_time_get);
     
-    bind_function(L, T, "revision", server::revision);
-    bind_function(L, T, "version", server::version);
+    bind_function(L, T, "revision", hopmod::revision);
+    bind_function(L, T, "version", hopmod::build_date);
+    bind_function(L, T, "build_date", hopmod::build_date);
     bind_function(L, T, "filtertext", server::extfiltertext);
 }
 
@@ -397,15 +397,15 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "cheatdetection", server::anti_cheat_enabled);
     bind_var(L, T, "hide_and_seek", server::hide_and_seek);
     
-    bind_var(L, T, "flood_protect_text", server::sv_text_hit_length);
-    bind_var(L, T, "flood_protect_sayteam", server::sv_sayteam_hit_length);
-    bind_var(L, T, "flood_protect_mapvote", server::sv_mapvote_hit_length);
-    bind_var(L, T, "flood_protect_switchname", server::sv_switchname_hit_length);
-    bind_var(L, T, "flood_protect_switchteam", server::sv_switchteam_hit_length);
-    bind_var(L, T, "flood_protect_kick", server::sv_kick_hit_length);
-    bind_var(L, T, "flood_protect_remip", server::sv_remip_hit_length);
-    bind_var(L, T, "flood_protect_newmap", server::sv_newmap_hit_length);
-    bind_var(L, T, "flood_protect_spectator", server::sv_spec_hit_length);
+    bind_var(L, T, "flood_protect_text", server::message::resend_time::text);
+    bind_var(L, T, "flood_protect_sayteam", server::message::resend_time::sayteam);
+    bind_var(L, T, "flood_protect_mapvote", server::message::resend_time::mapvote);
+    bind_var(L, T, "flood_protect_switchname", server::message::resend_time::switchname);
+    bind_var(L, T, "flood_protect_switchteam", server::message::resend_time::switchteam);
+    bind_var(L, T, "flood_protect_kick", server::message::resend_time::kick);
+    bind_var(L, T, "flood_protect_remip", server::message::resend_time::remip);
+    bind_var(L, T, "flood_protect_newmap", server::message::resend_time::newmap);
+    bind_var(L, T, "flood_protect_spectator", server::message::resend_time::spec);
     
     bind_ro_var(L, T, "tx_bytes", tx_bytes);
     bind_ro_var(L, T, "rx_bytes", rx_bytes);
