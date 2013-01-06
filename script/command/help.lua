@@ -43,22 +43,18 @@ return function(cn, command_name)
     privilege_colours[server.PRIV_MASTER] = green
     privilege_colours[server.PRIV_ADMIN] = orange
     
-    local output = {}
+    local list_of_command_names = {}
     
     for permission, commands in pairs(commands_per_privilege) do
         permission = permission - 1
         if privilege >= permission then
             local colouring = privilege_colours[permission] or function(text) return text end
-            output[#output + 1] = colouring(table.concat(commands, ", "))
+            list_of_command_names[#list_of_command_names + 1] = colouring(table.concat(commands, ", "))
         end
     end
     
-    output = table.concat(output, "\n")
+    list_of_command_names = table.concat(list_of_command_names, "\n")
     
-    local list_of_command_names = output
-    
-    output = "List of command_names: " .. list_of_command_names .. "\ncommand descriptions: #help <command>"
-    
-    server.player_msg(cn, output)
+    server.player_msg(cn, string.format("List of command names: %s", list_of_command_names))
+    server.player_msg(cn, "Command descriptions: #help <command>")
 end, "[command]", "List all player commands available or show command description and usage"
-
