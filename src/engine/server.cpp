@@ -677,7 +677,7 @@ bool servererror(bool dedicated, const char *desc)
 
 bool setuplistenserver(bool dedicated)
 {
-    ENetAddress address = { ENET_HOST_ANY, serverport <= 0 ? server::serverport() : serverport };
+    ENetAddress address = { ENET_HOST_ANY, serverport <= 0 ? static_cast<enet_uint16>(server::serverport()) : static_cast<enet_uint16>(serverport) };
     if(serverip[0])
     {
         if(enet_address_set_host(&address, serverip)<0) conoutf(CON_WARN, "WARNING: server ip not resolved");

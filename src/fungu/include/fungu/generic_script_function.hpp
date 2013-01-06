@@ -43,10 +43,10 @@ public:
         try
         {
             arg = 0;
-            return s.deserialize_return_value(call(&args), type_tag<result_type>());
+            return s.deserialize_return_value(this->call(&args), type_tag<result_type>());
         }
         catch(ErrorException e){
-            return s.deserialize_return_value(error_handler(arg, e), type_tag<result_type>());
+            return s.deserialize_return_value(this->error_handler(arg, e), type_tag<result_type>());
         }
     }
 };
@@ -68,10 +68,10 @@ public:
         {
             arg = 1; args.push_back(s.serialize(a1));
             arg = 0;
-            return s.deserialize_return_value(call(&args), type_tag<result_type>());
+            return s.deserialize_return_value(this->call(&args), type_tag<result_type>());
         }
         catch(ErrorException e){
-            return s.deserialize_return_value(error_handler(arg,e), type_tag<result_type>());
+            return s.deserialize_return_value(this->error_handler(arg,e), type_tag<result_type>());
         }
     }
 };
@@ -95,10 +95,10 @@ public:
             arg = 1; args.push_back(s.serialize(a1));
             arg = 2; args.push_back(s.serialize(a2));
             arg = 0;
-            return s.deserialize_return_value(call(&args), type_tag<result_type>());
+            return s.deserialize_return_value(this->call(&args), type_tag<result_type>());
         }
         catch(ErrorException e){
-            return s.deserialize_return_value(error_handler(arg,e), type_tag<result_type>());
+            return s.deserialize_return_value(this->error_handler(arg,e), type_tag<result_type>());
         }
     }
 };
@@ -124,10 +124,10 @@ public:
             arg = 2; args.push_back(s.serialize(a2));
             arg = 3; args.push_back(s.serialize(a3));
             arg = 0;
-            return s.deserialize_return_value(call(&args), type_tag<result_type>());
+            return s.deserialize_return_value(this->call(&args), type_tag<result_type>());
         }
         catch(ErrorException e){
-            return s.deserialize_return_value(error_handler(arg,e), type_tag<result_type>());
+            return s.deserialize_return_value(this->error_handler(arg,e), type_tag<result_type>());
         }
     }
 };
@@ -155,10 +155,10 @@ public:
             arg = 3; args.push_back(s.serialize(a3));
             arg = 4; args.push_back(s.serialize(a4));
             arg = 0;
-            return s.deserialize_return_value(call(&args), type_tag<result_type>());
+            return s.deserialize_return_value(this->call(&args), type_tag<result_type>());
         }
         catch(ErrorException e){
-            return s.deserialize_return_value(error_handler(arg,e), type_tag<result_type>());
+            return s.deserialize_return_value(this->error_handler(arg,e), type_tag<result_type>());
         }
     }
 };
@@ -188,10 +188,10 @@ public:
             arg = 4; args.push_back(s.serialize(a4));
             arg = 5; args.push_back(s.serialize(a5));
             arg = 0;
-            return s.deserialize_return_value(call(&args), type_tag<result_type>());
+            return s.deserialize_return_value(this->call(&args), type_tag<result_type>());
         }
         catch(ErrorException e){
-            return s.deserialize_return_value(error_handler(arg,e), type_tag<result_type>());
+            return s.deserialize_return_value(this->error_handler(arg,e), type_tag<result_type>());
         }
     }
 };
@@ -206,7 +206,7 @@ public:
     typedef typename FunctionTraits::arg3_type arg3_type;
     typedef typename FunctionTraits::arg4_type arg4_type;
     typedef typename FunctionTraits::arg5_type arg5_type;
-    typedef typename FunctionTraits::arg5_type arg6_type;
+    typedef typename FunctionTraits::arg6_type arg6_type;
     
     result_type operator()(arg1_type a1,arg2_type a2,arg3_type a3,arg4_type a4,arg5_type a5,arg6_type a6)
     {
@@ -223,10 +223,10 @@ public:
             arg = 5; args.push_back(s.serialize(a5));
             arg = 6; args.push_back(s.serialize(a6));
             arg = 0;
-            return s.deserialize_return_value(call(&args), type_tag<result_type>());
+            return s.deserialize_return_value(this->call(&args), type_tag<result_type>());
         }
         catch(ErrorException e){
-            return s.deserialize_return_value(error_handler(arg,e), type_tag<result_type>());
+            return s.deserialize_return_value(this->error_handler(arg,e), type_tag<result_type>());
         }
     }
 };
