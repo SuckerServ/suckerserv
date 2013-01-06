@@ -188,7 +188,7 @@ local function exec_command(cn, text, force)
 end
 
 server.event_handler("text", function(cn, text)
-    exec_command(cn, text, false)
+    return exec_command(cn, text, false)
 end)
 
 server.event_handler("servcmd", function(cn, text)
