@@ -102,6 +102,7 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "player_has_joined_game", server::player_has_joined_game);
     bind_function(L, T, "player_join_game", server::player_join_game);
     bind_function(L, T, "player_reject_join_game", server::player_reject_join_game);
+    bind_function(L, T, "player_ownernum", server::player_ownernum);
     bind_function(L, T, "disconnect", server::disconnect);
     bind_function(L, T, "force_spec", server::player_force_spec);
     bind_function(L, T, "unforce_spec", server::player_unforce_spec);

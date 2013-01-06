@@ -135,6 +135,11 @@ int player_sessionid(int cn)
     return (ci ? ci->sessionid : -1);
 }
 
+int player_ownernum(int cn)
+{
+    return get_ci(cn)->ownernum;
+}
+
 const char * player_name(int cn){return get_ci(cn)->name;}
 
 void player_rename(int cn, const char * newname, bool public_rename)
@@ -221,12 +226,12 @@ const char * player_team(int cn)
 
 const char * player_ip(int cn)
 {
-    return get_ci(get_ci(cn)->ownernum)->hostname();
+    return get_ci(cn)->hostname();
 }
 
 unsigned long player_iplong(int cn)
 {
-    return ntohl(getclientip(get_ci(get_ci(cn)->ownernum)->clientnum));
+    return ntohl(getclientip(get_ci(cn)->clientnum));
 }
 
 int player_status_code(int cn)

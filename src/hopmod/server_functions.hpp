@@ -83,6 +83,7 @@ namespace server
     void started();
     int player_sessionid(int);
     int player_id(lua_State * L);
+    int player_ownernum(int);
     void player_msg(int,const char *);
     const char * player_name(int);
     void player_rename(int, const char *, bool);
