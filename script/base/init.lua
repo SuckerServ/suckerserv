@@ -29,7 +29,7 @@ exec("base/team/utils.lua")
 exec("base/setmaster.lua")
 exec("base/kickban.lua")
 exec("base/server_message.lua")
-exec("base/cd.lua")
+exec("base/cheat_detection.lua")
 
 server.module("base/maprotation/init.lua")
 server.module("base/normalize")
