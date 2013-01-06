@@ -811,7 +811,7 @@ env["exec_if_found"] = function(filename)
 end
 
 env["eval_lua"] = function(str)
-    local chunk, error_message = loadstring(str)
+    local chunk, error_message = load(str)
     if not chunk then 
         error(error_message)
     end
