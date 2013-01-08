@@ -577,8 +577,6 @@ static void update_time_vars()
 
 void update_server(const boost::system::error_code & error)
 {
-    if(error == boost::asio::error::operation_aborted || error) return;
-    
     localclients = nonlocalclients = 0;
     loopv(clients) switch(clients[i]->type)
     {
@@ -591,6 +589,11 @@ void update_server(const boost::system::error_code & error)
         update_timer.expires_from_now(boost::posix_time::milliseconds(5));
         update_timer.async_wait(update_server);
     }
+}
+
+void update_server(const boost::system::error_code & error = boost::system::error_code())
+{
+    if(nonlocalclients > 0) sched_next_update();
     
     update_time_vars();
     
