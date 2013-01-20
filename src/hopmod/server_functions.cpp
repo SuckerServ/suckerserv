@@ -16,6 +16,7 @@ namespace message{
     
     bool limit(clientinfo * ci, int * millis, int resend_time, const char * message_type = NULL)
     {
+        if(ci->privilege == PRIV_ADMIN) return false;
         int wait = totalmillis - *millis;
         
         if(wait >= resend_time){

@@ -176,6 +176,8 @@ local function cheat(cn, cheat_type, info, info_str)
     end
 
     if type[cheat_type][2] == nil then return end
+    
+    if server.gamespeed ~= 100 then return end
 
     local logmsg =
         string.format("CHEATER: %s IP: %s PING: %i LAG: %i GAMEMODE: %s MAP: %s CHEAT: ",

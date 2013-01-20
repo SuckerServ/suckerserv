@@ -16,7 +16,7 @@ struct collectclientmode : clientmode
     static const int TOKENLIMIT = 5;
     static const int UNOWNEDTOKENLIMIT = 15;
     static const int TOKENDIST = 16;
-    static const int SCORELIMIT = 30;
+    static const int SCORELIMIT = 50;
     static const int RESPAWNSECS = 5;
     static const int EXPIRETOKENTIME = 10000;
     static const int STEALTOKENTIME = 5000;
@@ -290,7 +290,7 @@ struct collectclientmode : clientmode
 
     bool canspawn(clientinfo *ci, bool connecting)
     {
-        return connecting || !ci->state.lastdeath || gamemillis-ci->state.lastdeath >= RESPAWNSECS*1000;
+        return connecting || !ci->state.lastdeath || gamemillis+curtime-ci->state.lastdeath >= RESPAWNSECS*1000;
     }
 
     bool canchangeteam(clientinfo *ci, const char *oldteam, const char *newteam)

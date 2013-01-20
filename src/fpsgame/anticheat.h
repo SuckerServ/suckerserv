@@ -668,7 +668,7 @@ void anti_cheat_parsepacket(int type, clientinfo *ci, clientinfo *cq, packetbuf 
     throw;
     #endif
     
-    if (!anti_cheat_enabled)
+    if (!anti_cheat_enabled || gamespeed != 100)
         return;
  
     clientinfo *ca = cq ? cq : ci;

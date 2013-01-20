@@ -358,6 +358,7 @@ static void bind_prop(lua_State * L, int table, const char * name, T (* get)(), 
 void bind_core_variables(lua_State * L, int T)
 {
     bind_ro_var(L, T, "paused", server::gamepaused);
+    bind_var(L, T, "gamespeed", server::gamespeed);
     bind_var(L, T, "servername", server::serverdesc);
     bind_ro_var(L, T, "map", server::smapname);
     bind_var(L, T, "server_password", server::serverpass);
