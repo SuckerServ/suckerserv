@@ -534,6 +534,7 @@ namespace server
     bool allow_mm_veto = false;
     bool allow_mm_locked = false;
     bool allow_mm_private = false;
+    bool allow_mm_private_reconnect = false;
     bool allow_item[11] = {true, true, true, true, true, true, true, true, true, true, true};
     
     string next_gamemode = "";

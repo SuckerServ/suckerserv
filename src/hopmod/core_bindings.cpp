@@ -387,6 +387,7 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "allow_mastermode_veto", server::allow_mm_veto);
     bind_var(L, T, "allow_mastermode_locked", server::allow_mm_locked);
     bind_var(L, T, "allow_mastermode_private", server::allow_mm_private);
+    bind_var(L, T, "allow_reconnect_with_private_mastermode", server::allow_mm_private_reconnect);
     bind_var(L, T, "reserved_slots", server::reservedslots);
     bind_wo_var(L, T, "reserved_slots_password", server::slotpass);
     bind_ro_var(L, T, "reserved_slots_occupied", server::reservedslots_use);

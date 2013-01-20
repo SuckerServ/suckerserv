@@ -1022,7 +1022,7 @@ void set_mastermode(int value)
     
     mastermode = value;
     allowedips.shrink(0);
-    if(mastermode >= MM_PRIVATE)
+    if(allow_mm_private_reconnect && mastermode >= MM_PRIVATE )
     {
         loopv(clients) allowedips.add(getclientip(clients[i]->clientnum));
     }
