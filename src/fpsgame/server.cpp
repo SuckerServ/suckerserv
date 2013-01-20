@@ -819,9 +819,9 @@ namespace server
     {
         switch(type)
         {
-            case PRIV_ADMIN: return "admin";
-            case PRIV_AUTH: return "auth";
-            case PRIV_MASTER: return "master";
+            case PRIV_ADMIN: return "\fs\f3admin\fr";
+            case PRIV_AUTH: return "\fs\f1auth\fr";
+            case PRIV_MASTER: return "\fs\f0master\fr";
             default: return "unknown";
         }
     }
@@ -2039,7 +2039,9 @@ namespace server
         {
             if(demorecord) enddemorecord();
             if((!ci->local || hasnonlocalclients()) && !mapreload && !ci->spy)
-                sendservmsgf("%s forced %s on map %s", colorname(ci), modename(ci->modevote), ci->mapvote[0]);
+            {
+                sendservmsgf("%s %s forced %s on map %s", ci->privilege && mastermode>=MM_VETO ? privname(ci->privilege) : "local player", colorname(ci), modename(ci->modevote), ci->mapvote);
+            }
             changemap(ci->mapvote, ci->modevote);
         }
         else

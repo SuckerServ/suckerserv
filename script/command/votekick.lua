@@ -59,7 +59,7 @@ local function run(cn,victim)
 		return false, "You can't vote to kick yourself."
 	end
 	
-	if server.player_priv(victim) == "admin" then
+	if server.player_priv_code(victim) == server.PRIV_ADMIN then
 		return false, "You can't vote to kick a server admin!"
 	end
 	

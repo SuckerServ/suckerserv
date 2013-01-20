@@ -29,6 +29,8 @@ namespace message{
         return wait < resend_time;
     }
     
+    string set_player_privilege = "The server has %s your privilege to %s%s.";
+    
 } //namespace message
 
 string ext_admin_pass = "";
@@ -666,9 +668,10 @@ void set_player_privilege(int cn, int priv_code, bool public_priv = false)
 {
     clientinfo * player = get_ci(cn);
     
+    if(player->privilege == priv_code && player->hide_privilege != public_priv) return;
+    
     public_priv = !player->spy && public_priv;
     
-    if(player->privilege == priv_code) return;
     if(priv_code == PRIV_NONE) unset_player_privilege(cn);
         
     int old_priv = player->privilege;
@@ -676,8 +679,8 @@ void set_player_privilege(int cn, int priv_code, bool public_priv = false)
     
     player->hide_privilege = !public_priv;
     
-    const char * change = (old_priv < player->privilege ? "raised" : "lowered");
-    defformatstring(msg)("The server has %s your privilege to %s.", change, privname(priv_code));
+    const char * change = (old_priv < player->privilege ? "\fs\f6raised\fr" : "\fs\f0lowered\fr");
+    defformatstring(msg)(message::set_player_privilege, change, public_priv ? "" : "\fs\f4invisible\fr ", privname(priv_code));
     player->sendprivtext(msg);
     
     send_currentmaster();

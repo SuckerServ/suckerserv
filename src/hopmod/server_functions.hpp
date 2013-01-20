@@ -77,6 +77,8 @@ namespace server
         
         bool limit(clientinfo *, int * millis, int resend_time, const char * message_type);
         
+        extern string set_player_privilege;
+        
     } //namespace message
     
     const char *extfiltertext(const char *src);

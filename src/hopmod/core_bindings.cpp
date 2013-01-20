@@ -409,6 +409,8 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "flood_protect_newmap", server::message::resend_time::newmap);
     bind_var(L, T, "flood_protect_spectator", server::message::resend_time::spec);
     
+    bind_var(L, T, "set_player_privilege_message", server::message::set_player_privilege);
+    
     bind_ro_var(L, T, "tx_bytes", tx_bytes);
     bind_ro_var(L, T, "rx_bytes", rx_bytes);
     bind_ro_var(L, T, "tx_packets", tx_packets);
