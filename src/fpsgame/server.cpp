@@ -3151,6 +3151,29 @@ namespace server
                 break;
             }
             
+            case N_SWITCHTEAM:
+            {
+                getstring(text, p);
+                filtertext(text, text, false, MAXTEAMLEN);
+                
+                bool allow = m_teammode && text[0] && strcmp(ci->team, text) && 
+                    (!smode || smode->canchangeteam(ci, ci->team, text)) &&
+                    !message::limit(ci, &ci->n_switchname_millis, message::resend_time::switchteam, "N_SWITCHTEAM") &&
+                    event_chteamrequest(event_listeners(), boost::make_tuple(ci->clientnum, ci->team, text)) == false;
+                
+                if(allow && addteaminfo(text))
+                {
+                    if(ci->state.state==CS_ALIVE) suicide(ci);
+                    string oldteam;
+                    copystring(oldteam, ci->team);
+                    copystring(ci->team, text);
+                    aiman::changeteam(ci);
+                    event_reteam(event_listeners(), boost::make_tuple(ci->clientnum, oldteam, text));
+                    if(!ci->spy) sendf(-1, 1, "riisi", N_SETTEAM, sender, ci->team, ci->state.state==CS_SPECTATOR ? -1 : 0);
+                }
+                break;
+            }
+            
             case N_MAPCHANGE:
             {
                 getstring(text, p);
