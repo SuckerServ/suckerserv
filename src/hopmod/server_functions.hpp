@@ -46,6 +46,7 @@ namespace server
     extern bool allow_mm_veto;
     extern bool allow_mm_locked;
     extern bool allow_mm_private;
+    extern bool allow_mm_private_reconnect;
     extern bool reset_mm;
     extern bool allow_item[11];
 

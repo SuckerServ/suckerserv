@@ -1034,7 +1034,7 @@ void set_mastermode(int value)
     mastermode_owner = -1;
     mastermode_mtime = totalmillis;
     allowedips.setsize(0);
-    if(mastermode >= MM_PRIVATE)
+    if(allow_mm_private_reconnect && mastermode >= MM_PRIVATE)
     {
         loopv(clients) allowedips.add(getclientip(clients[i]->clientnum));
     }
