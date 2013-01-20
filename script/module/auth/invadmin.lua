@@ -32,7 +32,6 @@ server.event_handler("connect", function(cn)
                         
                         server.set_invisible_admin(cn)
                         
-                        server.player_msg(cn, string.format(server.invadmin_activation_message))
                         server.log(user_id .. " playing as " .. server.player_name(cn) .. "(" .. cn .. ") used auth to claim invisible admin.")
                         server.admin_log(user_id .. " playing as " .. server.player_name(cn) .. "(" .. cn .. ") used auth to claim invisible admin.")
                     end)

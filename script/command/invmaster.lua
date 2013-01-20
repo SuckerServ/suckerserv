@@ -5,8 +5,7 @@
 local function set_invmaster(cn, name)
 
     server.set_invisible_master(cn)
-    server.player_msg(cn, "Your rights have been raised to invisible-master.")
-    
+
     if not name then
     	server.log(string.format("%s(%i) claimed (inv)master.", server.player_name(cn), cn))
     else

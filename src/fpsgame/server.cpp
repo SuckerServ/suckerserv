@@ -789,9 +789,9 @@ namespace server
     {
         switch(type)
         {
-            case PRIV_ADMIN: return "admin";
-            case PRIV_MASTER: return "master";
-            case PRIV_NONE: return "none";
+            case PRIV_ADMIN: return "\fs\f3admin\fr";
+            case PRIV_MASTER: return "\fs\f0master\fr";
+            case PRIV_NONE: return "\fs\ffnone\fr";
             default: return "unknown";
         }
     }
@@ -1842,10 +1842,15 @@ namespace server
             if(demorecord) enddemorecord();
             if((!ci->local || hasnonlocalclients()) && !mapreload && !ci->spy)
             {
+<<<<<<< HEAD
                 defformatstring(msg)("%s forced %s on map %s", ci->privilege && mastermode>=MM_VETO ? privname(ci->privilege) : "local player", modename(ci->modevote), ci->mapvote);
                 sendservmsg(msg);
             }
             sendf(-1, 1, "risii", N_MAPCHANGE, ci->mapvote, ci->modevote, 1);
+=======
+                sendservmsgf("%s %s forced %s on map %s", ci->privilege && mastermode>=MM_VETO ? privname(ci->privilege) : "local player", colorname(ci), modename(ci->modevote), ci->mapvote);
+            }
+>>>>>>> b422787... Fix map changing + Fix #help command another time + Fix visibility of privileges after hide_privilege = true + Customize core privilege change message (v5)
             changemap(ci->mapvote, ci->modevote);
         }
         else

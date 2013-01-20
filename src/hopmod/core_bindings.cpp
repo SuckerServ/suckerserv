@@ -411,6 +411,8 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "flood_protect_disc_timewindow", server::message::disc_window);
     bind_var(L, T, "flood_protect_disc_max", server::message::disc_msgs);
     
+    bind_var(L, T, "set_player_privilege_message", server::message::set_player_privilege);
+    
     bind_ro_var(L, T, "tx_bytes", tx_bytes);
     bind_ro_var(L, T, "rx_bytes", rx_bytes);
     bind_ro_var(L, T, "tx_packets", tx_packets);

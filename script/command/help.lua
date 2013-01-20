@@ -53,8 +53,10 @@ return function(cn, command_name)
         end
     end
     
-    list_of_command_names = table.concat(list_of_command_names, "\n")
-    
-    server.player_msg(cn, string.format("List of command names: %s", list_of_command_names))
     server.player_msg(cn, "Command descriptions: #help <command>")
-end, "[command]", "List all player commands available or show command description and usage", { "commands" }
+    
+    for i,v in ipairs(list_of_command_names) do
+        if i == 1 then v = "List of command names: " .. v end
+        server.player_msg(cn, v)
+    end
+end, "[command]", "List all player commands available or show command description and usage"

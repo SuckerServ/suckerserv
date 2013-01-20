@@ -82,6 +82,8 @@ namespace server
         
         bool limit(clientinfo *, unsigned long long * millis, unsigned long long resend_time, const char * message_type);
         
+        extern string set_player_privilege;
+        
     } //namespace message
     
     void started();
