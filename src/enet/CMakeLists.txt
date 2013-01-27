@@ -56,6 +56,10 @@ set(ENET_INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     CACHE INTERNAL "enet public include directories")
 
+IF(NOT CMAKE_BUILD_TYPE STREQUAL "DEBUG") 
+    add_definitions( -O2)
+ENDIF(NOT CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+
 set(ENET_SOURCES
 	host.c
 	list.c
