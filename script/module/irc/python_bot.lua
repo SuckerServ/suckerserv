@@ -215,7 +215,7 @@ server.event_handler("text", function(cn, msg)
     end
 	
 	--Hide mapbattle votes
-	if not mapbattle.map_changed and mapbattle.running and (msg == "1" or msg == "2") then return end
+	  if mapbattle and not mapbattle.map_changed and mapbattle.running and (msg == "1" or msg == "2") then return end
 	
     local mute_tag = ""
     if server.is_muted(cn) then mute_tag = "(muted)" end
@@ -346,6 +346,7 @@ end)
 server.event_handler("intermission", function()
     server.sleep(250, function()
         local best = server.awards
+        if not best then return end
 
         local function format_message(record_name, record, append)
             if not record.value or #record.cn > 2 then return "" end
