@@ -94,6 +94,7 @@ private:
 class basic_binder
 {
 public:
+    virtual ~basic_binder()=0;
     virtual bool parse_value(const char *)=0;
 };
 

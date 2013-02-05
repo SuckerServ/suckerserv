@@ -48,6 +48,12 @@ local function request_key(cn)
 	    if v.nameprotect_wanted_authname == string.lower(user_id)
 	    then
 		v.reserved_name = user_id
+
+        -- Using stats configuration variables here, may change in the future
+        if server.stats_tell_auth_name == 1 then
+            server.player_msg(cn, string.format(server.stats_logged_in_message.." (Name Protection) ", user_id))
+        end
+
 		server.log(string.format("%s(%i) authenticated as '%s' to use reserved name.", server.player_name(cn), cn, user_id))
 		return
 	    else
@@ -108,8 +114,10 @@ end
 
 
 server.event_handler("maploaded", function(cn)
-    server.sleep(5000, function()
-        check_name(cn)
+    server.sleep(1000, function()
+        if server.valid_cn(cn) and not server.player_vars(cn).reserved_name then
+            check_name(cn)
+        end
     end)
 end)
 

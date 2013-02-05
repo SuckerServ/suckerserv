@@ -221,6 +221,7 @@ public:
     static int create_object(lua_State * L)
     {
         http::server::request * request = request_wrapper::handover_request(L, 1);
+        if(!request) return 0;
         int status_code = luaL_checkint(L, 2);
         new (lua_newuserdata(L, sizeof(response_wrapper))) response_wrapper(new http::server::response(*request, static_cast<http::status>(status_code)));
         luaL_getmetatable(L, response_wrapper::MT);

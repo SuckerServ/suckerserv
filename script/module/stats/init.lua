@@ -1,6 +1,7 @@
 local using_sqlite = (server.stats_use_sqlite == 1)
 local using_json = (server.stats_use_json == 1)
 local using_mysql = (server.stats_use_mysql == 1)
+local using_psql = (server.stats_use_psql == 1)
 local query_backend_name = server.stats_query_backend
 
 local commit_backends = {}
@@ -41,7 +42,24 @@ if using_mysql then
         database    = server.stats_mysql_database,
         schema      = "./script/module/stats/mysql_schema.sql",
         triggers    = "./script/module/stats/mysql_triggers.sql",
-        install     = server.stats_mysql_install == 0,
+        install     = server.stats_mysql_install == "true",
+        servername  = server.stats_servername
+    })
+end
+
+if using_psql then
+
+    commit_backends.psql = dofile("./script/module/stats/psql.lua")
+
+    catch_error(commit_backends.psql.open, {
+        hostname    = server.stats_psql_hostname,
+        port        = server.stats_psql_port,
+        username    = server.stats_psql_username,
+        password    = server.stats_psql_password,
+        database    = server.stats_psql_database,
+        schema      = "./script/module/stats/postgres_schema.sql",
+        triggers    = "./script/module/stats/postgres_triggers.sql",
+        install     = server.stats_psql_install == "true",
         servername  = server.stats_servername
     })
 end
@@ -64,7 +82,7 @@ else
     server.player_ranking = function() return nil end
     server.player_stats_by_period = function() return nil end
     server.player_ranking_by_period = function() return nil end
-    
+
     if server.stats_query_backend ~= "" then
         server.log_error(string.format("Error in stats module: unused/unknown %s commit backend is trying to be used for the query backend.")) 
     end

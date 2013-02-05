@@ -23,6 +23,7 @@ local function player(p)
     output.teamkills = p:teamkills()
     output.misses = p:misses()
     output.shots = p:shots()
+    output.accuracy = p:accuracy2()
     
     if(output.status == "spectator") then
         output.team = nil
@@ -44,7 +45,7 @@ local function clients()
     local output = {}
     
     for _, cn in ipairs(server.clients()) do
-        table.insert(output, player(server.new_player_object(cn)))
+        table.insert(output, player(server.Client(cn)))
     end
     
     return output
@@ -61,7 +62,7 @@ http_server_root["clients"] = http_server.resource({
         if server.player_sessionid(cn) == -1 then return nil end
         return http_server.resource({
             get = function(request)
-                http_response.send_json(request, player(server.new_player_object(cn)))
+                http_response.send_json(request, player(server.Client(cn)))
             end
         })
     end,

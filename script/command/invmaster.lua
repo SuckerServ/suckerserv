@@ -2,15 +2,7 @@
 	A player command to raise privilege to (invisble) master
 ]]
 
-local domains = table_unique(server.parse_list(server["invmaster_domains"])) or 
-                table_unique(server.parse_list(server["master_domains"]))
-
-if not domains then
-    server.log_error("invmaster command: no domains set")
-    return
-end
-
-local function set_invisible_master(cn, name)
+local function set_invmaster(cn, name)
 
     server.set_invisible_master(cn)
     server.player_msg(cn, "Your rights have been raised to invisible-master.")
@@ -27,26 +19,32 @@ local function unload() end
 
 local function run(cn, pw)
 
+    local domains = table_unique(server.parse_list(server["invmaster_domains"])) or
+                    table_unique(server.parse_list(server["master_domains"]))
+
+    if not domains then
+        server.log_error("invmaster command: no domains set")
+        return
+    end
+
     if server.player_priv_code(cn) > 0 then
-	    server.unsetpriv(cn)
-	
+        server.unsetpriv(cn)
     elseif pw then
-    	if server.check_admin_password(pw) then
-	        set_invisible_master(cn)
-	    end
+        if server.check_admin_password(pw) then
+            server.set_invisible_master(cn)
+        end
     else
-	    local sid = server.player_sessionid(cn)
-	    
-	    for _, domain in pairs(domains) do
-	        auth.send_request(cn, domain, function(cn, user_id, domain, status)
-		        if not (sid ~= server.player_sessionid(cn)) or 
-		           not (status == auth.request_status.SUCCESS) then
-		            return
-		        end
-		        
-		        set_invisible_master(cn, user_id)
-	        end)
-	    end
+        local sid = server.player_sessionid(cn)
+
+        for _, domain in pairs(domains) do
+            auth.send_request(cn, domain, function(cn, user_id, domain, status)
+                if not (sid == server.player_sessionid(cn)) or not (status == auth.request_status.SUCCESS) then
+                    return
+                end
+                
+                set_invmaster(cn, user_id)
+            end)
+        end
     end
 end
 

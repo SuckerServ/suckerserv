@@ -5,7 +5,7 @@
 
 extern lua::event< boost::tuple<> >                                         event_init;
 extern lua::event< boost::tuple<int, const char *, const char *, const char *, bool> >  event_connecting;
-extern lua::event< boost::tuple<int> >                                      event_connect;
+extern lua::event< boost::tuple<int, bool> >                                event_connect;
 extern lua::event< boost::tuple<int,const char *> >                         event_disconnect;
 extern lua::event< boost::tuple<const char *,const char *> >                event_failedconnect;
 extern lua::event< boost::tuple<int> >                                      event_maploaded;
@@ -27,9 +27,7 @@ extern lua::event< boost::tuple<int,int,const char *> >                     even
 extern lua::event< boost::tuple<int,int,int> >                              event_addbot;
 extern lua::event< boost::tuple<int> >                                      event_delbot;
 extern lua::event< boost::tuple<int> >                                      event_botleft;
-extern lua::event< boost::tuple<int> >                                      event_mapcrcfail;
-extern lua::event< boost::tuple<int, const char *, int> >                   event_mapcrc;
-extern lua::event< boost::tuple<int> >                                      event_checkmaps;
+extern lua::event< boost::tuple<int, const char *, int> >                   event_modmap;
 extern lua::event< boost::tuple<int,int> >                                  event_teamkill;
 extern lua::event< boost::tuple<int,int> >                                  event_frag;
 extern lua::event< boost::tuple<int,int,int> >                              event_shot;
@@ -52,7 +50,7 @@ extern lua::event< boost::tuple<int,int> >                                  even
 extern lua::event< boost::tuple<const char *,const char *> >                event_votepassed;
 extern lua::event< boost::tuple<int, const char *> >                        event_takeflag;
 extern lua::event< boost::tuple<int, const char *> >                        event_dropflag;
-extern lua::event< boost::tuple<int, const char *, int> >                   event_scoreflag;
+extern lua::event< boost::tuple<int, const char *, int, int> >              event_scoreflag;
 extern lua::event< boost::tuple<int, const char *> >                        event_returnflag;
 extern lua::event< boost::tuple<const char *> >                             event_resetflag;
 extern lua::event< boost::tuple<const char *, int> >                        event_scoreupdate;
@@ -63,6 +61,7 @@ extern lua::event< boost::tuple<> >                                         even
 extern lua::event< boost::tuple<const char *> >                             event_varchanged;
 extern lua::event< boost::tuple<> >                                         event_sleep;
 extern lua::event< boost::tuple<> >                                         event_interval;
+extern lua::event< boost::tuple<int, int, int, const char *> >              event_cheat;
 
 void register_event_idents(lua::event_environment &);
 

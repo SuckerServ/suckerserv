@@ -48,20 +48,16 @@ namespace server
     extern bool allow_mm_private;
     extern bool allow_item[11];
 
-    extern bool ctftkpenalty;
-
     extern bool broadcast_mapmodified;
     extern timer::time_diff_t timer_alarm_threshold;
     
     extern bool enable_extinfo;
     
     extern int spectator_delay;
-	
-	extern void add_item(int n, int v);
-	extern void add_flag(int num, int team, int y);
-	extern void prepare_hold_mode();
-	extern void add_base(int type, int x, int y, int z);
-	extern void prepare_capture_mode();
+    
+    int revision();
+    const char *version();
+    const char *extfiltertext(const char *src);
     
     void started();
     int player_sessionid(int);
@@ -76,6 +72,9 @@ namespace server
     int player_ping(int);
     int player_ping_update(int);
     int player_lag(int);
+    int player_real_lag(int);
+    int player_maploaded(int);
+    int player_deathmillis(int);
     const char * player_ip(int);
     unsigned long player_iplong(int);
     const char * player_status(int);
@@ -97,6 +96,10 @@ namespace server
     int player_misses(int);
     int player_shots(int);
     int player_accuracy(int);
+    int player_accuracy2(int);
+    bool player_is_spy(int cn);
+    int player_clientmillis(int);
+    int player_timetrial(int);
     int player_connection_time(int);
     int player_timeplayed(int);
     int player_win(int);
@@ -123,6 +126,10 @@ namespace server
     void set_player_privilege(int, int);
     void player_freeze(int);
     void player_unfreeze(int);
+
+    void updateservinfo(int, const char*);
+    void editvar(int, const char *, int);
+    void set_spy(int, bool);
     
     void team_msg(const char *,const char *);
     std::vector<std::string> get_teams();
@@ -183,6 +190,8 @@ namespace server
     extern int sv_remip_hit_length;
     extern int sv_newmap_hit_length;
     extern int sv_spec_hit_length;
+    
+    extern string ext_admin_pass;
     
     void crash_handler(int signal);
     void restore_server(const char * filename);

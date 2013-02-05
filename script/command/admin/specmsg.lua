@@ -1,26 +1,18 @@
 --[[
-
-	A player command to send a message to all spectators
-
+        A player command to send a message to all spectators
 ]]
 
+local usage = "#specmsg <text>"
 
 return function(cn, ...)
 
-	local text = ""
+    local text = table.concat(arg, " ")
+    
+    if not text then
+        return false, usage
+    end
 
-	for _, item in ipairs(arg) do
-		item = tostring(item)
-		if #item > 0 then
-			if #text > 0 then
-				text = text .. " "
-			end
-			text = text .. item
-		end
-	end
-
-	for client in server.gspectators() do
-		server.player_msg(client.cn, string.format(server.specmsg_command_message, server.player_name(cn), cn, text))
-	end
-
+    for client in server.gspectators() do
+        client:msg(string.format(server.specmsg_command_message, server.player_name(cn), cn, text))
+    end
 end

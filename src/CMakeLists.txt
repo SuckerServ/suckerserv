@@ -1,36 +1,80 @@
-add_subdirectory(enet)
-add_subdirectory(lua)
-add_subdirectory(boost)
+find_package(ENet 1.3.4)
+
+if(ENET_FOUND)
+    set(ENET_INCLUDE_DIRS ${ENET_INCLUDE_DIR})    
+else(ENET_FOUND)
+    add_subdirectory(enet)
+endif(ENET_FOUND)
+
+
+find_package(Lua5.1)
+
+if(LUA5.1_FOUND)
+    set(LUA_INCLUDE_DIRS ${LUA5.1_INCLUDE_DIR})
+    set(LUA_LIBRARY ${LUA5.1_LIBRARY})
+else(LUA5.1_FOUND)
+    add_subdirectory(lua)
+endif(LUA5.1_FOUND)
+
+
+find_package(Boost 1.35.0 COMPONENTS signals system thread)
+
+if(Boost_FOUND)
+    set(BOOST_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
+    set(BOOST_SYSTEM_LIBRARY ${Boost_SYSTEM_LIBRARY})
+    set(BOOST_SIGNALS_LIBRARY ${Boost_SIGNALS_LIBRARY})
+    set(BOOST_THREAD_LIBRARY ${Boost_THREAD_LIBRARY})
+else(Boost_FOUND)
+    add_subdirectory(boost)
+endif(Boost_FOUND)
+
+
+find_package(OpenSSL)
+
+
+find_package(GeoIP)
+
+option(WITH_GEOIP "Enable GeoIP support" ON)
+
+if(WITH_GEOIP)
+    add_definitions(-DWITH_GEOIP)
+    if(GeoIP_FOUND)
+        set(GEOIP_INCLUDE_DIRS ${GeoIP_INCLUDE_DIRS})
+        set(GEOIP_LIBRARY ${GeoIP_LIBRARY})
+    else(GeoIP_FOUND)
+        add_subdirectory(geoip)
+    endif(GeoIP_FOUND)
+endif(WITH_GEOIP)
+
+
 add_subdirectory(fungu)
 add_subdirectory(lsqlite3)
 add_subdirectory(hopmod/standalone/luapp)
 add_subdirectory(luasql)
+add_subdirectory(authserver)
+
 
 include(CheckLibraryExists)
 
-check_library_exists(GeoIP GeoIP_open "" GEOIP_EXISTS)
 check_library_exists(z gzopen "" ZLIB_EXISTS)
 check_library_exists(pthread pthread_self "" PTHREAD_EXISTS)
 check_library_exists(rt clock_gettime "" RTLIB_EXISTS)
-
-if(NOT ${GEOIP_EXISTS})
-    message(FATAL_ERROR "missing required library: GeoIP")
-endif(NOT ${GEOIP_EXISTS})
 
 if(NOT ${ZLIB_EXISTS})
     message(FATAL_ERROR "missing required library: ZLIB")
 endif(NOT ${ZLIB_EXISTS})
 
-find_package(OpenSSL)
+option(WITH_OPENSSL "Enable SSL support" ON)
 
-if(OPENSSL_FOUND)
+if(WITH_OPENSSL AND OPENSSL_FOUND AND OPENSSL_INCLUDE_DIR)
     set(LUA_NET_SSL_SOURCES
         hopmod/lua/modules/net/ssl_context.cpp
         hopmod/lua/modules/net/ssl_tcp_stream.cpp)
     add_definitions(-DKSSL_DEBUG)
-else(OPENSSL_FOUND)
+else(WITH_OPENSSL AND OPENSSL_FOUND AND OPENSSL_INCLUDE_DIR)
     add_definitions(-DDISABLE_SSL -DWITHOUT_OPENSSL)
-endif(OPENSSL_FOUND)
+endif(WITH_OPENSSL AND OPENSSL_FOUND AND OPENSSL_INCLUDE_DIR)
+
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -42,9 +86,15 @@ include_directories(
     ${LUA_INCLUDE_DIRS}
     ${BOOST_INCLUDE_DIRS}
     ${FUNGU_INCLUDE_DIRS}
-    ${OPENSSL_INCLUDE_DIR})
+    ${OPENSSL_INCLUDE_DIR}
+    ${GEOIP_INCLUDE_DIRS})
 
-add_definitions(-Wall -fsigned-char -DSTANDALONE ${LSQLITE3_DEFINITIONS})
+add_definitions(-Wall -fsigned-char -DSTANDALONE -DREVISION=$ENV{REVISION} ${LSQLITE3_DEFINITIONS})
+
+
+IF(NOT CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+    add_definitions( -O3)
+ENDIF(NOT CMAKE_BUILD_TYPE STREQUAL "DEBUG")
 
 set(SAUERTOOLS_SOURCES
     shared/tools.cpp
@@ -53,6 +103,8 @@ set(SAUERTOOLS_SOURCES
     )
 
 add_library(sauertools STATIC ${SAUERTOOLS_SOURCES})
+target_link_libraries(sauertools -lrt -lz)
+
 
 set(LUA_MODULES_SOURCES
     hopmod/lib/md5.c
@@ -89,21 +141,19 @@ set(LUA_MODULES_SOURCES
     hopmod/httpserver/lua_module.cpp )
 
 add_library(lua_modules STATIC ${LUA_MODULES_SOURCES})
-
 target_link_libraries(lua_modules 
-    -lGeoIP
     -pthread sauertools
     ${LUA_LIBRARY}
+    ${GEOIP_LIBRARY}
     ${FUNGU_STRING_LIBRARY}
     ${FUNGU_HTTP_LIBRARY}
     ${LSQLITE3_LIBRARY}
     ${OPENSSL_LIBRARIES})
 
+
 SET(GAME_SERVER_SOURCES
     engine/server.cpp
-    engine/worldio.cpp
     fpsgame/server.cpp
-    fpsgame/entities.cpp
     hopmod/startup.cpp
     hopmod/scheduler.cpp
     hopmod/lua.cpp
@@ -112,7 +162,6 @@ SET(GAME_SERVER_SOURCES
     hopmod/signals.cpp)
 
 add_executable(sauer_server ${GAME_SERVER_SOURCES})
-
 target_link_libraries(sauer_server 
     -lz
     -lrt
@@ -122,10 +171,13 @@ target_link_libraries(sauer_server
     ${BOOST_THREAD_LIBRARY}
     ${ENET_LIBRARY})
 
+
 add_executable(keygen hopmod/standalone/keygen.cpp)
 target_link_libraries(keygen sauertools)
 
+
 add_executable(monitor hopmod/standalone/monitor.cpp hopmod/lib/program_arguments.cpp)
+
 
 install(TARGETS 
         sauer_server

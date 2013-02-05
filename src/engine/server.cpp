@@ -10,6 +10,8 @@ using namespace boost::asio;
 
 static void shutdown_from_signal(int i)
 {
+    extern void delclients();
+    delclients();
     server::shutdown();
 }
 
@@ -148,14 +150,38 @@ void getstring(char *text, ucharbuf &p, int len)
     while(*t++);
 }
 
+//HOPMOD
+static inline bool is_bad_char(uchar c)
+{
+    return c == '\r' || c == '\n' || (c >= 11 && c <= 13);
+}
+//END HOPMOD
+
 void filtertext(char *dst, const char *src, bool whitespace, int len)
 {
     for(int c = *src; c; c = *++src)
     {
-        if(c == '\f') { 
+        if(c == '\f')
+        { 
             if(!*++src) break;
             continue;
         }
+        //HOPMOD
+        bool f = false;
+        while(c)
+        {
+            if(is_bad_char(c)) f = true;
+            else break;
+            c = *++src;
+        }
+        if(f)
+        {
+            *dst++ = ' ';
+            if(!--len) break;
+            if(!is_bad_char(c)) src--;
+            continue;
+        }
+        //END HOPMOD
         if(c == ' ' ? whitespace : isprint(c)) //NEW c == ' ' instead "isspace(c) to skip whitespaces: TAB LF VT FF CR
         {
             *dst++ = c;
@@ -257,6 +283,8 @@ void sendpacket(int n, int chan, ENetPacket *packet, int exclude)
         loopv(clients) if(i!=exclude && server::allowbroadcast(i)) sendpacket(i, chan, packet);
         return;
     }
+    if(n >= server::spycn) server::real_cn(n);
+    ASSERT(n >= 0 && n < MAXCLIENTS);
     switch(clients[n]->type)
     {
         case ST_TCPIP:
@@ -414,6 +442,11 @@ client &addclient()
     return *c;
 }
 
+void delclients()
+{
+    while(clients.length()) delete clients.remove(0);
+}
+
 int localclients = 0, nonlocalclients = 0;
 
 bool hasnonlocalclients() { return nonlocalclients!=0; }
@@ -525,11 +558,21 @@ static void check_timeouts()
     }
 }
 
+uint totalsecs = 0;
+
 static void update_time_vars()
 {
     int millis = (int)enet_time_get();
     curtime = millis - totalmillis;
     lastmillis = totalmillis = millis;
+
+    static int lastsec = 0;
+    if(totalmillis - lastsec >= 1000) 
+    {
+        int cursecs = (totalmillis - lastsec) / 1000;
+        totalsecs += cursecs;
+        lastsec += cursecs * 1000;
+    }
 }
 
 void update_server(const boost::system::error_code & error)
@@ -729,14 +772,15 @@ void rundedicatedserver()
 
 bool servererror(bool dedicated, const char *desc)
 {
-    printf("servererror: %s\n", desc); 
+    printf("servererror: %s\n", desc);
+    delclients();
     server::shutdown();
     return false;
 }
 
 bool setuplistenserver(bool dedicated)
 {
-    ENetAddress address = { ENET_HOST_ANY, serverport <= 0 ? server::serverport() : serverport };
+    ENetAddress address = { ENET_HOST_ANY, serverport <= 0 ? static_cast<enet_uint16>(server::serverport()) : static_cast<enet_uint16>(serverport) };
     if(serverip[0])
     {
         if(enet_address_set_host(&address, serverip)<0) conoutf(CON_WARN, "WARNING: server ip not resolved");

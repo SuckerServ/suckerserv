@@ -16,7 +16,7 @@ local function start_recording(map, mode)
     
     mode = string.gsub(mode, " ", "_")
     
-    server.recorddemo(string.format("log/demo/%s.%s.%s.dmo", os.date("!%y_%m_%d.%H_%M"), mode, map))
+    server.recorddemo(string.format("log/demo/%s.%s.%s.dmo", os.date("%y_%m_%d.%H_%M"), mode, map))
     server.msg(server.demo_recording_message)
     
     is_recording = true

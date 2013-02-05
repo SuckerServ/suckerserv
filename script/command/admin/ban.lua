@@ -127,6 +127,7 @@ return function(cn,arg1,arg2,arg3,arg4,arg5)
 		end
 
 		server.kick(lcn,time,server.player_displayname(cn),reason)
+		server.admin_log(string.format("BAN: Player %s has been banned for %s. Reason %s", server.player_displayname(cn), time, reason))
 
 		if all == 1 then
 

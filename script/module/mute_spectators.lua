@@ -31,6 +31,9 @@ server.event_handler("text", function(cn, text)
 end)
 
 server.event_handler("mapchange", function()
-
     is_enabled = default_enabled
 end)
+
+return {unload = function()
+    server.mute_spectators = nil
+end}

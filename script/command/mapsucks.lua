@@ -10,7 +10,7 @@ local lower_time = server.mapsucks_lower_time
 local mapsucks = {}
 
 server.event_handler("text", function(cn, text)
-	    if (string.match(text, "SUCKS") or string.match(text, "sucks"))
+	    if (string.match(text, "SUCKS") or string.match(text, "sucks")) and not (string.match(text, "#mapsucks") or string.match(text, "!mapsucks") or string.match(text, "@mapsucks"))
 		then 
 		server.player_msg(cn, string.format(server.mapsucks_analysetext_message))
 	    end
@@ -35,7 +35,7 @@ return function(cn)
                 mapsucks_size = table_size(mapsucks)
                 if mapsucks_size > 2 then plural = "s" else plural = "" end
                 server.player_msg(cn, string.format(server.mapsucks_message, (mapsucks_size - 1)))
-                server.msg(string.format(server.mapsucks_announce_message, mapsucks_size))
+                server.msg(string.format(server.mapsucks_announce_message, server.player_displayname(cn)))
                 if mapsucks_size > (#server.players() / ratio) then
                     server.changetime(lower_time*60*1000)
                     if lower_time > 1 then plural_time = "s" else plural_time = "" end

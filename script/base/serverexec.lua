@@ -1,7 +1,13 @@
 local MAX_TIME = 5
 local READ_SIZE = 256
 
-local file, error_message = os.open_fifo("serverexec")
+if server.is_authserver then
+    filename = "authexec"
+else
+    filename = "serverexec"
+end
+
+local file, error_message = os.open_fifo(filename)
 
 if not file then
     server.log_error(error_message)
@@ -46,6 +52,6 @@ read_expression()
 
 server.event_handler("shutdown", function()
     file_stream:close()
-    os.remove("serverexec")
+    os.remove(filename)
 end)
 

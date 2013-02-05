@@ -4,17 +4,17 @@
 
 ]]
 
-local domains = table_unique(server.parse_list(server["admin_domains"]))
-
-if not domains then
-    server.log_error("admin command: no domains set")
-    return
-end
-
 local function init() end
 local function unload() end
 
 local function run(cn)
+
+    local domains = table_unique(server.parse_list(server["admin_domains"]))
+
+    if not domains then
+        server.log_error("admin command: no domains set")
+        return
+    end
 
     local sid = server.player_sessionid(cn)
     
@@ -26,14 +26,11 @@ local function run(cn)
 		        return
 	        end
 	        
-	        if server.player_priv_code(cn) > 0 then
-		        server.unsetpriv(cn)
-	        end
-	        
 	        server.setadmin(cn)
 	        
 	        server.msg(string.format(server.claimadmin_message, server.player_displayname(cn), user_id))
-	        server.log(string.format("%s playing as %s(%i) used auth to claim admin.", user_id, server.player_name(cn), cn))
+            server.log(string.format("%s playing as %s(%i) used auth to claim admin.", user_id, server.player_name(cn), cn))
+            server.admin_log(string.format("%s playing as %s(%i) used auth to claim admin.", user_id, server.player_name(cn), cn))
 	    end)
     end
 end

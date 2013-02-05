@@ -14,15 +14,20 @@ local function sendServerBanner(cn)
         -- cancel if not the same player from 1 second ago
         if sid ~= server.player_sessionid(cn) then return end
         
-        server.player_msg(cn, server.motd .. "\n" .. server.connect_info_message)
-        
+        server.player_msg(cn, server.motd)
+        server.player_msg(cn, server.connect_info_message)
+
         server.player_set_session_var(cn, "shown_banner", true)
     end)
 end
 
-local function onConnect(cn)
+local function onConnect(cn, is_spy)
+
+    if is_spy or server.is_bot(cn) then return end
     
     local country = geoip.ip_to_country(server.player_ip(cn))
+    local city = geoip.ip_to_city(server.player_ip(cn))
+    if not city or #city < 1 then city = "Unknown" end
     
     if show_country_message and #country > 0 then
 
@@ -33,7 +38,7 @@ local function onConnect(cn)
             player_ranking = "Unknown" 
         end
         
-        local normal_message = string.format(server.client_connect_message, server.player_displayname(cn), country, player_ranking)
+        local normal_message = string.format(server.client_connect_message, server.player_displayname(cn), city, country, player_ranking)
         local admin_message = string.format(server.client_connect_admin_message, normal_message, server.player_ip(cn))
         
         for _, cn in ipairs(server.clients()) do

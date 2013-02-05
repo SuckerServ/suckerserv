@@ -1,6 +1,6 @@
-project(hopmod)
+project(SuckerServ)
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.6.2)
 
 set(INSTALL_DIR ${PROJECT_SOURCE_DIR})
 set(INSTALL_LIBRARY_DIR ${INSTALL_DIR}/lib)

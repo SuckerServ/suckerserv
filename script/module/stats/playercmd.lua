@@ -14,6 +14,10 @@ local function total_stats(query_backend, sendto, player)
     local kpd = round(row.frags / row.deaths, 2)
     local acc = round((row.hits / row.shots)*100)
 
+    if server.player_ranking then 
+        player_ranking = server.player_ranking(server.player_name(player)) 
+    end
+
     if not player_ranking then
         player_ranking = "Unknown" 
     end

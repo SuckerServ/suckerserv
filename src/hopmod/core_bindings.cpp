@@ -59,6 +59,9 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "player_ping", server::player_ping);
     bind_function(L, T, "player_ping_update", server::player_ping_update);
     bind_function(L, T, "player_lag", server::player_lag);
+    bind_function(L, T, "player_real_lag", server::player_real_lag);
+    bind_function(L, T, "player_maploaded", server::player_maploaded);
+    bind_function(L, T, "player_deathmillis", server::player_deathmillis);
     bind_function(L, T, "player_ip", server::player_ip);
     bind_function(L, T, "player_iplong", server::player_iplong);
     bind_function(L, T, "player_status", server::player_status);
@@ -79,6 +82,10 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "player_misses", server::player_misses);
     bind_function(L, T, "player_shots", server::player_shots);
     bind_function(L, T, "player_accuracy", server::player_accuracy);
+    bind_function(L, T, "player_accuracy2", server::player_accuracy2);
+    bind_function(L, T, "player_is_spy", server::player_is_spy);
+    bind_function(L, T, "player_clientmillis", server::player_clientmillis);
+    bind_function(L, T, "player_timetrial", server::player_timetrial);
     bind_function(L, T, "player_timeplayed", server::player_timeplayed);
     bind_function(L, T, "player_win", server::player_win);
     bind_function(L, T, "player_slay", server::player_slay);
@@ -102,10 +109,13 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "unsetmaster", server::unsetmaster);
     bind_function(L, T, "setmaster", server::set_player_master);
     bind_function(L, T, "setadmin", server::set_player_admin);
+    bind_function(L, T, "update_server_info", server::updateservinfo);
+    bind_function(L, T, "editvar", server::editvar);
+    bind_function(L, T, "setspy", server::set_spy);
     bind_function(L, T, "set_invisible_admin", server::set_player_private_admin);
     bind_function(L, T, "set_invisible_master", server::set_player_private_master);
     bind_function(L, T, "unsetpriv", server::unset_player_privilege);
-    
+
     bind_function(L, T, "send_auth_request", server::send_auth_request);
     bind_function(L, T, "send_auth_challenge_to_client", server::send_auth_challenge);
     
@@ -137,12 +147,6 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "shutdown", server::shutdown);
     bind_function(L, T, "restart_now", restart_now);
     bind_function(L, T, "reload_lua", reload_hopmod);
-
-	bind_function(L, T, "add_item", server::add_item);
-    bind_function(L, T, "add_flag", server::add_flag);
-    bind_function(L, T, "prepare_hold_mode", server::prepare_hold_mode);
-    bind_function(L, T, "add_base", server::add_base);
-    bind_function(L, T, "prepare_capture_mode", server::prepare_capture_mode);
     
     bind_function(L, T, "file_exists", file_exists);
     bind_function(L, T, "dir_exists", dir_exists);
@@ -155,6 +159,13 @@ void bind_core_functions(lua_State * L, int T)
     
     int get_lua_stack_size();
     bind_function(L, T, "lua_stack_size", get_lua_stack_size);
+    
+    bind_function(L, T, "enet_time_set", enet_time_set);
+    bind_function(L, T, "enet_time_get", (int (*)())enet_time_get);
+    
+    bind_function(L, T, "revision", server::revision);
+    bind_function(L, T, "version", server::version);
+    bind_function(L, T, "filtertext", server::extfiltertext);
 }
 
 template<int Constant>
@@ -373,10 +384,13 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "reserved_slots", server::reservedslots);
     bind_wo_var(L, T, "reserved_slots_password", server::slotpass);
     bind_ro_var(L, T, "reserved_slots_occupied", server::reservedslots_use);
-    bind_var(L, T, "ctf_teamkill_penalty", server::ctftkpenalty);
     bind_ro_var(L, T, "reloaded", reloaded);
     bind_prop<__uid_t>(L, T, "UID", getuid, NULL);
     bind_var(L, T, "spectator_delay", server::spectator_delay);
+    bind_var(L, T, "ctf_teamkill_penalty", server::ctftkpenalty);
+    bind_var(L, T, "specslots", server::spec_slots);
+    bind_var(L, T, "cheatdetection", server::anti_cheat_enabled);
+    bind_var(L, T, "hide_and_seek", server::hide_and_seek);
     
     bind_var(L, T, "flood_protect_text", server::sv_text_hit_length);
     bind_var(L, T, "flood_protect_sayteam", server::sv_sayteam_hit_length);
@@ -395,7 +409,13 @@ void bind_core_variables(lua_State * L, int T)
         
     bind_var(L, T, "timer_alarm_threshold", server::timer_alarm_threshold);
     bind_var(L, T, "enable_extinfo", server::enable_extinfo);
+
+    bind_ro_var(L, T, "anti_cheat_system_rev", server::anti_cheat_system_rev);
     
+    bind_var(L, T, "ext_admin_pass", server::ext_admin_pass);
+    
+    bind_var(L, T, "mapcrc", server::mcrc);
+
     bind_prop<int>(L, T, "mastermode", server::get_mastermode, server::script_set_mastermode);
 }
 

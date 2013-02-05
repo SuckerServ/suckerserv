@@ -126,7 +126,7 @@ local function query_request_constructor(socket, id, name, domain, callback)
     local function process_reply(unused, arguments)
         
         if arguments[1] == "FoundId" then
-            callback(true)
+            callback(true, arguments[3])
         else
             callback(false)
         end

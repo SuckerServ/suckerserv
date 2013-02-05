@@ -2,6 +2,7 @@
 ** $Id: luaconf.h,v 1.81 2006/02/10 17:44:06 roberto Exp $
 ** Configuration file for Lua
 ** See Copyright Notice in lua.h
+** Added logic operators : & | ^^ (xor) << >> ~, arithmetic operator \ (integer division) and != as an alternative to ~=
 */
 
 
@@ -197,12 +198,19 @@
 */
 #define LUA_IDSIZE	60
 
+/*
+@@ LUA_BITWISE_OPERATORS enable logical operators | & ^| >> << ~ on lua_Number
+@* but also arithmetic operator \ (integer division) and != as an alernative to ~=
+*/
+#define LUA_BITWISE_OPERATORS
+
 
 /*
 ** {==================================================================
 ** Stand-alone configuration
 ** ===================================================================
 */
+
 
 #if defined(lua_c) || defined(luaall_c)
 
@@ -513,25 +521,6 @@
 
 
 /*
-@@ The luai_num* macros define the primitive operations over numbers.
-*/
-#if defined(LUA_CORE)
-#include <math.h>
-#define luai_numadd(a,b)	((a)+(b))
-#define luai_numsub(a,b)	((a)-(b))
-#define luai_nummul(a,b)	((a)*(b))
-#define luai_numdiv(a,b)	((a)/(b))
-#define luai_nummod(a,b)	((a) - floor((a)/(b))*(b))
-#define luai_numpow(a,b)	(pow(a,b))
-#define luai_numunm(a)		(-(a))
-#define luai_numeq(a,b)		((a)==(b))
-#define luai_numlt(a,b)		((a)<(b))
-#define luai_numle(a,b)		((a)<=(b))
-#define luai_numisnan(a)	(!luai_numeq((a), (a)))
-#endif
-
-
-/*
 @@ lua_number2int is a macro to convert lua_Number to int.
 @@ lua_number2integer is a macro to convert lua_Number to lua_Integer.
 ** CHANGE them if you know a faster way to convert a lua_Number to
@@ -552,6 +541,38 @@ union luai_Cast { double l_d; long l_l; };
 #else
 #define lua_number2int(i,d)	((i)=(int)(d))
 #define lua_number2integer(i,d)	((i)=(lua_Integer)(d))
+
+#endif
+
+
+/*
+@@ The luai_num* macros define the primitive operations over numbers.
+*/
+#if defined(LUA_CORE)
+#include <math.h>
+#define luai_numadd(a,b)	((a)+(b))
+#define luai_numsub(a,b)	((a)-(b))
+#define luai_nummul(a,b)	((a)*(b))
+#define luai_numdiv(a,b)	((a)/(b))
+#ifdef LUA_BITWISE_OPERATORS
+#define luai_numintdiv(a,b)	(floor((a)/(b)))
+#endif
+#define luai_nummod(a,b)	((a) - floor((a)/(b))*(b))
+#define luai_numpow(a,b)	(pow(a,b))
+#define luai_numunm(a)		(-(a))
+#define luai_numeq(a,b)		((a)==(b))
+#define luai_numlt(a,b)		((a)<(b))
+#define luai_numle(a,b)		((a)<=(b))
+#define luai_numisnan(a)	(!luai_numeq((a), (a)))
+
+#if defined(LUA_BITWISE_OPERATORS)
+#define luai_logor(r, a, b)	{ lua_Integer ai,bi; lua_number2int(ai,a); lua_number2int(bi,b); r = ai|bi; }
+#define luai_logand(r, a,b)	{ lua_Integer ai,bi; lua_number2int(ai,a); lua_number2int(bi,b); r = ai&bi; }
+#define luai_logxor(r, a,b)	{ lua_Integer ai,bi; lua_number2int(ai,a); lua_number2int(bi,b); r = ai^bi; }
+#define luai_lognot(r,a)	{ lua_Integer ai; lua_number2int(ai,a); r = ~ai; }
+#define luai_loglshft(r, a,b)	{ lua_Integer ai,bi; lua_number2int(ai,a); lua_number2int(bi,b); r = ai<<bi; }
+#define luai_logrshft(r, a,b)	{ lua_Integer ai,bi; lua_number2int(ai,a); lua_number2int(bi,b); r = ai>>bi; }
+#endif
 
 #endif
 

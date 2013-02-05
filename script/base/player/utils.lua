@@ -101,7 +101,8 @@ function server.is_teamkill(player1, player2)
 end
 
 function server.valid_cn(cn)
-    return server.player_sessionid(tonumber(cn) or -1) ~= -1
+    local cn = tonumber(cn)
+    return server.player_sessionid(cn or -1) ~= -1 and not server.player_is_spy(cn or -1)
 end
 
 function server.specall()

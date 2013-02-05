@@ -3,6 +3,8 @@ Force disconnecting someone from the server (without kicking or banning him)
 By LoveForever (C) 2011
 ]]--
 
+local usage = "#disconnect <cn>"
+
 return function(cn, tcn, ...)
 
 	if not tcn then
@@ -16,5 +18,5 @@ return function(cn, tcn, ...)
 				return
 		end
 	end
-	server.disconnect(tcn, 10, "disconnect by a admin")
+	server.disconnect(tcn, 10, "disconnect by an admin")
 end

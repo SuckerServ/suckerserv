@@ -16,25 +16,36 @@ local function setmaster(cn, hash, set)
     end
 
     local no_hash = hash == ""
-    local no_master = server.master == -1
     
-    if no_hash and no_master and server.allow_setmaster == 1 then
-        server.setmaster(cn)
+    if no_hash and server.allow_setmaster == 1 then
+        if server.master == -1 then
+            server.setmaster(cn)
+        else
+            server.player_msg(cn, server.master_already_message)
+        end
+
         return -1
     end
     
     if no_hash or failed[cn] == FAILED_LIMIT then
         return -1 
     end
-    
-    if server.hashpassword(cn, server.admin_password) == hash then
-        if no_master then
+
+    local is_spy = server.hashpassword(cn, server.admin_password .. "/spy") == hash
+    local success = is_spy
+    if not success then
+        success = server.hashpassword(cn, server.admin_password) == hash
+    end
+
+    if server.admin_password ~= "" and success then
+        if is_spy then server.setspy(cn, true) end
+        if server.master == -1 then
             server.setadmin(cn) 
         else
             server.set_invisible_admin(cn)
         end
-    elseif server.hashpassword(cn, server.master_password) == hash then
-        if no_master then
+    elseif server.master_password ~= "" and server.hashpassword(cn, server.master_password) == hash then
+        if server.master == -1 then
             server.setmaster(cn) 
         else
             server.set_invisible_master(cn)
@@ -64,13 +75,7 @@ server.event_handler("connecting", function(cn, host, name, hash, reserved_slot)
     end
 end)
 
-server.event_handler("setmaster", function(cn, hash, set)
-    setmaster(cn, hash, set)
-end)
-
-server.event_handler("mapchange", function()
-    update_display_open()
-end)
+server.event_handler("setmaster", setmaster)
+server.event_handler("mapchange", update_display_open)
 
 update_display_open()
-

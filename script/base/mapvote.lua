@@ -29,7 +29,7 @@ local function mapvote(cn, map, mode)
 	end
     
     if not allowed_modes[mode] then
-        server.player_msg(cn, string.format(server.mapvote_disallowed_gamemode_message, mode))
+        server.player_msg(cn, string.format(server.mapvote_disallowed_gamemode, mode))
         return -1
     end
     

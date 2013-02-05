@@ -356,6 +356,11 @@ bool parser::compare_option(option a, option b)
     return a.name < b.name;
 }
 
+basic_binder::~basic_binder()
+{
+
+}
+
 string_binder::string_binder(std::string & output)
 :m_str(output)
 {

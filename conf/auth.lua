@@ -10,6 +10,11 @@ auth.directory.domain{
 }
 
 auth.directory.domain{
+    id = "suckerserv:master",
+    server = "piernov.org"
+}
+
+auth.directory.domain{
     id = "suckerserv:admin",
     server = "piernov.org"
 }

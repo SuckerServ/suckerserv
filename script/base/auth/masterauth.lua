@@ -10,34 +10,16 @@ auth.directory.domain{
     id = ""
 }
 
+server.current_master_global_authed = nil
+server.current_master_global_auth_user = nil
+
 local banned = list_to_set(table_unique(server.parse_list(server.masterauth_banned)))
 
-local current_master_authed = false
-local auth_name
-local auth_player_cn
-local message
-
-local function broadcast() return function(text) server.msg(text) end end
-local function unicast(cn) return function(text) server.player_msg(cn, text) end end
-
-local function send_info_message(sender)
-    
-    if not message then
-       local cn = auth_player_cn
-       local name = server.player_displayname(cn)
-       message = string.format(server.claimmaster_message, name, auth_name)
-    end
-    
-    sender(message)
-end
-
 auth.listener("", function(cn, user_id, domain, status)
-
+    
     if status ~= auth.request_status.SUCCESS then return end
     
-    local no_admin = server.master == -1 or server.player_priv_code(server.master) ~= server.PRIV_ADMIN
-    
-    if server.player_priv_code(cn) == 0 and no_admin then
+    if server.player_priv_code(cn) == 0 then
         
         local name = server.player_name(cn)
         
@@ -47,30 +29,27 @@ auth.listener("", function(cn, user_id, domain, status)
         end
         
         if server.setmaster(cn) then
-        
-            current_master_authed = true
-            message = nil
-            auth_name = user_id
-            auth_player_cn = cn
-            
-            send_info_message(broadcast())
-            
+            server.current_master_global_authed = cn
+            server.current_master_global_auth_user = user_id
+            server.msg(string.format(server.claimmaster_message, server.player_displayname(cn), user_id))
             server.log(string.format("%s(%i) claimed master as '%s'", name, cn, user_id))
-        else
-            server.player_msg(cn, server.player_master_disabled_message)
+            server.admin_log(string.format("%s(%i) claimed master as '%s'", name, cn, user_id))
         end
     end
 end)
 
 server.event_handler("connect", function(cn)
-    if current_master_authed then
-        send_info_message(unicast(cn))
+    if server.current_master_authed then
+        server.player_msg(cn, string.format(server.claimmaster_message, server.player_displayname(server.current_master_authed), server.current_master_global_auth_user))
     end
 end)
-
+server.event_handler("disconnect", function(cn)
+    if server.current_master_global_authed == cn then
+        server.current_master_global_authed = nil
+    end
+end)
 server.event_handler("privilege", function(cn, old_priv, new_priv)
-    if current_master_authed and cn == auth_player_cn and new_priv ~= server.PRIV_MASTER then
-        current_master_authed = false
+    if server.current_master_global_authed == cn and new_priv ~= server.PRIV_MASTER then
+        server.current_master_global_authed = nil
     end
 end)
-

@@ -67,9 +67,9 @@ local function external_load(filename)
 --    os.execute("test -e " .. file .. " || touch " .. file)
     if server.file_exists(file)
     then
-	server.execute_cubescript_file(file)
+        exec(file)
     else
-	os.execute("touch " .. file .. " &")
+        os.execute("touch " .. file .. " &")
     end
     
     return domains_and_users, case_insensitive_domains

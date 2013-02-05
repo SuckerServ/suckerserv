@@ -1,6 +1,12 @@
-#!/bin/bash
-PROJECT="$(tput bold ; tput setaf 3)SuckerServ-v4$(tput sgr0)"
-THREADS=`cat /proc/cpuinfo | grep processor | wc -l`
+#!/usr/bin/env bash
+export REVISION=`svn log -l1 -q | cut --delimiter=" " -f1 -s | cut -c2-`
+PROJECT="$(tput bold ; tput setaf 3)SuckerServ-v4 $(tput setaf 2)r$REVISION$(tput sgr0)"
+if [ -z $THREADS ]; then 
+    THREADS=1
+    if [ -r "/proc/cpuinfo" ]; then
+        THREADS=`cat /proc/cpuinfo | grep processor | wc -l`
+    fi
+fi
 ARG_LENGTH=$#
 if [ $ARG_LENGTH -gt 2 -o "$1" == "--help" ]; then
   echo "Usage: $(tput bold ; tput setaf 4)$0$(tput sgr0) [--$(tput bold ; tput setaf 5)recompile$(tput sgr0)] [--$(tput bold ; tput setaf 1)debug$(tput sgr0)] — Build $PROJECT"
@@ -22,7 +28,7 @@ if [ "$ARG_LENGTH" -gt 0 -a "$1" == "--recompile" -o "$2" == "--recompile" ]; th
   rm -rf $COMPILEDIR
 fi
 if [ $THREADS -lt 1 ]; then
-  echo "Unable to detect number of threads, using 1 thread."
+  echo "$(tput bold ; tput setaf 1)Unable to detect number of threads, using 1 thread.$(tput sgr0)"
   THREADS=1
 fi
 if [ ! -d $COMPILEDIR ]; then
@@ -33,8 +39,19 @@ STRTHREADS="threads"
 if [ $THREADS -eq 1 ]; then
   STRTHREADS="thread"
 fi
+
+# Now compile the source code and install it in server's directory
 echo "$STRCOMPILE $PROJECT using $(tput bold ; tput setaf 4)$THREADS$(tput sgr0) $STRTHREADS ($BUILDTYPE build)"
-time (cmake $COMPILEFLAGS .. ; make -j$THREADS install)
-[[ "$?" != "0" ]] && echo "$(tput bold ; tput setaf 1)COMPILATION FAILED$(tput sgr0)" && exit 1
+cmake $COMPILEFLAGS ..
+[[ "$?" != "0" ]] && echo "$(tput bold ; tput setaf 1)CMAKE FAILED$(tput sgr0)" && exit 1
+if `echo "$COMPILEFLAGS" | grep -q "DEBUG"`; then
+  make -j$THREADS install
+  [[ "$?" != "0" ]] && echo "$(tput bold ; tput setaf 1)MAKE INSTALL FAILED$(tput sgr0)" && exit 1
+else
+  make -j$THREADS install/strip
+  [[ "$?" != "0" ]] && echo "$(tput bold ; tput setaf 1)MAKE INSTALL/STRIP FAILED$(tput sgr0)" && exit 1
+fi
+
+# Give right execution permissions to executables
 cd ../bin
 for i in sauer_server server monitor env.sh utils/newserver.sh utils/convert utils/luapp utils/keygen utils/shell.rb utils/shell.pl; do chmod +x $i; done

@@ -147,7 +147,7 @@ p_status() {
 
 p_update_conf() {
 
-    if ! p_exec reloadscripts
+    if ! p_exec reload_lua
     then
 	return 1
     fi

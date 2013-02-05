@@ -2,7 +2,7 @@
 
 lua::event< boost::tuple<> >                                         event_init("init");
 lua::event< boost::tuple<int, const char *, const char *, const char *, bool> >  event_connecting("connecting");
-lua::event< boost::tuple<int> >                                      event_connect("connect");
+lua::event< boost::tuple<int, bool> >                                event_connect("connect");
 lua::event< boost::tuple<int,const char *> >                         event_disconnect("disconnect");
 lua::event< boost::tuple<const char *,const char *> >                event_failedconnect("failedconnect");
 lua::event< boost::tuple<int> >                                      event_maploaded("maploaded");
@@ -24,9 +24,7 @@ lua::event< boost::tuple<int,int,const char *> >                     event_authr
 lua::event< boost::tuple<int,int,int> >                              event_addbot("addbot");
 lua::event< boost::tuple<int> >                                      event_delbot("delbot");
 lua::event< boost::tuple<int> >                                      event_botleft("botleft");
-lua::event< boost::tuple<int> >                                      event_mapcrcfail("mapcrcfail");
-lua::event< boost::tuple<int, const char *, int> >                   event_mapcrc("mapcrc");
-lua::event< boost::tuple<int> >                                      event_checkmaps("checkmaps");
+lua::event< boost::tuple<int, const char *, int> >                   event_modmap("modmap");
 lua::event< boost::tuple<int,int> >                                  event_frag("frag");
 lua::event< boost::tuple<int,int,int> >                              event_shot("shot");
 lua::event< boost::tuple<int> >                                      event_suicide("suicide");
@@ -48,7 +46,7 @@ lua::event< boost::tuple<int,int> >                                  event_endre
 lua::event< boost::tuple<const char *,const char *> >                event_votepassed("votepassed");
 lua::event< boost::tuple<int, const char *> >                        event_takeflag("takeflag");
 lua::event< boost::tuple<int, const char *> >                        event_dropflag("dropflag");
-lua::event< boost::tuple<int, const char *, int> >                   event_scoreflag("scoreflag");
+lua::event< boost::tuple<int, const char *, int, int> >              event_scoreflag("scoreflag");
 lua::event< boost::tuple<int, const char *> >                        event_returnflag("returnflag");
 lua::event< boost::tuple<const char *> >                             event_resetflag("resetflag");
 lua::event< boost::tuple<const char *, int> >                        event_scoreupdate("scoreupdate");
@@ -59,6 +57,7 @@ lua::event< boost::tuple<> >                                         event_reloa
 lua::event< boost::tuple<const char *> >                             event_varchanged("varchanged");
 lua::event< boost::tuple<> >                                         event_sleep("sleep");
 lua::event< boost::tuple<> >                                         event_interval("interval");
+lua::event< boost::tuple<int, int, int, const char *> >              event_cheat("cheat");
 
 void register_event_idents(lua::event_environment & env)
 {
@@ -87,9 +86,7 @@ void register_event_idents(lua::event_environment & env)
         & event_addbot,
         & event_delbot,
         & event_botleft,
-        & event_mapcrcfail,
-        & event_mapcrc,
-        & event_checkmaps,
+        & event_modmap,
         & event_frag,
         & event_shot,
         & event_suicide,
@@ -122,6 +119,7 @@ void register_event_idents(lua::event_environment & env)
         & event_varchanged,
         & event_sleep,
         & event_interval,
+        & event_cheat,
         NULL
     };
     

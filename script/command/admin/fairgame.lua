@@ -5,6 +5,8 @@
 
 ]]
 
+local usage = "#fairgame <map> [<mode>] [lockteams]"
+
 local running = false
 local runned = false
 local teams_locked = false

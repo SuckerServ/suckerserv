@@ -1,5 +1,7 @@
 local normal_implementation
 
+local usage = "#setnextmap <map> [<mode>]"
+
 local function create_map_rotation_implementation(map, mode)
 
     local current_map_rotation = map_rotation.get_map_rotation()

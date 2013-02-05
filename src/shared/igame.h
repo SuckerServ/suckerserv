@@ -1,3 +1,6 @@
+#ifndef __IGAME_H__
+#define __IGAME_H__
+
 // the interface the engine uses to run the gameplay module
 
 namespace entities
@@ -117,5 +120,13 @@ namespace server
     extern bool ispaused();
     extern void started();
     extern void shutdown();
+    extern bool ctftkpenalty;
+    extern bool spec_slots;
+    extern bool anti_cheat_enabled;
+    extern int anti_cheat_system_rev;
+    extern uint mcrc;
+    extern void real_cn(int &n);
+    extern int spycn;
 }
 
+#endif

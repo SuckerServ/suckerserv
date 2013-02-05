@@ -33,14 +33,14 @@ local function fuller_team()
 
     local sizes = server.team_sizes()
     
-    return _if((sizes.good > sizes.evil), "good", "evil")
+    return _if(((sizes.good or 0) > (sizes.evil or 0)), "good", "evil")
 end
 
 local function team_diff()
 
     local sizes = server.team_sizes()
     
-    return (math.abs(sizes.good - sizes.evil))
+    return (math.abs((sizes.good or 0) - (sizes.evil or 0)))
 end
 
 local function is_unbalanced()
@@ -58,7 +58,7 @@ local function move_player(cn, team)
     if server.player_team(cn) == team
     then
 	server.changeteam(cn, team_map[team])
-	server.player_msg(cn,string.format(orange("You switched the team for balance.")))
+	server.player_msg(cn,string.format(server.balance_switched_message))
 	
 	search_dead_player = nil
 	
@@ -93,7 +93,7 @@ local function check_balance(option)
 	then
 	    if not search_dead_player
 	    then
-		check_already_dead_player(fuller_team())
+		check_already_dead_players(fuller_team())
 	    end
 	    
 	elseif search_dead_player
@@ -141,7 +141,7 @@ server.event_handler("chteamrequest", function(cn, old, new)
     then
 	if not team_map[new]
 	then
-	    server.player_msg(cn,red("Only teams good and evil are allowed."))
+	    server.player_msg(cn, string.format(server.balance_allowed_teams_message))
 	    return (-1)
 	    
 	elseif not (server.player_status_code(cn) == 5) and using_moveblock
@@ -150,7 +150,7 @@ server.event_handler("chteamrequest", function(cn, old, new)
 	    
 	    if (math.abs((sizes[old] - 1) - (sizes[new] + 1))) > 1
 	    then
-		server.player_msg(cn, red(string.format("Team change disallowed: \"%s\" team has enough players.", new)))
+		server.player_msg(cn, string.format(server.balance_disallow_message, new))
 		return (-1)
 	    end
 	end

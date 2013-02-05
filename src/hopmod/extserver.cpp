@@ -13,6 +13,8 @@ int sv_remip_hit_length = 0;
 int sv_newmap_hit_length = 0;
 int sv_spec_hit_length = 0;
 
+string ext_admin_pass = "";
+
 struct disconnect_info
 {
     int cn;
@@ -24,7 +26,7 @@ struct disconnect_info
 static int execute_disconnect(void * info_vptr)
 {
     disconnect_info * info = reinterpret_cast<disconnect_info *>(info_vptr);
-    clientinfo * ci = reinterpret_cast<clientinfo *>(getclientinfo(info->cn));
+    clientinfo * ci = getinfo(info->cn);
     if(!ci || ci->sessionid != info->session_id)
     {
         delete info;
@@ -121,7 +123,7 @@ void player_rename(int cn, const char * newname, bool public_rename)
 {
     char safenewname[MAXNAMELEN + 1];
     filtertext(safenewname, newname, false, MAXNAMELEN);
-    if(!safenewname[0]) copystring(safenewname, "unnamed");
+    if(!safenewname[0]) copystring(safenewname, "unnamed", MAXNAMELEN + 1);
     
     clientinfo * ci = get_ci(cn);
     
@@ -201,12 +203,12 @@ const char * player_team(int cn)
 
 const char * player_ip(int cn)
 {
-    return get_ci(cn)->hostname();
+    return get_ci(get_ci(cn)->ownernum)->hostname();
 }
 
 unsigned long player_iplong(int cn)
 {
-    return ntohl(getclientip(get_ci(cn)->clientnum));
+    return ntohl(getclientip(get_ci(get_ci(cn)->ownernum)->clientnum));
 }
 
 int player_status_code(int cn)
@@ -227,6 +229,22 @@ int player_ping_update(int cn)
 int player_lag(int cn)
 {
     return get_ci(cn)->lag;
+}
+
+int player_real_lag(int cn)
+{
+    return totalmillis - get_ci(cn)->lastposupdate;
+}
+
+int player_maploaded(int cn)
+{
+    return get_ci(cn)->maploaded;
+}
+
+int player_deathmillis(int cn)
+{
+    clientinfo * ci = get_ci(cn);
+    return ci->state.lastdeath;
 }
 
 int player_frags(int cn)
@@ -309,9 +327,33 @@ int player_shots(int cn)
 int player_accuracy(int cn)
 {
     clientinfo * ci = get_ci(cn);
-    int damagewasted = ci->state.explosivedamage + ci->state.shotdamage - ci->state.damage;
-    int damage = ci->state.damage;
-    return static_cast<int>(roundf(static_cast<float>(damage)/std::max(damage+damagewasted,1)*100));
+    int shots = ci->state.shots;
+    int hits = shots - ci->state.misses;
+    return static_cast<int>(roundf(static_cast<float>(hits)/std::max(shots,1)*100));
+}
+
+int player_accuracy2(int cn)
+{
+    clientinfo * ci = get_ci(cn);
+    return static_cast<int>(roundf(static_cast<float>(ci->state.damage*100/max(ci->state.shotdamage,1))));
+}
+
+bool player_is_spy(int cn)
+{
+    clientinfo * ci = get_ci(cn);
+    return ci->spy;
+}
+
+int player_clientmillis(int cn)
+{
+    clientinfo * ci = get_ci(cn);
+    return ci->clientmillis;
+}
+
+int player_timetrial(int cn)
+{ 
+    clientinfo * ci = get_ci(cn);
+    return ci->timetrial >= 0 ? ci->timetrial : -1;
 }
 
 int player_privilege_code(int cn)
@@ -573,6 +615,8 @@ void unset_player_privilege(int cn)
 void set_player_privilege(int cn, int priv_code, bool public_priv = false)
 {
     clientinfo * player = get_ci(cn);
+
+    public_priv = !player->spy && public_priv;
     
     if(player->privilege == priv_code) return;
     if(priv_code == PRIV_NONE) unset_player_privilege(cn);
@@ -1056,6 +1100,28 @@ void player_respawn(int cn)
     try_respawn(ci, ci);
 }
 
+int revision()
+{
+#if defined(REVISION) && (REVISION + 0)
+    return REVISION;
+#endif
+    return -1;
+}
+
+const char *version()
+{
+    static char buf[40];
+    formatstring(buf)("%s %s", __TIME__, __DATE__);
+    return buf;
+}
+
+const char *extfiltertext(const char *src)
+{
+    static string dst; 
+    filtertext(dst, src);
+    return dst;
+}
+
 void player_nospawn(int cn, int no_spawn)
 {
     clientinfo *ci = getinfo(cn);
@@ -1063,6 +1129,19 @@ void player_nospawn(int cn, int no_spawn)
     ci->no_spawn = no_spawn;
 }
 
-#include <static_item_functions.h>
+void updateservinfo(int cn, const char* servername)
+{
+    clientinfo *ci = getinfo(cn);
+    if (!ci) return;
+    sendf(ci->clientnum, 1, "ri5s", N_SERVINFO, ci->clientnum, PROTOCOL_VERSION, ci->sessionid, 0, servername);
+}
+
+
+void editvar(int cn, const char *var, int value) 
+{
+    clientinfo *ci = getinfo(cn);
+    if (!ci) return;
+    sendf(cn, 1, "ri5si", N_CLIENT, cn, 100/*should be safe*/, N_EDITVAR, ID_VAR, var, value);
+}
 
 #endif
