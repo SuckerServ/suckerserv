@@ -108,11 +108,6 @@ server.event_handler("connect", check_name)
 
 server.event_handler("rename", check_name)
 
-server.event_handler("disconnect", function(cn)
-
-    server.player_vars(cn).reserved_tag = nil
-end)
-
 if server.file_exists("conf/clans")
 then
     script("conf/clans")

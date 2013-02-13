@@ -317,7 +317,6 @@ function internal.loadEventHandlers()
     
     local disconnect = server.event_handler("disconnect", function(cn)
         internal.updatePlayer(cn).playing = false
-        server.player_vars(cn).stats_auth_name = nil
     end)
     
     local addbot = server.event_handler("addbot", function(cn, skill, botcn)
