@@ -1,23 +1,39 @@
-* WARNING : This is *NOT* a stable release, so if you encounter some problems, please report all of these *
-* Because authserver has been removed directly in HopMod-v4, if you want to install one, please choose the trunk version either the MasterLua script *
+* WARNING : This is NOT a stable release, so if you encounter problems,
+  please report all of them and don't hesitate to send patches. 
+  Bugtracker: https://code.google.com/p/suckerserv/issues *
+
+* Since the v3 authserver has not been entirely ported to v4/5,
+ if you want to use it, please install the SuckerServ-v3's one.
+ More information at: http://wiki.piernov.org/en:suckerserv:auth *
 
 This server is based on HopMod-v4
 
 == How to build SuckerServ ==
 
-http://piernov.org/dokuwiki/en:suckerserv:installation
+Installation guide : http://wiki.piernov.org/en:suckerserv:installation
 
-Be sure to install all Dependencies needed!!! (cmake, libgeoip-dev, libsqlite3-dev, zlib1g-dev, libmysqlclient-dev)
+Be sure to install all the dependencies needed!
+List: http://wiki.piernov.org/en:suckerserv:installation#required_dependencies
 
-Compiling with the compile script:
-Make the script executable and run it →
+= Quick installation =
 
+Make sure the script is marked as executable:
     chmod +x compile.sh
+Then runt it:
     ./compile.sh
 
-Usage: ./compile.sh [--recompile] [--debug] — Build SuckerServ
+Usage: ./compile.sh [--recompile] [--debug] — Build SuckerServ-v4
           --recompile   — Delete $COMPILEDIR (release_build or debug_build with --debug) before compiling SuckerServ again
           --debug       — Make a debug build
+
+== Starting the server ==
+
+To start the server, run:
+    ./bin/server start
+
+== Configuration ==
+
+The configuration file is located at conf/server.conf
 
 
 For more informations, contact us at IRC: #suckerserv@irc.gamesurge.net
