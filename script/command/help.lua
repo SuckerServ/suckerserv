@@ -57,4 +57,4 @@ return function(cn, command_name)
     
     server.player_msg(cn, string.format("List of command names: %s", list_of_command_names))
     server.player_msg(cn, "Command descriptions: #help <command>")
-end, "[command]", "List all player commands available or show command description and usage"
+end, "[command]", "List all player commands available or show command description and usage", { "commands" }
