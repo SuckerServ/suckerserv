@@ -2904,6 +2904,7 @@ namespace server
             case N_SAYTEAM:
             {
                 getstring(text, p);
+                filtertext(text, text);
                 if(!ci || !cq || (ci->state.state==CS_SPECTATOR && !ci->privilege) || !m_teammode || !cq->team[0] || message::limit(ci, &ci->n_sayteam_millis, message::resend_time::sayteam, "N_SAYTEAM") || ci->spy) break;
                 if(event_sayteam(event_listeners(), boost::make_tuple(ci->clientnum, text)) == false)
                 {
