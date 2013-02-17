@@ -31,8 +31,6 @@ local function chat(cn)
 end
 
 
-server.event_handler("disconnect", unset_mem)
-
 server.event_handler("spectator", function(cn, joined)
 
     if joined == 0
@@ -65,7 +63,6 @@ server.event_handler("finishedgame", function()
 		    
 			if obj:valid()
 			then
-			    unset_mem(obj.cn)
 			    obj:disconnect(server.DISC_TIMEOUT, "too long inactive in spec")
 			end
 		    end)
