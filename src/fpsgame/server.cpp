@@ -803,7 +803,8 @@ namespace server
         {
             case PRIV_ADMIN: return "admin";
             case PRIV_MASTER: return "master";
-            default: return "none";
+            case PRIV_NONE: return "none";
+            default: return "unknown";
         }
     }
 
