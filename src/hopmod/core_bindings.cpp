@@ -169,6 +169,7 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "revision", hopmod::revision);
     bind_function(L, T, "version", hopmod::build_date);
     bind_function(L, T, "build_date", hopmod::build_date);
+    bind_function(L, T, "build_time", hopmod::build_time);
     
 }
 
