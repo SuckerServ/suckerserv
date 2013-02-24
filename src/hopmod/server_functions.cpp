@@ -589,7 +589,11 @@ void cleanup_masterstate(clientinfo * master)
         mastermode = MM_OPEN;
         mastermode_owner = -1;
         mastermode_mtime = totalmillis;
-        allowedips.setsize(0);
+        if(reset_mm)
+        {
+            mastermode = display_open ? MM_OPEN : MM_AUTH;
+            allowedips.setsize(0);
+        }
     }
     
     if(gamepaused && cn == pausegame_owner) pausegame(false);
