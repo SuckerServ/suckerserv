@@ -33,9 +33,6 @@ local function update(cn)
     server.player_vars(cn).inactivity_time = server.gamemillis
 end
 
-
-server.event_handler("disconnect", clean)
-
 server.event_handler("finishedgame", mrproper)
 
 server.event_handler("spectator", function(cn, joined)

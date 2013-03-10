@@ -2,6 +2,7 @@
 
 #ifndef _TOOLS_H
 #define _TOOLS_H
+#include <string>
 
 #ifdef NULL
 #undef NULL
@@ -1154,6 +1155,41 @@ static inline uchar uni2cube(int c)
 }
 extern int decodeutf8(uchar *dst, int dstlen, uchar *src, int srclen, int *carry = NULL);
 extern int encodeutf8(uchar *dstbuf, int dstlen, uchar *srcbuf, int srclen, int *carry = NULL);
+
+extern const char *decodeutf8(const char *src, std::string &buf);
+extern const char *encodeutf8(const char *src, std::string &buf);
+
+class convert2utf8
+{
+    public:
+        convert2utf8(const char *src)
+        {
+            buf.reserve((strlen(src)*4)+1);
+            conv = encodeutf8(src, buf);
+        }
+        const char *str() { return conv; }
+        const std::string &stdstr() { return buf; }
+        size_t length() { return buf.length(); }
+    private:
+        const char *conv;
+        std::string buf;
+};
+
+class convert2cube
+{
+    public:
+        convert2cube(const char *src)
+        {
+            buf.reserve(strlen(src)+1);
+            conv = decodeutf8(src, buf);
+        }
+        const char *str() { return conv; }
+        const std::string &stdstr() { return buf; }
+        size_t length() { return buf.length(); }
+    private:
+        const char *conv;
+        std::string buf;
+};
 
 extern char *makerelpath(const char *dir, const char *file, const char *prefix = NULL, const char *cmd = NULL);
 extern char *path(char *s);

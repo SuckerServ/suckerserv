@@ -20,7 +20,7 @@ end
 
 local function defaultHandlerConstructor(eventName, listener, dequeueFunction)
     return server.event_handler(eventName, function(...)
-        table.insert(listener.queue, {name = eventName, args = argToArray(arg)})
+        table.insert(listener.queue, {name = eventName, args = argToArray({...})})
         dequeueFunction()
     end)
 end

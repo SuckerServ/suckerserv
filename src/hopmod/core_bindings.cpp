@@ -140,7 +140,7 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "get_gamemode_info", server::lua_gamemodeinfo);
     bind_function(L, T, "pausegame", (void (*)(bool))server::pausegame);
     
-    bind_function(L, T, "msg", server::sendservmsg);
+    bind_function(L, T, "msg", server::server_msg);
 
     bind_function(L, T, "changetime", server::changetime);
     bind_function(L, T, "changemap", server::changemap);
@@ -210,6 +210,7 @@ void bind_core_constants(lua_State * L, int T)
 
     bind_function(L, T, "PRIV_NONE", get_constant<PRIV_NONE>);
     bind_function(L, T, "PRIV_MASTER", get_constant<PRIV_MASTER>);
+    bind_function(L, T, "PRIV_AUTH", get_constant<PRIV_AUTH>);
     bind_function(L, T, "PRIV_ADMIN", get_constant<PRIV_ADMIN>);
 
     bind_function(L, T, "GREEN_ARMOUR", get_constant<A_GREEN>);
@@ -255,14 +256,16 @@ static int string_accessor(lua_State * L)
     if(lua_gettop(L) > 0) // Set variable
     {
         if(READ_ONLY) luaL_error(L, "variable is read-only");
-        copystring(var, lua_tostring(L, 1));
+        convert2cube varcubeenc(lua_tostring(L, 1));
+        copystring(var, varcubeenc.str());
         event_varchanged(event_listeners(), boost::make_tuple(lua_tostring(L, lua_upvalueindex(2))));
         return 0;
     }
     else // Get variable
     {
         if(WRITE_ONLY) luaL_error(L, "variable is write-only");
-        lua::push(L, var);
+        convert2utf8 varutf8(var);
+        lua::push(L, varutf8.str());
         return 1;
     }
 }

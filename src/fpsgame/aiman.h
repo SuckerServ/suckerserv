@@ -54,7 +54,9 @@ namespace aiman
                 copystring(bot->team, t.team, MAXTEAMLEN+1);
                 sendf(-1, 1, "riisi", N_SETTEAM, bot->clientnum, bot->team, 0);
                 
-                event_reteam(event_listeners(), boost::make_tuple(bot->clientnum, oldteam, bot->team));
+                convert2utf8 oldteamutf8(oldteam);
+                convert2utf8 newteamutf8(bot->team);
+                event_reteam(event_listeners(), boost::make_tuple(bot->clientnum, oldteamutf8.str(), newteamutf8.str()));
             }
             else teams.remove(0, 1);
         }

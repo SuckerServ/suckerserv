@@ -123,14 +123,6 @@ end)
 
 server.event_handler("rename", check_name)
 
-server.event_handler("disconnect", function(cn)
-
-    local v = server.player_vars(cn)
-    
-    v.nameprotect_wanted_authname	= nil
-    v.reserved_name			= nil
-end)
-
 server.event_handler("maintenance", function()
 
     local cur_time = server.uptime

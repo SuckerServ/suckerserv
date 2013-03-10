@@ -1,4 +1,5 @@
 #include "cube.h"
+#include <string>
 
 ///////////////////////// character conversion ///////////////
 
@@ -174,6 +175,70 @@ int encodeutf8(uchar *dstbuf, int dstlen, uchar *srcbuf, int srclen, int *carry)
 done:
     if(carry) *carry += src - srcbuf;
     return dst - dstbuf;
+}
+
+const char *decodeutf8(const char *src, std::string &buf) {
+
+    const uchar *iter = (const uchar *)src;
+    while (*iter) {
+        int c = *iter;
+        if (c < 0x80) { // ASCII char
+            buf += c;
+        } else if (c >= 0xC0) { // multi-byte char
+            int uni;
+            if (c >= 0xE0) {
+                if (c >= 0xF0) {
+                    uni = c & 0x7;
+                    if (!*++iter) break; 
+                    c = *iter;
+                    if ((c & 0xC0) != 0x80) continue;
+                    uni = (uni<<6) | (c & 0x3F);
+                } else { 
+                    uni = c & 0xF; 
+                }
+                if (!*++iter) break; 
+                c = *iter; 
+                if ((c & 0xC0) != 0x80) continue;
+                uni = (uni<<6) | (c & 0x3F);
+            } else { 
+                uni = c & 0x1F;
+            }
+            if (!*++iter) break; 
+            c = *iter; 
+            if ((c & 0xC0) != 0x80) continue;
+            uni = (uni<<6) | (c & 0x3F);
+            c = uni2cube(uni);
+            if(!c) continue;
+            buf += c;
+        }
+        iter++;
+    }
+    
+    return buf.c_str();
+}
+
+const char *encodeutf8(const char *src, std::string &buf) {
+    
+    for (; *src; src++) {
+        int uni = cube2uni(*src);
+        if (uni < 0x80) { // ASCII char
+            buf += uni;
+        } else if (uni < 0x800) { // 2-byte char
+            buf += 0xC0 | (uni>>6);
+            buf += 0x80 | (uni & 0x3F);
+        } else if (uni < 0x10000) { // 3-byte char
+            buf += 0xE0 | (uni>>12);
+            buf += 0x80 | (uni>>6 & 0x3F);
+            buf += 0x80 | (uni & 0x3F);
+        } else if (uni < 0x110000) { // 4-byte char (no longer exist yet)
+            buf += 0xF0 | (uni>>18);
+            buf += 0x80 | (uni>>12 & 0x3F);
+            buf += 0x80 | (uni>>6 & 0x3F);
+            buf += 0x80 | (uni & 0x3F);
+        }
+    }
+    
+    return buf.c_str();
 }
 
 ///////////////////////// file system ///////////////////////

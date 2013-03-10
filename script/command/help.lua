@@ -59,4 +59,4 @@ return function(cn, command_name)
         if i == 1 then v = "List of command names: " .. v end
         server.player_msg(cn, v)
     end
-end, "[command]", "List all player commands available or show command description and usage"
+end, "[command]", "List all player commands available or show command description and usage", { "commands" }

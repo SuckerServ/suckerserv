@@ -359,6 +359,7 @@ function auth.query_id(user_id, domain_id, callback)
     send_query()
 end
 
-for _, cn in ipairs(server.players()) do
-    initClientTable(cn)
+-- initialization on (re)load lua (no bots)
+for p in server.gclients() do
+    init_client_state(cn)
 end

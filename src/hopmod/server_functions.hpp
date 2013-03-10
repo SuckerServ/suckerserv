@@ -88,10 +88,11 @@ namespace server
     int player_id(lua_State * L);
     int player_ownernum(int);
     void player_msg(int,const char *);
-    const char * player_name(int);
+    void server_msg(const char *);
+    std::string player_name(int);
     void player_rename(int, const char *, bool);
     std::string player_displayname(int);
-    const char * player_team(int);
+    std::string player_team(int);
     const char * player_privilege(int);
     int player_privilege_code(int);
     int player_ping(int);

@@ -102,29 +102,35 @@ function server.ip_var_instances(name)
     return ipmask_vars_by_name[name] or {}
 end
 
-function server.player_set_session_var(cn, name, value)
-    local session_id = server.player_sessionid(cn)
-    local session_vars = player_session_vars[session_id]
-    if not session_vars then
-        session_vars = {}
-        player_session_vars[session_id] = session_vars
-    end
-    session_vars[name] = value
-end
-
 function server.player_vars(cn)
-    
     local id = server.player_id(cn)
     if id == -1 then error("invalid cn") end
     
-    local ip_vars = server.ip_vars(server.player_ip(cn))
-    
-    local session_vars = player_session_vars[server.player_sessionid(cn)] or {}
-    setmetatable(session_vars, {__index = ip_vars})
-    
-    return session_vars
+    return player_session_vars[server.player_sessionid(cn)]
 end
 
 load_vars()
 
+local function init_vars(cn)
+    local id = server.player_sessionid(cn)
+    if id == -1 then error("invalid cn") end
+    player_session_vars[id] = {}
+    
+    local ip_vars = server.ip_vars(server.player_ip(cn))
+    
+    local session_vars = player_session_vars[id]
+    setmetatable(session_vars, {__index = ip_vars})
+end
 
+server.event_handler("connect", function(cn)
+    init_vars(cn)
+end)
+
+server.event_handler("disconnect", function(cn)
+    player_session_vars[server.player_sessionid(cn)] = nil
+end)
+
+-- initialization on (re)load lua
+for _, cn in ipairs(server.clients()) do
+    init_vars(cn)
+end
