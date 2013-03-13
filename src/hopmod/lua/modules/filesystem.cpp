@@ -22,10 +22,16 @@ public:
         m_dir_path = new char[strlen(dirname) + 1];
         strcpy(m_dir_path, dirname);
     }
+
+    void closehandle()
+    {
+        if(m_dir) closedir(m_dir);
+        m_dir = NULL;
+    }
     
     ~directory_iterator()
     {
-        if(m_dir) closedir(m_dir);
+        closehandle();
         delete [] m_dir_path;
     }
     
@@ -38,6 +44,7 @@ public:
         
         static luaL_Reg funcs[] = {
             {"__gc", &directory_iterator::__gc},
+            {"close", &directory_iterator::close},
             {NULL, NULL}
         };
         
@@ -79,6 +86,12 @@ private:
     static int __gc(lua_State * L)
     {
         reinterpret_cast<directory_iterator *>(luaL_checkudata(L, 1, MT))->~directory_iterator();
+        return 0;
+    }
+
+    static int close(lua_State * L)
+    {
+        reinterpret_cast<directory_iterator *>(luaL_checkudata(L, 1, MT))->closehandle();
         return 0;
     }
     
