@@ -5,16 +5,16 @@ server.reset_mastermode = 0 -- otherwise the mastermode is reset to auth if the 
 server.event_handler("disconnect", function(cn, reason)
 
 	if server.playercount == 0 then
-		server.set_mastermode(default_mastermode)
+		server.mastermode = default_mastermode
 	end
 end)
 
 server.event_handler("started", function()
-        server.set_mastermode(default_mastermode)
+	server.mastermode = default_mastermode
 end)
 
 local function unload()
-        server.set_mastermode(0)
+	server.mastermode = 0
         server.reset_mastermode = default_reset_matermode 
 end
 
