@@ -1,12 +1,6 @@
 require "http_server"
 require "Json"
 
-function argToArray(arg)
-    local result = {}
-    for i = 1, arg.n do result[i] = arg[i] end
-    return result
-end
-
 local listeners = {}
 local specialHandlerConstructors = {}
 
@@ -20,7 +14,7 @@ end
 
 local function defaultHandlerConstructor(eventName, listener, dequeueFunction)
     return server.event_handler(eventName, function(...)
-        table.insert(listener.queue, {name = eventName, args = argToArray({...})})
+        table.insert(listener.queue, {name = eventName, args = {...}})
         dequeueFunction()
     end)
 end
