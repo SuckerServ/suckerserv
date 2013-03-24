@@ -313,12 +313,13 @@ function auth.send_request(cn, domain_id, callback)
     
     local session_id = server.player_sessionid(cn)
     
-    server.sleep(5000, function()
-        
-        if session_id ~= server.player_sessionid(cn) then return end
-        
-        if not clients[cn].has_key[domain_id] then
-            call_listeners(cn, "", domain_id, auth.request_status.REQUEST_FAILED)
+    server.interval(1000, function()
+        if session_id ~= server.player_sessionid(cn) then return -1 end
+        if server.player_vars(cn).maploaded then
+            if not clients[cn].has_key[domain_id] then
+                call_listeners(cn, "", domain_id, auth.request_status.REQUEST_FAILED)
+            end
+            return -1
         end
     end)
     
@@ -361,5 +362,5 @@ end
 
 -- initialization on (re)load lua (no bots)
 for p in server.gclients() do
-    init_client_state(cn)
+    init_client_state(p.cn)
 end

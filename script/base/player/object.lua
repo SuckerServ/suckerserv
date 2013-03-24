@@ -49,7 +49,8 @@ local methods = {
     set_invisible_admin = function(obj) return server.set_inivisible_admin(obj.cn) end,
     vars            = function(obj) return server.player_vars(obj.cn) end,
     pos             = function(obj) return server.player_pos(obj.cn) end,
-    valid           = function(obj) return server.player_sessionid(obj.cn) == obj.sessionid end
+    valid           = function(obj) return server.player_sessionid(obj.cn) == obj.sessionid end,
+    servcmd         = function(obj, cmd) return server.player_servcmd(obj.cn, cmd) end
 }
 
 function server.Client(cn)

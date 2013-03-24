@@ -9,18 +9,18 @@ local votes = {}
 local function check_kick(cn)
 	local required_votes = round((server.playercount / 2), 0)
 	if required_votes < server.votekick_min_votes_required then required_votes = server.votekick_min_votes_required end
-	if votes[tostring(server.player_id(cn))].votes >= required_votes then
-		server.kick(cn, 3600, "server", "votekick by "..votes[tostring(server.player_id(cn))].votes.." players")
+	if votes[tostring(server.player_ip(cn))].votes >= required_votes then
+		server.kick(cn, 3600, "server", "votekick by "..votes[tostring(server.player_ip(cn))].votes.." players")
 		server.msg(string.format(server.votekick_passed_message, server.player_displayname(cn)))
-        votes[tostring(server.player_id(cn))] = nil
+		votes[tostring(server.player_ip(cn))] = nil
 	end
     return required_votes
 end
 
 local function check_player_on_disconnect(cn)
-	local actor_id = tostring(server.player_id(cn))
+	local actor_id = tostring(cn)
 	for p in server.gclients() do
-		victim_id = tostring(server.player_id(p.cn))
+		victim_id = tostring(p:ip())
 		if votes[victim_id] then
 			if votes[victim_id][actor_id] then
 				votes[victim_id][actor_id] = nil
@@ -33,7 +33,8 @@ end
 
 local function init()
 	votes = {}
-	server.event_handler("disconnect", function(cn) check_player_on_disconnect(cn) end)
+	server.event_handler("disconnect", check_player_on_disconnect(cn))
+	server.event_handler("mapchange", function() votes = {} end)
 end
 
 local function unload()
@@ -41,8 +42,8 @@ local function unload()
 end
 
 local function run(cn,victim)
-	if server.playercount < 3 then
-		return false, "There aren't enough players here for votekick to work."
+	if server.playercount < server.votekick_min_votes_required+1 then
+		return false, "There aren't enough players here for votekick to work"
 	end
     
 	if victim and not server.valid_cn(victim) then
@@ -53,33 +54,36 @@ local function run(cn,victim)
 		return false, usage
 	end
 	
-	local actor_id = tostring(server.player_id(cn))
+	local actor_id = tostring(cn)
 	
 	if victim == cn then
-		return false, "You can't vote to kick yourself."
+		return false, "You can't vote to kick yourself"
 	end
 	
 	if server.player_priv_code(victim) == server.PRIV_ADMIN then
 		return false, "You can't vote to kick a server admin!"
 	end
 	
-	victim_id = tostring(server.player_id(victim))
-	
+	victim_id = tostring(server.player_ip(victim))
+
 	if not votes[victim_id] then
 		votes[victim_id] = {}
+		for p in server.gclients() do
+			votes[victim_id][tostring(p.cn)] = "no"
+		end
+	elseif votes[victim_id][actor_id] == "yes" then
+		return false, "You have already voted for this player to be kicked"
+	elseif votes[victim_id][actor_id] ~= "no" then
+		return false, "You connected after the votekick starts, so you can't vote"
 	end
 
-	if votes[victim_id][actor_id] then
-		return false, "You have already voted for this player to be kicked."
+	votes[victim_id][actor_id] = "yes"
+	
+	if not votes[victim_id].votes then
+		votes[victim_id].votes = 0
 	end
-
-	votes[victim_id][actor_id] = true
 	
-    if not votes[victim_id].votes then
-        votes[victim_id].votes = 0
-    end
-	
-    votes[victim_id].votes = votes[victim_id].votes + 1
+	votes[victim_id].votes = votes[victim_id].votes + 1
 
 	local required_votes = check_kick(victim)
 	local msg = string.format(server.votekick_vote_message, server.player_displayname(cn), server.player_displayname(victim), votes[victim_id].votes, required_votes)

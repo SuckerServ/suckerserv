@@ -34,7 +34,7 @@ void delete_temp_files_on_shutdown(int);
 namespace hopmod{
     int revision();
     const char * build_date();
+    const char * build_time();
 } //namespace hopmod
 
 #endif
-

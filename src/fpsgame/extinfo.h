@@ -107,6 +107,13 @@
         loopv(scores) extinfoteamscore(p, scores[i].team, scores[i].score);
     }
 
+    static inline const char *buildtime()
+    {
+        static string buf = {0};
+        if(!buf[0]) formatstring(buf)("%s %s", hopmod::build_date(), hopmod::build_time());
+        return buf;
+    }
+
     void extserverinforeply(ucharbuf &req, ucharbuf &p)
     {
         int extcmd = getint(req); // extended commands  
@@ -121,13 +128,22 @@
             {
                 putint(p, totalsecs); //in seconds
                 /* hopmod extension */
-                if(req.remaining() && req.remaining() > 0)
+                if(req.remaining() && req.get() > 0)
                 {
                     putint(p, EXT_HOPMOD);
                     putint(p, EXT_HOPMOD_VERSION);
                     putint(p, hopmod::revision());
-                    sendstring(hopmod::build_date(), p);
+                    sendstring(buildtime(), p);
                 }
+                break;
+            }
+
+            /* hopmod extension */
+            case EXT_HOPMOD:
+            {
+                putint(p, EXT_NO_ERROR);
+                putint(p, hopmod::revision());
+                sendstring(buildtime(), p);
                 break;
             }
 

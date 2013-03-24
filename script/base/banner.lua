@@ -4,6 +4,8 @@ local BANNER_DELAY = 1000
 local show_country_message = server.show_country_message == 1
 
 local function sendServerBanner(cn)
+
+    server.player_vars(cn).maploaded = true
     
     if server.player_vars(cn).shown_banner then return end
     
@@ -56,3 +58,8 @@ end
 
 server.event_handler("connect",onConnect)
 server.event_handler("maploaded", sendServerBanner)
+server.event_handler("mapchange", function()
+    for p in server.gclients() do
+        p:vars().maploaded = nil
+    end
+end)

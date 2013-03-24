@@ -50,6 +50,7 @@ namespace server
     extern bool allow_mm_locked;
     extern bool allow_mm_private;
     extern bool allow_mm_private_reconnect;
+    extern bool reset_mm;
     extern bool allow_item[11];
 
     extern bool broadcast_mapmodified;
@@ -195,6 +196,7 @@ namespace server
     void recorddemo(const char *);
     void enddemorecord();
     void calc_player_ranks();
+    void set_mastermode_cn(int, int);
     void set_mastermode(int);
     int get_mastermode();
     void add_allowed_ip(const char *);
@@ -212,6 +214,7 @@ namespace server
     bool rotatemap();
     
     void suicide(int);
+    void player_servcmd(int cn, const char *string);
     
     extern string ext_admin_pass;
     

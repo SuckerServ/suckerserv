@@ -24,9 +24,9 @@ setmetatable(server,{
         
         if existing_property and type(existing_property) == "function" then
             existing_property(value)
+        else
+            core[key] = value
         end
-        
-        core[key] = value
     end
 });
 

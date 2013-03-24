@@ -91,6 +91,7 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "player_respawn", server::player_respawn);
     bind_function(L, T, "player_nospawn", server::player_nospawn);
     bind_function(L, T, "player_suicide", (void (*)(int))server::suicide);
+    bind_function(L, T, "player_servcmd", server::player_servcmd);
     bind_function(L, T, "changeteam", server::player_changeteam);
     bind_function(L, T, "player_bots", server::player_bots);
     bind_function(L, T, "player_rank", server::player_rank);
@@ -171,6 +172,7 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "revision", hopmod::revision);
     bind_function(L, T, "version", hopmod::build_date);
     bind_function(L, T, "build_date", hopmod::build_date);
+    bind_function(L, T, "build_time", hopmod::build_time);
     bind_function(L, T, "filtertext", server::extfiltertext);
 }
 
@@ -392,6 +394,7 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "allow_mastermode_locked", server::allow_mm_locked);
     bind_var(L, T, "allow_mastermode_private", server::allow_mm_private);
     bind_var(L, T, "allow_reconnect_with_private_mastermode", server::allow_mm_private_reconnect);
+    bind_var(L, T, "reset_mastermode", server::reset_mm);
     bind_var(L, T, "reserved_slots", server::reservedslots);
     bind_wo_var(L, T, "reserved_slots_password", server::slotpass);
     bind_ro_var(L, T, "reserved_slots_occupied", server::reservedslots_use);

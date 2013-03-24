@@ -475,7 +475,7 @@ bool player_changeteam(int cn,const char * newteam)
     convert2utf8 oldteamutf8(ci->team);
     
     if(!m_teammode || (smode && !smode->canchangeteam(ci, ci->team, newteamcubeenc.str())) ||
-        event_chteamrequest(event_listeners(), boost::make_tuple(cn, oldteamutf8.str(), newteam)))
+        event_chteamrequest(event_listeners(), boost::make_tuple(cn, oldteamutf8.str(), newteam)) || !addteaminfo(newteamcubeenc.str()))
     {
         return false;
     }
@@ -621,7 +621,7 @@ bool hasmaster()
 
 void cleanup_masterstate()
 {
-    if(!hasmaster())
+    if(reset_mm && !hasmaster())
     {
         mastermode = display_open ? MM_OPEN : MM_AUTH;
         allowedips.shrink(0);
@@ -1044,6 +1044,11 @@ void calc_player_ranks()
 
 void set_mastermode(int value)
 {
+    set_mastermode_cn(value, -1);
+}
+
+void set_mastermode_cn(int value, int cn)
+{
     if(value == mastermode)
     {
         return;
@@ -1058,7 +1063,7 @@ void set_mastermode(int value)
         loopv(clients) allowedips.add(getclientip(clients[i]->clientnum));
     }
     
-    event_setmastermode(event_listeners(), boost::make_tuple(-1, mastermodename(prev_mastermode), mastermodename(mastermode)));
+    event_setmastermode(event_listeners(), boost::make_tuple(cn, mastermodename(prev_mastermode), mastermodename(mastermode)));
     
     sendf(-1, 1, "rii", N_MASTERMODE, mastermode);
 }
@@ -1079,6 +1084,12 @@ void add_allowed_ip(const char * hostname)
 void suicide(int cn)
 {
     suicide(get_ci(cn));
+}
+
+void player_servcmd(int cn, const char *string)
+{
+    if(cn != -1 && !get_ci(cn)) return;
+    sendf(cn, 1, "ris", N_SERVCMD, string);
 }
 
 bool compare_admin_password(const char * x)
