@@ -1368,7 +1368,7 @@ namespace server
         assert(!authname);
         update_mastermask();
         event_setmaster(event_listeners(), boost::make_tuple(ci->clientnum, hashed_password, request_claim_master));
-        checkpausegame();
+        if(reset_mm) checkpausegame();
         return true;
     }
     
