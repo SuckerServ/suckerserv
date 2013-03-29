@@ -139,7 +139,7 @@ namespace server
     void player_slay(int);
     void player_respawn(int);
     void player_nospawn(int, int);
-    bool player_changeteam(int,const char *);
+    bool player_changeteam(int,const char *, bool);
     int player_rank(int);
     bool player_isbot(int);
     void set_player_private_admin(int);
