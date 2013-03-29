@@ -13,3 +13,9 @@ core.recorddemo = function(filename)
     real_recorddemo(filename or "")
 end
 
+local real_changeteam = core.changeteam
+core.changeteam = function(cn, team, suicide)
+    if suicide == nil then suicide = true end
+    real_changeteam(cn, team, suicide)
+end
+
