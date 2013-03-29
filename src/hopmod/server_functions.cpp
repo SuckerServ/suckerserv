@@ -871,9 +871,11 @@ int get_team_score(const char * team)
 {
     int score = 0;
     if(smode) return smode->getteamscore(team);
-    else loopv(clients)
-        if(clients[i]->state.state != CS_SPECTATOR && !strcmp(clients[i]->team,team))
-            score += clients[i]->state.frags;
+    else
+    {
+        teaminfo *t = teaminfos.access(team);
+        if(t) score = t->frags;
+    }
     return score;
 }
 
