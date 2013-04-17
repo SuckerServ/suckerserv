@@ -159,11 +159,13 @@ ENetPeer *getclientpeer(int i) { return clients.inrange(i) && clients[i]->type==
 int getnumclients()        { return clients.length(); }
 uint getclientip(int n)    { return clients.inrange(n) && clients[n]->type==ST_TCPIP ? clients[n]->peer->address.host : 0; }
 
+static int demooverride = 0;
+
 void sendpacket(int n, int chan, ENetPacket *packet, int exclude)
 {
+    if(!demooverride?n<0:demooverride==1) server::recordpacket(chan, packet->data, packet->dataLength);
     if(n<0)
     {
-        server::recordpacket(chan, packet->data, packet->dataLength);
         loopv(clients) if(i!=exclude && server::allowbroadcast(i)) sendpacket(i, chan, packet);
         return;
     }
@@ -224,10 +226,13 @@ ENetPacket *sendf(int cn, int chan, const char *format, ...)
             p.put(va_arg(args, uchar *), n);
             break;
         }
+	case 'd': demooverride = +1; break;
+	case 'D': demooverride = -1; break;
     }
     va_end(args);
     ENetPacket *packet = p.finalize();
     sendpacket(cn, chan, packet, exclude);
+    demooverride = 0;
     return packet->referenceCount > 0 ? packet : NULL;
 }
 
