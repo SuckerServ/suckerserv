@@ -1096,7 +1096,7 @@ void suicide(int cn)
 void player_servcmd(int cn, const char *string)
 {
     if(cn != -1 && !get_ci(cn)) return;
-    sendf(cn, 1, "ris", N_SERVCMD, string);
+    sendf(cn, 1, "rdis", N_SERVCMD, string);
 }
 
 bool compare_admin_password(const char * x)
