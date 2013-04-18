@@ -34,6 +34,7 @@ local methods = {
     timeplayed      = function(obj) return server.player_timeplayed(obj.cn) end,
     win             = function(obj) return server.player_win(obj.cn) end,
     slay            = function(obj) return server.player_slay(obj.cn) end,
+    respawn         = function(obj) return server.player_respawn(obj.cn) end,
     changeteam      = function(obj,newteam,suicide) return server.changeteam(obj.cn,newteam,suicide) end,
     bots            = function(obj) return server.player_bots(obj.cn) end,
     rank            = function(obj) return server.player_rank(obj.cn) end,
