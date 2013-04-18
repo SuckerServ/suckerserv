@@ -2581,7 +2581,7 @@ namespace server
             if(clients.empty()) noclients();
             else aiman::dorefresh = true;
             
-            checkpausegame();
+            if(reset_mm) checkpausegame();
         }
         else
         {
