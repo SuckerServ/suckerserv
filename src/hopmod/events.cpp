@@ -10,7 +10,7 @@ lua::event< boost::tuple<int,int> >                                  event_renam
 lua::event< boost::tuple<int,const char *> >                         event_allow_rename("allow_rename");
 lua::event< boost::tuple<int,const char *,const char *> >            event_rename("rename");
 lua::event< boost::tuple<int,const char *,const char *> >            event_reteam("reteam");
-lua::event< boost::tuple<int,const char *,const char *> >            event_chteamrequest("chteamrequest");
+lua::event< boost::tuple<int,const char *,const char *, int> >       event_chteamrequest("chteamrequest");
 lua::event< boost::tuple<int,const char *> >                         event_text("text");
 lua::event< boost::tuple<int,const char *> >                         event_sayteam("sayteam");
 lua::event< boost::tuple<int,const char *> >                         event_servcmd("servcmd");

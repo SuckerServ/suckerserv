@@ -3254,7 +3254,7 @@ namespace server
                 bool allow = m_teammode && text[0] && strcmp(ci->team, text) && 
                     (!smode || smode->canchangeteam(ci, ci->team, text)) &&
                     !message::limit(ci, &ci->n_switchteam_millis, message::resend_time::switchteam, "team change") &&
-                    event_chteamrequest(event_listeners(), boost::make_tuple(ci->clientnum, oldteamutf8.str(), newteamutf8.str())) == false;
+                    event_chteamrequest(event_listeners(), boost::make_tuple(ci->clientnum, oldteamutf8.str(), newteamutf8.str(), sender)) == false;
                 
                 if(allow && addteaminfo(text))
                 {
@@ -3442,7 +3442,7 @@ namespace server
                 convert2utf8 oldteamutf8(wi->team);
                 if((!smode || smode->canchangeteam(wi, wi->team, text)) && 
                     !message::limit(ci, &ci->n_switchname_millis, message::resend_time::switchteam, "N_SWITCHTEAM") &&
-                    event_chteamrequest(event_listeners(), boost::make_tuple(wi->clientnum, oldteamutf8.str(), newteamutf8.str())) == false &&
+                    event_chteamrequest(event_listeners(), boost::make_tuple(wi->clientnum, oldteamutf8.str(), newteamutf8.str(), sender)) == false &&
                     addteaminfo(text))
                 {
                     if(smode && wi->state.state==CS_ALIVE) suicide(wi);
