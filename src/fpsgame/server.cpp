@@ -2969,7 +2969,7 @@ namespace server
                 bool allow = m_teammode && text[0] && strcmp(ci->team, text) && 
                     (!smode || smode->canchangeteam(ci, ci->team, text)) &&
                     !message::limit(ci, &ci->n_switchteam_millis, message::resend_time::switchteam, "team change") &&
-                    event_chteamrequest(event_listeners(), boost::make_tuple(ci->clientnum, ci->team, text)) == false;
+                    event_chteamrequest(event_listeners(), boost::make_tuple(ci->clientnum, ci->team, text, sender)) == false;
                 
                 if(allow)
                 {
@@ -3179,7 +3179,7 @@ namespace server
                 clientinfo *wi = getinfo(who);
                 if(!wi || !strcmp(wi->team, text) || wi->spy) break;
                 if((!smode || smode->canchangeteam(wi, wi->team, text)) && 
-                    event_chteamrequest(event_listeners(), boost::make_tuple(wi->clientnum, wi->team, text)) == false)
+                    event_chteamrequest(event_listeners(), boost::make_tuple(wi->clientnum, wi->team, text, sender)) == false)
                 {
                     if(smode && wi->state.state==CS_ALIVE) suicide(wi);
                     event_reteam(event_listeners(), boost::make_tuple(wi->clientnum, wi->team, text));

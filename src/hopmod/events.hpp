@@ -13,7 +13,7 @@ extern lua::event< boost::tuple<int,int> >                                  even
 extern lua::event< boost::tuple<int,const char *> >                         event_allow_rename;
 extern lua::event< boost::tuple<int,const char *,const char *> >            event_rename;
 extern lua::event< boost::tuple<int,const char *,const char *> >            event_reteam;
-extern lua::event< boost::tuple<int,const char *,const char *> >            event_chteamrequest;
+extern lua::event< boost::tuple<int,const char *,const char *, int> >       event_chteamrequest;
 extern lua::event< boost::tuple<int,const char *> >                         event_text;
 extern lua::event< boost::tuple<int,const char *> >                         event_sayteam;
 extern lua::event< boost::tuple<int,const char *,const char *> >            event_mapvote;

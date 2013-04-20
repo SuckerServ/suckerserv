@@ -468,7 +468,7 @@ bool player_changeteam(int cn,const char * newteam, bool dosuicide)
     clientinfo * ci = get_ci(cn);
     
     if(!m_teammode || (smode && !smode->canchangeteam(ci, ci->team, newteam)) ||
-        event_chteamrequest(event_listeners(), boost::make_tuple(cn, ci->team, newteam))) 
+        event_chteamrequest(event_listeners(), boost::make_tuple(cn, ci->team, newteam, sender))) 
     {
         return false;
     }
