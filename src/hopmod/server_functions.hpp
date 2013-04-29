@@ -62,6 +62,9 @@ namespace server
     extern int spectator_delay;
     
     namespace message{
+
+        extern int disc_msgs;
+        extern int disc_window;
         
         namespace resend_time{
             
