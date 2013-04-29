@@ -2321,14 +2321,13 @@ namespace server
             defformatstring(discmsg)("client (%s) disconnected because: %s", ci->hostname(), disc_reason_msg);
             printf("%s\n",discmsg);
             if (!ci->spy){
-                int totmsg = 0;
+                bool senddiscmsg = true;
                 if(message::disc_window > 0 && message::disc_msgs > 0){
                     vector<int>& millis = disc_record[getclientip(n)];
                     millis.put(totalmillis);
-                    loopvrev(millis) if(totalmillis-millis[i]<message::disc_window) totmsg++; else break;
-                    totmsg = totmsg >= message::disc_msgs;
+                    senddiscmsg = millis.length() <= message::disc_msgs;
                 }
-                if(!totmsg) sendservmsg(discmsg);
+                if(senddiscmsg) sendservmsg(discmsg);
             }
         }
         else
