@@ -39,7 +39,7 @@ extern lua::event< boost::tuple<int> >                                      even
 extern lua::event< boost::tuple<int, int, int, int, double, double, double> >        event_damage;
 extern lua::event< boost::tuple<int,const char*,bool> >                     event_setmaster;
 extern lua::event< boost::tuple<int,int> >                                  event_respawnrequest;
-extern lua::event< boost::tuple<> >                                         event_clearbans_request;
+extern lua::event< boost::tuple<int> >                                      event_clearbans_request;
 extern lua::event< boost::tuple<int, const char *, int, int, const char *> >  event_kick_request;
 extern lua::event< boost::tuple<> >                                         event_intermission;
 extern lua::event< boost::tuple<> >                                         event_finishedgame;

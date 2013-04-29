@@ -2492,7 +2492,7 @@ namespace server
 
     void noclients()
     {
-        event_clearbans_request(event_listeners(), boost::make_tuple());
+        event_clearbans_request(event_listeners(), boost::make_tuple(-1));
         aiman::clearai();
     }
     
@@ -3398,7 +3398,7 @@ namespace server
             {
                 if(ci->privilege)
                 {
-                    event_clearbans_request(event_listeners(), boost::make_tuple());
+                    event_clearbans_request(event_listeners(), boost::make_tuple(ci->clientnum));
                 }
                 break;
             }
