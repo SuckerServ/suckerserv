@@ -32,7 +32,7 @@ lua::event< boost::tuple<int> >                                      event_spawn
 lua::event< boost::tuple<int, int, int, int> >                       event_damage("damage");
 lua::event< boost::tuple<int,const char*,bool> >                     event_setmaster("setmaster");
 lua::event< boost::tuple<int,int> >                                  event_respawnrequest("respawnrequest");
-lua::event< boost::tuple<> >                                         event_clearbans_request("clearbans_request");
+lua::event< boost::tuple<int> >                                      event_clearbans_request("clearbans_request");
 lua::event< boost::tuple<int, const char *, int, int, const char *> >  event_kick_request("kick_request");
 lua::event< boost::tuple<> >                                         event_intermission("intermission");
 lua::event< boost::tuple<> >                                         event_finishedgame("finishedgame");
