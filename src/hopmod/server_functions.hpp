@@ -61,6 +61,9 @@ namespace server
     const char *extfiltertext(const char *src);
 
     namespace message{
+
+        extern int disc_msgs;
+        extern int disc_window;
         
         namespace resend_time{
             

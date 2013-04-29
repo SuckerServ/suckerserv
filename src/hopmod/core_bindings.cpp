@@ -407,6 +407,8 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "flood_protect_remip", server::message::resend_time::remip);
     bind_var(L, T, "flood_protect_newmap", server::message::resend_time::newmap);
     bind_var(L, T, "flood_protect_spectator", server::message::resend_time::spec);
+    bind_var(L, T, "flood_protect_disc_timewindow", server::message::disc_window);
+    bind_var(L, T, "flood_protect_disc_max", server::message::disc_msgs);
     
     bind_ro_var(L, T, "tx_bytes", tx_bytes);
     bind_ro_var(L, T, "rx_bytes", rx_bytes);

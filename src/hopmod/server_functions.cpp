@@ -1,6 +1,9 @@
 
 namespace message{
     
+    int disc_msgs;
+    int disc_window;
+    
     namespace resend_time{
         
         int text = 0;

@@ -613,6 +613,8 @@ namespace server
     #define anticheat_helper_func
     #include "anticheat.h"
     #undef anticheat_helper_func
+    
+    hashtable<uint, vector<int> > disc_record;
 
     extern void setspectator(clientinfo * spinfo, bool val, bool broadcast=true);
     
@@ -2235,6 +2237,21 @@ namespace server
                      <<timeleft<< " minutes left"
                      <<std::endl;
         }
+
+        vector<uint> disc_topurge;
+        enumeratekt(disc_record, uint, ip, vector<int>, millis,
+            int toremove = 0;
+            loopv(millis) if(totalmillis-millis[i] < message::disc_window){
+                toremove = i;
+                break;
+            }
+            if(toremove){
+                millis.remove(0, toremove);
+                if(millis.empty()) disc_topurge.add(ip);
+            }
+        );
+        loopv(disc_topurge) disc_record.remove(disc_topurge[i]);
+
     }
 
     struct crcinfo 
@@ -2302,8 +2319,17 @@ namespace server
         {
             disc_reason_msg = (ci->disconnect_reason.length() ? ci->disconnect_reason.c_str() : disconnect_reason(reason));
             defformatstring(discmsg)("client (%s) disconnected because: %s", ci->hostname(), disc_reason_msg);
-            printf("%s",discmsg);
-            if(!ci->spy) sendservmsg(discmsg);
+            printf("%s\n",discmsg);
+            if (!ci->spy){
+                int totmsg = 0;
+                if(message::disc_window > 0 && message::disc_msgs > 0){
+                    vector<int>& millis = disc_record[getclientip(n)];
+                    millis.put(totalmillis);
+                    loopvrev(millis) if(totalmillis-millis[i]<message::disc_window) totmsg++; else break;
+                    totmsg = totmsg >= message::disc_msgs;
+                }
+                if(!totmsg) sendservmsg(discmsg);
+            }
         }
         else
         {
