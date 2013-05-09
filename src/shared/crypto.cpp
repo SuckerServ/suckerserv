@@ -735,10 +735,10 @@ const ecjacobian ecjacobian::base(
 #error Unsupported GF
 #endif
 
-void genprivkey(const char *seed, vector<char> &privstr, vector<char> &pubstr)
+void genprivkey(const char *seed, vector<char> &privstr, vector<char> &pubstr, int seedlength)
 {
     tiger::hashval hash;
-    tiger::hash((const uchar *)seed, (int)strlen(seed), hash);
+    tiger::hash((const uchar *)seed, seedlength ? seedlength : (int)strlen(seed), hash);
     bigint<8*sizeof(hash.bytes)/BI_DIGIT_BITS> privkey;
     memcpy(privkey.digits, hash.bytes, sizeof(hash.bytes));
     privkey.len = 8*sizeof(hash.bytes)/BI_DIGIT_BITS;

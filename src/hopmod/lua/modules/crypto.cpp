@@ -167,11 +167,10 @@ static int generate_key_pair(lua_State * L)
 {
     vector<char> privkeyout, pubkeyout;
     
-    unsigned int seed[5];
+    unsigned int seed[4];
     make_seed(seed, 4);
-    seed[4] = 0;
     
-    genprivkey((const char *)seed, privkeyout, pubkeyout);
+    genprivkey((const char *)seed, privkeyout, pubkeyout, sizeof(seed));
     
     lua_pushstring(L, privkeyout.getbuf());
     new (lua_newuserdata(L, sizeof(key))) key(pubkeyout.getbuf());
