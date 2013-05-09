@@ -4,6 +4,10 @@
 #include "server_functions.hpp"
 extern bool reloaded; // Defined in startup.cpp
 
+#ifdef __APPLE__
+typedef __darwin_uid_t __uid_t;
+#endif //__APPLE__
+
 /* Forward declaration of Lua value io functions */
 #include "lua/push_function_fwd.hpp"
 namespace lua{

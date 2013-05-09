@@ -19,7 +19,7 @@ v_system=$(uname)
 f_starter=$(basename $0)
 d_main=
 
-if echo $v_system | grep -q "BSD"
+if `echo $v_system | grep -q "BSD"` || `echo $v_system | grep -q "Darwin"`
 then
     d_main=$(dirname $(cd $(dirname $0) ; pwd))
 else
@@ -72,7 +72,7 @@ p_start_server() {
     touch log/error.log
     
     ERROR_START=
-    if echo $v_system | grep -q "BSD"
+    if `echo $v_system | grep -q "BSD"` || `echo $v_system | grep -q "Darwin"`
     then
 	ERROR_START=$(stat -f %Sp log/error.log)
     else

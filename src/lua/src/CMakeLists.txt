@@ -40,14 +40,15 @@ set(LUA_SOURCES
 )
 
 IF(NOT CMAKE_BUILD_TYPE STREQUAL "DEBUG") 
-    add_definitions( -O3)
+    add_definitions(-O3)
 ENDIF(NOT CMAKE_BUILD_TYPE STREQUAL "DEBUG")
 
-add_library(${LUA_LIBRARY} SHARED ${LUA_SOURCES})
+add_library(${LUA_LIBRARY} STATIC ${LUA_SOURCES})
 
 if(${CMAKE_SYSTEM_NAME} MATCHES Linux)
     add_definitions(-DLUA_USE_LINUX)
     target_link_libraries(${LUA_LIBRARY} -ldl)
+    add_definitions(-fPIC)
 endif(${CMAKE_SYSTEM_NAME} MATCHES Linux)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES BSD)

@@ -3,9 +3,16 @@ export REVISION=`svn log -l1 -q | cut --delimiter=" " -f1 -s | cut -c2-`
 PROJECT="$(tput bold ; tput setaf 3)SuckerServ-v4 $(tput setaf 2)r$REVISION$(tput sgr0)"
 if [ -z $THREADS ]; then 
     THREADS=1
-    if [ -r "/proc/cpuinfo" ]; then
-        THREADS=`cat /proc/cpuinfo | grep processor | wc -l`
-    fi
+    case "$(uname -s)" in
+      *Darwin*|*BSD*)
+        THREADS=`sysctl -n hw.ncpu`
+        ;;
+      *)
+        if [ -r "/proc/cpuinfo" ]; then
+            THREADS=`cat /proc/cpuinfo | grep processor | wc -l`
+        fi
+        ;;
+    esac
 fi
 ARG_LENGTH=$#
 if [ $ARG_LENGTH -gt 2 -o "$1" == "--help" ]; then
