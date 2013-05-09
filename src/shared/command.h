@@ -40,6 +40,7 @@ enum { ID_VAR, ID_FVAR, ID_SVAR, ID_COMMAND, ID_ALIAS };
 
 enum { IDF_PERSIST = 1<<0, IDF_OVERRIDE = 1<<1, IDF_HEX = 1<<2, IDF_READONLY = 1<<3, IDF_OVERRIDDEN = 1<<4, IDF_UNKNOWN = 1<<5 };
 
+#if 0
 struct ident;
 
 struct identval
@@ -318,3 +319,4 @@ inline void ident::getval(tagval &v) const
 #define ICOMMANDSNAME _icmds_
 #define ICOMMANDS(name, nargs, proto, b) _ICOMMAND(ICOMMANDSNAME, name, nargs, proto, b)
  
+#endif

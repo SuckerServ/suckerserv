@@ -6,7 +6,7 @@ extern "C"{
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <cstring>
+#include <string.h>
 }
 #include <string> // Find out why placement new depends on a stdlib header
 
