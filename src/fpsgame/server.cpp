@@ -2238,20 +2238,24 @@ namespace server
                      <<std::endl;
         }
 
-        vector<uint> disc_topurge;
-        enumeratekt(disc_record, uint, ip, vector<int>, millis,
+        static vector<uint> disc_topurge;
+
+        enumeratekt(disc_record, uint, ip, vector<int>, millis, {
             int toremove = 0;
-            loopv(millis) if(totalmillis-millis[i] < message::disc_window){
+            loopv(millis) if(totalmillis-millis[i] < message::disc_window)
+            {
                 toremove = i;
                 break;
             }
-            if(toremove){
+            if(toremove)
+            {
                 millis.remove(0, toremove);
                 if(millis.empty()) disc_topurge.add(ip);
             }
-        );
-        loopv(disc_topurge) disc_record.remove(disc_topurge[i]);
+        });
 
+        loopv(disc_topurge) disc_record.remove(disc_topurge[i]);
+        disc_topurge.setsize(0);
     }
 
     struct crcinfo 
@@ -2320,9 +2324,11 @@ namespace server
             disc_reason_msg = (ci->disconnect_reason.length() ? ci->disconnect_reason.c_str() : disconnect_reason(reason));
             defformatstring(discmsg)("client (%s) disconnected because: %s", ci->hostname(), disc_reason_msg);
             printf("%s\n",discmsg);
-            if (!ci->spy){
+            if (!ci->spy)
+            {
                 bool senddiscmsg = true;
-                if(message::disc_window > 0 && message::disc_msgs > 0){
+                if(message::disc_window > 0 && message::disc_msgs > 0)
+                {
                     vector<int>& millis = disc_record[getclientip(n)];
                     millis.put(totalmillis);
                     senddiscmsg = millis.length() <= message::disc_msgs;
@@ -2332,7 +2338,7 @@ namespace server
         }
         else
         {
-            defformatstring(discmsg)("disconnected client (%s)",ci->hostname());
+            defformatstring(discmsg)("disconnected client (%s)", ci->hostname());
             puts(discmsg);
         }
         
