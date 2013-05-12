@@ -1,6 +1,11 @@
 #!/bin/bash
 PROJECT="$(tput bold ; tput setaf 3)SuckerServ$(tput sgr0)"
-THREADS=`cat /proc/cpuinfo | grep processor | wc -l`
+if [ -z $THREADS ]; then
+    THREADS=1
+    if [ -r "/proc/cpuinfo" ]; then
+        THREADS=`cat /proc/cpuinfo | grep processor | wc -l`
+    fi
+fi
 ARG_LENGTH=$#
 if [ $ARG_LENGTH -gt 2 -o "$1" == "--help" ]; then
   echo "Usage: $(tput bold ; tput setaf 4)$0$(tput sgr0) [--$(tput bold ; tput setaf 5)recompile$(tput sgr0)] [--$(tput bold ; tput setaf 1)debug$(tput sgr0)] — Build $PROJECT"
