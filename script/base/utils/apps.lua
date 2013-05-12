@@ -2,7 +2,7 @@
 function server.write_server_status(filename, filemode)
     
     if not filemode then
-        filemode = "a+"
+        filemode = "w"
     end
     
     local out = io.open(filename, filemode)
