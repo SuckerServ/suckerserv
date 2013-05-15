@@ -4,6 +4,8 @@
 #include <time.h>
 #include <string>
 
+unsigned long long getnanoseconds();
+
 class timer
 {
 public:

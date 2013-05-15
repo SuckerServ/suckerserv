@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <lua.hpp>
 #include "module.hpp"
+#include "utils.hpp"
 
 static FILE * urandom = NULL;
 
@@ -357,11 +358,11 @@ void open_crypto(lua_State * L)
     urandom = fopen("/dev/urandom","r");
     if(!urandom)
     {
-        fprintf(stderr, "Crypto module warning: couldn't open /dev/urandom for reading -- will be using randomMT() instead!");
+        fprintf(stderr, "Crypto module warning: couldn't open /dev/urandom for reading -- will be using randomMT() instead!\n");
     }
     else
     {
-        seedMT(time(NULL));
+        seedMT((unsigned int)getnanoseconds());
     }
     
     static luaL_Reg functions[] = {
