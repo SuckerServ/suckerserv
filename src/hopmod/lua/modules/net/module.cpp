@@ -57,7 +57,8 @@ void open_net2(lua_State * L)
     
     static luaL_Reg ssl_funcs[] = {
         {"context", lua::ssl_context::create_object},
-        {"tcp_stream", lua::managed_ssl_tcp_stream::create_object}
+        {"tcp_stream", lua::managed_ssl_tcp_stream::create_object},
+        {NULL, NULL}
     };
     luaL_register(L, NULL, ssl_funcs);
     
