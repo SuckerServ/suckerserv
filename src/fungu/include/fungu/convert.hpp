@@ -68,7 +68,7 @@ const_string from_int(IntType i)
         i = -i;
     }
     
-    char tmp[index + 2];
+    char *tmp = new char[index + 2];
     tmp[index + 1] = '\0';
     
     do
@@ -80,7 +80,10 @@ const_string from_int(IntType i)
     if(negative) tmp[index] = '-';
     else ++index;
     
-    return const_string(std::string(tmp + index));
+    const_string str = const_string(std::string(tmp + index));
+    delete[] tmp;
+
+    return str;
 }
 
 } //namespace fungu
