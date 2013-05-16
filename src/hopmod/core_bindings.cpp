@@ -28,10 +28,6 @@ void push(lua_State * L, string value)
 {
     lua_pushstring(L, value);   
 }
-void push(lua_State * L, __uid_t value)
-{
-    lua_pushinteger(L, value);
-}
 } //namespace lua
 
 template<typename FunctionPointerType>

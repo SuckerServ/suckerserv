@@ -16,6 +16,7 @@ template<typename T, typename FT> struct wrapper_return_tag{};
 
 void push(lua_State *, bool);
 void push(lua_State *, int);
+void push(lua_State *, unsigned int);
 void push(lua_State *, long);
 void push(lua_State *, unsigned long);
 void push(lua_State *, lua_Number);
@@ -257,4 +258,5 @@ void push_function(lua_State * L, FunctionPointerType function)
 } //namespace lua
 
 #endif
+
 

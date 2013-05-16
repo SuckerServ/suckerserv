@@ -12,6 +12,11 @@ void push(lua_State * L, unsigned long value)
     lua_pushnumber(L, static_cast<lua_Number>(value));
 }
 
+void push(lua_State * L, unsigned int value)
+{
+    lua_pushnumber(L, static_cast<lua_Number>(value));
+}
+
 int to(lua_State * L, int index, return_tag<int>)
 {
     return luaL_checkint(L, index);
@@ -59,4 +64,5 @@ std::string to(lua_State * L, int index, return_tag<std::string>)
 }
 
 } //namespace lua
+
 
