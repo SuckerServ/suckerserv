@@ -65,4 +65,3 @@ std::string to(lua_State * L, int index, return_tag<std::string>)
 
 } //namespace lua
 
-

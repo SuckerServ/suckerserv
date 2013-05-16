@@ -259,4 +259,3 @@ void push_function(lua_State * L, FunctionPointerType function)
 
 #endif
 
-
