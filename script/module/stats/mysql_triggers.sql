@@ -40,8 +40,11 @@ FOR EACH ROW BEGIN
         hits = hits - old.hits,
         misses = misses - old.misses,
         shots = shots - old.shots,
+        damage = damage - old.damage,
+        damagewasted = damagewasted - old.damagewasted,
         wins = wins - old.win,
         games = games - 1,
-        withdraws = withdraws - (old.finished = 0)
+        withdraws = withdraws - (old.finished = 0),
+        timeplayed = timeplayed - old.timeplayed
         WHERE name = old.name;
 END ~
