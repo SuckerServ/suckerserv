@@ -10,8 +10,7 @@ local usage = "#rename <cn> <newname>"
 return function(cn,player_cn,new_name)
     if not player_cn or not new_name then
         return false, "#rename <cn> <newname>"
-    end
-    if not server.valid_cn(player_cn) then
+    elseif not server.valid_cn(player_cn) then
         return false, "Invalid CN"
     end
 
