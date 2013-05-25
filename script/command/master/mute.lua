@@ -1,27 +1,22 @@
 --[[
 
-	A player command to mute a player
-    
+  A player command to mute a player
+  
 ]]
 
-local usage = "#mute <cn>|\"<name>\" [<time>]"
+return function(cn,tcn,reason,time)
+  if not server.mute then
+    return false, "mute module not loaded"
+  elseif not tcn then
+    return false, "#mute <cn>|\"<name>\" [reason] [time]"
+  elseif not server.valid_cn(tcn) then
+    tcn = server.name_to_cn_list_matches(cn,tcn)
+    if not tcn then return end
+  elseif server.is_muted(tcn) then
+    server.player_msg(cn, string.format(server.player_muted_already, server.player_displayname(tcn)))
+    return
+  end
 
-return function(cn,tcn,time)
-
-    if not server.mute then
-        return false, "mute module not loaded"
-    end
-
-    if not tcn then
-        return false, usage
-    end
-
-    if not server.valid_cn(tcn) then
-        tcn = server.name_to_cn_list_matches(cn,tcn)
-	    if not tcn then return end
-    end
-
-    server.mute(tcn,time)
-
-    server.player_msg(cn, string.format(server.player_mute_admin_message, tcn))
+  server.mute(tcn, time, reason or nil)
+  server.player_msg(cn, string.format(server.player_mute_admin_message, server.player_displayname(tcn)))
 end
