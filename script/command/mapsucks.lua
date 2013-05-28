@@ -8,7 +8,9 @@
 ]]
 
 return function(cn)
-  if server.player_status_code(cn) ~= server.SPECTATOR then
+  if not server.mapsucks then
+    return false, "Mapsucks module not loaded"
+  elseif server.player_status_code(cn) ~= server.SPECTATOR then
     server.mapsucks.vote(cn)
   else
     return false, server.mapbattle_cant_vote_message
