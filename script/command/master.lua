@@ -16,7 +16,7 @@ return function(cn)
 
   for _, domain in pairs(domains) do
     auth.send_request(cn, domain, function(cn, user_id, domain, status)
-      if sid == server.player_sessionid(cn) or status == auth.request_status.SUCCESS then
+      if sid == server.player_sessionid(cn) and status == auth.request_status.SUCCESS then
         local admin_present = server.master ~= -1 and server.player_priv_code(server.master) == server.PRIV_ADMIN
 
         if not admin_present and not server.current_master_global_authed then
@@ -30,7 +30,6 @@ return function(cn)
         else
           server.player_msg(cn, string.format(server.master_already_message))
         end
-
       end
     end)
   end

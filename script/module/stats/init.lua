@@ -84,7 +84,7 @@ else
     server.player_ranking_by_period = function() return nil end
 
     if server.stats_query_backend ~= "" then
-        server.log_error(string.format("Error in stats module: unused/unknown commit backend is trying to be used for the query backend.")) 
+        server.log_error(string.format("Error in stats module: unused/unknown %s commit backend is trying to be used for the query backend.", server.stats_query_backend)) 
     end
 end
 
