@@ -46,8 +46,7 @@ int main(int argc, char ** argv)
         lua_pushstring(L, argv[i]);
         lua_settable(L, -3);
     }
-    lua_pushglobaltable(L);
-    lua_getfield(L, -1, "arg");
+    lua_setglobal(L, "arg");
     lua_remove(L, -2);
     
     if(luaL_dofile(L, script) == 1)
