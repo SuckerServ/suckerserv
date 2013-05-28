@@ -16,7 +16,7 @@ return function(cn)
 
   for _, domain in pairs(domains) do
     auth.send_request(cn, domain, function(cn, user_id, domain, status)
-      if sid == server.player_sessionid(cn) or status == auth.request_status.SUCCESS then
+      if sid == server.player_sessionid(cn) and status == auth.request_status.SUCCESS then
         server.setmaster(cn)
 
         server.msg(string.format(server.claimmaster_message, server.player_displayname(cn), user_id))

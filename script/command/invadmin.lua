@@ -20,7 +20,7 @@ return function(cn, pw)
     local sid = server.player_sessionid(cn)
     for _, domain in pairs(domains) do
       auth.send_request(cn, domain, function(cn, user_id, domain, status)
-        if sid == server.player_sessionid(cn) or status == auth.request_status.SUCCESS then
+        if sid == server.player_sessionid(cn) and status == auth.request_status.SUCCESS then
           server.set_invisible_admin(cn)
   
           if not name then
