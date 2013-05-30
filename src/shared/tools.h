@@ -82,8 +82,8 @@ static inline T clamp(T a, U b, U c)
 }
 
 
-#define rnd(x) ((int)(randomMT()&0xFFFFFF)%(x))
-#define rndscale(x) (float((randomMT()&0xFFFFFF)*double(x)/double(0xFFFFFF)))
+#define rnd(x) ((int)(randomMT()&0x7FFFFFFF)%(x))
+#define rndscale(x) (float((randomMT()&0x7FFFFFFF)*double(x)/double(0x7FFFFFFF)))
 #define detrnd(s, x) ((int)(((((uint)(s))*1103515245+12345)>>16)%(x)))
 
 #define loop(v,m) for(int v = 0; v<int(m); v++)
@@ -953,7 +953,7 @@ template <class T, int SIZE> struct ringbuf
 
     bool empty() const { return !len; }
 
-    const int length() const { return len; }
+    int length() const { return len; }
 
     T &add()
     {
