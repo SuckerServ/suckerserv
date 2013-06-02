@@ -121,11 +121,12 @@ function createChatShell(parent, server){
         var message = document.createElement("p");
         message.className = "chat-shell-message";
         
+        if(className){
+            message.className += " " + className;
+        }
+        
         var name = document.createElement("span");
         name.className = "chat-shell-name";
-        if(className){
-            name.className += " " + className;
-        }
         name.appendChild(document.createTextNode(playerName));
         
         var messageText = document.createElement("span");
@@ -148,14 +149,6 @@ function createChatShell(parent, server){
         var chatClass = null;
         if(client.priv == "admin") chatClass = "chat-shell-admin";
         else if(client.priv == "master") chatClass = "chat-shell-master";
-        addTextMessage(client.name + "(" + client.cn + ")", message, chatClass);
-    });
-
-    server.addListener("sayteam", function(client, message){
-        var chatClass = null;
-        if(client.priv == "admin") chatClass = "chat-shell-team-admin";
-        else if(client.priv == "master") chatClass = "chat-shell-team-master";
-        else chatClass = "chat-shell-team";
         addTextMessage(client.name + "(" + client.cn + ")", message, chatClass);
     });
     
@@ -448,7 +441,6 @@ function PlayersTable(parent){
         {label:"Ping",          key:"ping"},
         {label:"Frags",         key:"frags"},
         {label:"Deaths",        key:"deaths"},
-        {label:"Accuracy",        key:"accuracy"},
         {label:"Teamkills",     key:"teamkills"},
         {label:"", cellFunction: createPlayerControlLinks, className:"player-control-links"}
     ], [{key:"frags", order: descendingOrder}, {key:"deaths", order: ascendingOrder}]);
@@ -483,7 +475,6 @@ function SpectatorsTable(parent){
         {label:"CN",        key:"cn"},
         {label:"IP Addr",   key:"ip"},
         {label:"Name",      key:"name"},
-        {label:"Ping",      key:"ping"},
         {label:"", cellFunction: createPlayerControlLinks, className:"player-control-links"}
     ]);
     table.attachTo(parent);
@@ -723,7 +714,7 @@ function createCommandLinks(parent, server){
     }
     
     function reload(){
-        server.executeCommand("reload_lua");
+        server.executeCommand("reloadscripts");
     }
     
     var serverCommands = [
@@ -736,7 +727,7 @@ function createCommandLinks(parent, server){
     function changeMotd(){
         var msg = prompt("Change the Message of the Day");
         if(!msg) return;
-        server.executeCommand(server.makeCommand("motd", msg));
+        server.executeCommand(server.makeCommand("motd", msgv));
     }
     
     function changeServerName(){

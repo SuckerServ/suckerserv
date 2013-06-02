@@ -45,9 +45,6 @@ table th{text-align:left;}
 .chat-shell-message{margin:0; padding:0;}
 .chat-shell-admin{color:#FF531A;}
 .chat-shell-master{color:#0eaf0a;}
-.chat-shell-team{background-color:#BBBBFF;}
-.chat-shell-team-admin{color:#FF531A;background-color:#BBBBFF;}
-.chat-shell-team-master{color:#0eaf0a;background-color:#BBBBFF;}
 
 #command-shell {width:100%; margin-top:10px;}
 #command-shell-heading {padding-left:18px; background:transparent url(gear.png) no-repeat; font-weight:bold;}

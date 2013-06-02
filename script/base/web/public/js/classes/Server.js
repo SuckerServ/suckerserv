@@ -144,7 +144,6 @@ function Server(){
 }
 
 Server.prototype.executeCommand = function(commandLine, responseHandler){
-    
     var serverObject = this;
     
     if(!responseHandler) responseHandler = function(){};
