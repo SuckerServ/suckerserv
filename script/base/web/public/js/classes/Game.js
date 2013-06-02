@@ -171,5 +171,23 @@ var GamemodeInfo = {
         "teams"     : true,
         "items"     : false,
         "instagib"  : true
+    },
+
+    "insta collect" : {
+        "teams"     : true,
+        "items"     : false,
+        "instagib"  : true
+    },
+
+    "efficiency collect" : {
+        "teams"     : true,
+        "items"     : false,
+        "instagib"  : false
+    },
+
+    "collect" : {
+        "teams"     : true,
+        "items"     : true,
+        "instagib"  : false
     }
 };
