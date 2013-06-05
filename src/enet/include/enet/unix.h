@@ -8,8 +8,13 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+
+#ifdef MSG_MAXIOVLEN
+#define ENET_BUFFER_MAXIMUM MSG_MAXIOVLEN
+#endif
 
 typedef int ENetSocket;
 
@@ -42,4 +47,3 @@ typedef fd_set ENetSocketSet;
 #define ENET_SOCKETSET_CHECK(sockset, socket)  FD_ISSET (socket, & (sockset))
     
 #endif /* __ENET_UNIX_H__ */
-
