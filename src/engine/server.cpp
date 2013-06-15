@@ -543,7 +543,7 @@ void netstats_handler(const boost::system::error_code & ec)
     
     if(info_queries)
     {
-        printf("info traffic: %zu queries/sec %.2f send, %.2f rec (KiB/s)\n", info_queries, 
+        printf("info traffic: %llu queries/sec %.2f send, %.2f rec (KiB/s)\n", (ullong)info_queries, 
             tx_info_bytes/60.0f/1024, rx_info_bytes/60.0f/1024);
         
         info_queries = 0;

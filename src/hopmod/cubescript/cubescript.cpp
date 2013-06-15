@@ -79,7 +79,7 @@ static const token_id symbols[] =
     ERROR, ERROR, ERROR, ERROR, ERROR, ERROR, ERROR, ERROR};
 } //namespace expression
 
-static void throw_unexpected(char c, const char * where)
+static void throw_unexpected(unsigned char c, const char * where)
 {
     char buf[2];
     buf[0] = c;

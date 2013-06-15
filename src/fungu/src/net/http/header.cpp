@@ -155,7 +155,7 @@ bool field_value_token::parse(const char ** input_output)
             
             for(; **input_output !='\r' && **input_output != '\"'; (*input_output)++)
             {
-                if(**input_output == '\\') **input_output++;
+                if(**input_output == '\\') (*input_output)++;
                 m_last = *input_output;
             }
             

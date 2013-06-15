@@ -2592,13 +2592,13 @@ namespace server
         return ci && ci->connected && !ci->is_delayed_spectator();
     }
     
-    bool tryauth(clientinfo *ci, const char * user, const char * domain)
+    bool tryauth(clientinfo *ci, const char * user, const char * domain, int kickcn = -1)
     {
         convert2utf8 utf8user(user);
-        event_authreq(event_listeners(), boost::make_tuple(ci->clientnum, utf8user.str(), domain));
+        event_authreq(event_listeners(), boost::make_tuple(ci->clientnum, utf8user.str(), domain, kickcn));
         return true;
     }
-
+    
     void answerchallenge(clientinfo *ci, uint id, char *val, const char * desc)
     {
         for(char *s = val; *s; s++)
@@ -2759,7 +2759,7 @@ namespace server
 
                 default:
                     disconnect_client(sender, DISC_TAGT);
-                    break;
+                    return;
             }
             return;
         }
@@ -3519,14 +3519,9 @@ namespace server
                 int victim = getint(p);
                 getstring(text, p);
                 filtertext(text, text);
-                int authpriv = PRIV_AUTH;
-                if(trykick(ci, victim, text, name, desc, authpriv, true) && tryauth(ci, name, desc))
-                {
-                    copystring(ci->authname, name);
-                    copystring(ci->authdesc, desc);
-                    ci->authkickvictim = victim;
-                    ci->authkickreason = newstring(text);
-                }
+
+                tryauth(ci, name, desc, victim);
+
                 break;
             }
 

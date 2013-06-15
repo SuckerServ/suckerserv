@@ -6,8 +6,7 @@
 
 #include "cube.h"
 
-extern void genprivkey(const char *seed, vector<char> &privstr, vector<char> &pubstr);
-extern void genprivkey(const void * seed, int seedlen, vector<char> & privkeyout, vector<char> & pubkeyout);
+extern void genprivkey(const char *seed, vector<char> &privstr, vector<char> &pubstr, int seedlength);
 extern bool hashstring(const char *str, char *result, int maxlen);
 extern void answerchallenge(const char *privstr, const char *challenge, vector<char> &answerstr);
 extern void *parsepubkey(const char *pubstr);

@@ -6,12 +6,13 @@ int main(int argc, const char ** argv)
     FILE * rng = fopen("/dev/urandom","r");
     if(!rng) return 1;
     
-    unsigned int seed[256];
-    if(!fread(seed, sizeof(unsigned int), sizeof(seed)/sizeof(unsigned int), rng))
+    char seed[256 * sizeof(unsigned int)];
+    if(fread(seed, sizeof(unsigned int), sizeof(seed)/sizeof(unsigned int), rng) != sizeof(seed)/sizeof(unsigned 
+int))
         return -1;
-    
+
     vector<char> privkey, pubkey;
-    genprivkey(seed,sizeof(seed), privkey, pubkey);
+    genprivkey(seed, privkey, pubkey, sizeof(seed));
     
     puts(privkey.getbuf());
     puts(pubkey.getbuf());
@@ -20,3 +21,4 @@ int main(int argc, const char ** argv)
     
     return 0;
 }
+

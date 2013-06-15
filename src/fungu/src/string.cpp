@@ -117,9 +117,9 @@ const char * const_string::c_str()const
 const_string join(const_string * a, std::size_t n)
 {
     std::string output;
-    for(int i = 0; i < n; i++)
+    for(std::size_t i = 0; i < n; i++)
     {
-        const_string s(a[i]);
+        const_string & s = a[i];
         output.append(s.begin(), s.end());
     }
     return output;

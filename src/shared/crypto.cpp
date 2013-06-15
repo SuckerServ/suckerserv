@@ -148,7 +148,7 @@ namespace tiger
         compress((chunk *)temp, val.chunks);
         if(!*(const uchar *)&islittleendian)
         {
-            loopk(3)
+            loopk(3) 
             {
                 uchar *c = &val.bytes[k*sizeof(chunk)];
                 loopl(sizeof(chunk)/2) swap(c[l], c[sizeof(chunk)-1-l]);
@@ -307,14 +307,14 @@ template<int BI_DIGITS> struct bigint
 
     template<int X_DIGITS> bigint &rshift(const bigint<X_DIGITS> &x, int n)
     {
-        if(!len || !n) return *this;
+        if(!len || n<=0) return *this;
         int dig = (n-1)/BI_DIGIT_BITS;
         n = ((n-1) % BI_DIGIT_BITS)+1;
         digit carry = digit(x.digits[dig]>>n);
-        loopi(len-dig-1)
+        for(int i = dig+1; i < x.len; i++)
         {
-            digit tmp = x.digits[i+dig+1];
-            digits[i] = digit((tmp<<(BI_DIGIT_BITS-n)) | carry);
+            digit tmp = x.digits[i];
+            digits[i-dig-1] = digit((tmp<<(BI_DIGIT_BITS-n)) | carry);
             carry = digit(tmp>>n);
         }
         digits[len-dig-1] = carry;
@@ -326,7 +326,7 @@ template<int BI_DIGITS> struct bigint
 
     template<int X_DIGITS> bigint &lshift(const bigint<X_DIGITS> &x, int n)
     {
-        if(!len || !n) return *this;
+        if(!len || n<=0) return *this;
         int dig = n/BI_DIGIT_BITS;
         n %= BI_DIGIT_BITS;
         digit carry = 0;
@@ -647,7 +647,7 @@ struct ecjacobian
         y.sub(f, x).sub(x).mul(b).sub(e.mul(a).mul(d)).div2();
     }
 
-    template<int Q_DIGITS> void mul(const ecjacobian &p, const bigint<Q_DIGITS> q)
+    template<int Q_DIGITS> void mul(const ecjacobian &p, const bigint<Q_DIGITS> &q)
     {
         *this = origin;
         for(int i = q.numbits()-1; i >= 0; i--)
@@ -656,7 +656,7 @@ struct ecjacobian
             if(q.hasbit(i)) add(p);
         }
     }
-    template<int Q_DIGITS> void mul(const bigint<Q_DIGITS> q) { ecjacobian tmp(*this); mul(tmp, q); }
+    template<int Q_DIGITS> void mul(const bigint<Q_DIGITS> &q) { ecjacobian tmp(*this); mul(tmp, q); }
 
     void normalize()
     {
@@ -735,12 +735,12 @@ const ecjacobian ecjacobian::base(
 #error Unsupported GF
 #endif
 
-void genprivkey(const char *seed, vector<char> &privstr, vector<char> &pubstr)
+void genprivkey(const char *seed, vector<char> &privstr, vector<char> &pubstr, int seedlength)
 {
     tiger::hashval hash;
-    tiger::hash((const uchar *)seed, (int)strlen(seed), hash);
+    tiger::hash((const uchar *)seed, seedlength ? seedlength : (int)strlen(seed), hash);
     bigint<8*sizeof(hash.bytes)/BI_DIGIT_BITS> privkey;
-    memcpy(privkey.digits, hash.bytes, sizeof(privkey.digits));
+    memcpy(privkey.digits, hash.bytes, sizeof(hash.bytes));
     privkey.len = 8*sizeof(hash.bytes)/BI_DIGIT_BITS;
     privkey.shrink();
     privkey.printdigits(privstr);
@@ -751,25 +751,6 @@ void genprivkey(const char *seed, vector<char> &privstr, vector<char> &pubstr)
     c.normalize();
     c.print(pubstr);
     pubstr.add('\0');
-}
-
-void genprivkey(const void * seed, int seedlen, vector<char> & privkeyout, vector<char> & pubkeyout)
-{
-    tiger::hashval hash;
-    tiger::hash((const uchar *)seed, seedlen, hash);
-    
-    bigint<8*sizeof(hash.bytes)/BI_DIGIT_BITS> privkey;
-    memcpy(privkey.digits, hash.bytes, sizeof(privkey.digits));
-    privkey.len = 8*sizeof(hash.bytes)/BI_DIGIT_BITS;
-    privkey.shrink();
-    privkey.printdigits(privkeyout);
-    privkeyout.add('\0');
-    
-    ecjacobian c(ecjacobian::base);
-    c.mul(privkey);
-    c.normalize();
-    c.print(pubkeyout);
-    pubkeyout.add('\0');
 }
 
 bool hashstring(const char *str, char *result, int maxlen)
@@ -816,7 +797,7 @@ void *genchallenge(void *pubkey, const void *seed, int seedlen, vector<char> &ch
     tiger::hashval hash;
     tiger::hash((const uchar *)seed, sizeof(seed), hash);
     gfint challenge;
-    memcpy(challenge.digits, hash.bytes, sizeof(challenge.digits));
+    memcpy(challenge.digits, hash.bytes, sizeof(hash.bytes));
     challenge.len = 8*sizeof(hash.bytes)/BI_DIGIT_BITS;
     challenge.shrink();
 

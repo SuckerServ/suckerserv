@@ -27,7 +27,7 @@ typedef unsigned long long int ullong;
 #define RESTRICT
 #endif
 
-#if 0 //HOPMOD
+#if 0
 inline void *operator new(size_t size)
 {
     void *p = malloc(size);
@@ -81,7 +81,6 @@ static inline T clamp(T a, U b, U c)
     return max(T(b), min(a, T(c)));
 }
 
-
 #define rnd(x) ((int)(randomMT()&0x7FFFFFFF)%(x))
 #define rndscale(x) (float((randomMT()&0x7FFFFFFF)*double(x)/double(0x7FFFFFFF)))
 #define detrnd(s, x) ((int)(((((uint)(s))*1103515245+12345)>>16)%(x)))
@@ -128,6 +127,12 @@ static inline T clamp(T a, U b, U c)
 #define PATHDIV '/'
 #endif
 
+#ifdef __GNUC__
+#define PRINTFARGS(fmt, args) __attribute__((format(printf, fmt, args)))
+#else
+#define PRINTFARGS(fmt, args)
+#endif
+
 // easy safe strings
 
 #define MAXSTRLEN 260
@@ -141,7 +146,7 @@ struct stringformatter
 {
     char *buf;
     stringformatter(char *buf): buf((char *)buf) {}
-    void operator()(const char *fmt, ...)
+    void operator()(const char *fmt, ...) PRINTFARGS(2, 3)
     {
         va_list v;
         va_start(v, fmt);
@@ -187,7 +192,7 @@ struct databuf
 
     databuf subbuf(int sz)
     {
-        sz = min(sz, maxlen-len);
+        sz = clamp(sz, 0, maxlen-len);
         len += sz;
         return databuf(&buf[len-sz], sz);
     }
@@ -213,7 +218,7 @@ struct databuf
         len += read;
         return read;
     }
-    
+
     void offset(int n)
     {
         n = min(n, maxlen);
@@ -374,16 +379,6 @@ static inline void quicksort(T *start, T *end, F fun)
     insertionsort(start, end, fun);
 }
 
-#if 0
-//hopmod
-template<class T, class U>
-static inline void quicksort(T *buf, int n, int (__cdecl *func)(U *, U *))
-{
-    qsort(buf, n, sizeof(T), (int (__cdecl *)(const void *,const void *))func);
-}
-//end hopmod
-#endif
-
 template<class T, class F>
 static inline void quicksort(T *buf, int n, F fun)
 {
@@ -402,6 +397,40 @@ template<class T> struct isclass
     template<class C> static int test(...);
     enum { yes = sizeof(test<T>(0)) == 1 ? 1 : 0, no = yes^1 };
 };
+
+static inline uint hthash(const char *key)
+{
+    uint h = 5381;
+    for(int i = 0, k; (k = key[i]); i++) h = ((h<<5)+h)^k;    // bernstein k=33 xor
+    return h;
+}
+
+static inline bool htcmp(const char *x, const char *y)
+{
+    return !strcmp(x, y);
+}
+
+static inline uint hthash(int key)
+{
+    return key;
+}
+
+static inline bool htcmp(int x, int y)
+{
+    return x==y;
+}
+
+#ifndef STANDALONE
+static inline uint hthash(GLuint key)
+{
+    return key;
+}
+
+static inline bool htcmp(GLuint x, GLuint y)
+{
+    return x==y;
+}
+#endif
 
 template <class T> struct vector
 {
@@ -665,7 +694,7 @@ template <class T> struct vector
         if(ulen) downheap(0);
         return e;
     }
-    
+
     template<class K>
     int htfind(const K &key)
     {
@@ -673,28 +702,6 @@ template <class T> struct vector
         return -1;
     }
 };
-
-static inline uint hthash(const char *key)
-{
-    uint h = 5381;
-    for(int i = 0, k; (k = key[i]); i++) h = ((h<<5)+h)^k;    // bernstein k=33 xor
-    return h;
-}
-
-static inline bool htcmp(const char *x, const char *y)
-{
-    return !strcmp(x, y);
-}
-
-static inline uint hthash(int key)
-{
-    return key;
-}
-
-static inline bool htcmp(int x, int y)
-{
-    return x==y;
-}
 
 template<class T> struct hashset
 {
@@ -1093,14 +1100,14 @@ struct stream
     virtual bool getline(char *str, int len);
     virtual bool putstring(const char *str) { int len = (int)strlen(str); return write(str, len) == len; }
     virtual bool putline(const char *str) { return putstring(str) && putchar('\n'); }
-    virtual int printf(const char *fmt, ...);
+    virtual int printf(const char *fmt, ...) PRINTFARGS(2, 3);
     virtual uint getcrc() { return 0; }
-    
+
     template<class T> int put(const T *v, int n) { return write(v, n*sizeof(T))/sizeof(T); } 
     template<class T> bool put(T n) { return write(&n, sizeof(n)) == sizeof(n); }
     template<class T> bool putlil(T n) { return put<T>(lilswap(n)); }
     template<class T> bool putbig(T n) { return put<T>(bigswap(n)); }
-    
+
     template<class T> int get(T *v, int n) { return read(v, n*sizeof(T))/sizeof(T); }
     template<class T> T get() { T n; return read(&n, sizeof(n)) == sizeof(n) ? n : 0; }
     template<class T> T getlil() { return lilswap(get<T>()); }
@@ -1153,8 +1160,8 @@ static inline uchar uni2cube(int c)
     extern const uchar uni2cubechars[];
     return uint(c) <= 0x7FF ? uni2cubechars[uni2cubeoffsets[c>>8] + (c&0xFF)] : 0;
 }
-extern int decodeutf8(uchar *dst, int dstlen, uchar *src, int srclen, int *carry = NULL);
-extern int encodeutf8(uchar *dstbuf, int dstlen, uchar *srcbuf, int srclen, int *carry = NULL);
+extern int decodeutf8(uchar *dst, int dstlen, const uchar *src, int srclen, int *carry = NULL);
+extern int encodeutf8(uchar *dstbuf, int dstlen, const uchar *srcbuf, int srclen, int *carry = NULL);
 
 extern const char *decodeutf8(const char *src, std::string &buf);
 extern const char *encodeutf8(const char *src, std::string &buf);
@@ -1212,7 +1219,8 @@ extern bool listdir(const char *dir, bool rel, const char *ext, vector<char *> &
 extern int listfiles(const char *dir, const char *ext, vector<char *> &files);
 extern int listzipfiles(const char *dir, const char *ext, vector<char *> &files);
 extern void seedMT(uint seed);
-extern uint randomMT(void);
+extern uint randomMT();
+extern int guessnumcpus();
 
 extern void putint(ucharbuf &p, int n);
 extern void putint(packetbuf &p, int n);
@@ -1234,4 +1242,5 @@ template<size_t N> static inline void getstring(char (&t)[N], ucharbuf &p) { get
 extern void filtertext(char *dst, const char *src, bool whitespace = true, int len = sizeof(string)-1);
 
 #endif
+
 

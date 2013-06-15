@@ -23,7 +23,7 @@ extern lua::event< boost::tuple<int, const char *,const char *> >           even
 extern lua::event< boost::tuple<int,int> >                                  event_spectator;
 extern lua::event< boost::tuple<int,int,int> >                              event_privilege;
 extern lua::event< boost::tuple<int,int> >                                  event_teamkill;
-extern lua::event< boost::tuple<int,const char *,const char *> >            event_authreq;
+extern lua::event< boost::tuple<int,const char *,const char *, int> >       event_authreq;
 extern lua::event< boost::tuple<int,int,const char *> >                     event_authrep;
 extern lua::event< boost::tuple<int,int,int> >                              event_addbot;
 extern lua::event< boost::tuple<int> >                                      event_delbot;

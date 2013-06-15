@@ -4,6 +4,8 @@
 #include <time.h>
 #include <string>
 
+unsigned long long getnanoseconds();
+
 class timer
 {
 public:
@@ -11,7 +13,7 @@ public:
     timer();
     time_diff_t usec_elapsed()const;
 private:
-    timespec m_start;
+    unsigned long long m_start;
 };
 
 bool file_exists(const char *);

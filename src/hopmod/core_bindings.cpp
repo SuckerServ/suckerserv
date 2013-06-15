@@ -4,6 +4,10 @@
 #include "server_functions.hpp"
 extern bool reloaded; // Defined in startup.cpp
 
+#ifdef __APPLE__
+typedef __darwin_uid_t __uid_t;
+#endif //__APPLE__
+
 /* Forward declaration of Lua value io functions */
 #include "lua/push_function_fwd.hpp"
 namespace lua{
@@ -23,10 +27,6 @@ namespace lua{
 void push(lua_State * L, string value)
 {
     lua_pushstring(L, value);   
-}
-void push(lua_State * L, __uid_t value)
-{
-    lua_pushinteger(L, value);
 }
 } //namespace lua
 
@@ -163,7 +163,7 @@ void bind_core_functions(lua_State * L, int T)
     
     bind_function(L, T, "log_event_error", log_event_error);
     
-    int get_lua_stack_size();
+    extern int get_lua_stack_size();
     bind_function(L, T, "lua_stack_size", get_lua_stack_size);
     
     bind_function(L, T, "enet_time_set", enet_time_set);

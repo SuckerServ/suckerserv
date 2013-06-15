@@ -90,6 +90,7 @@ extern void mpreplacetex(int oldtex, int newtex, bool insel, selinfo &sel, bool 
 extern void mpdelcube(selinfo &sel, bool local);
 extern void mpremip(bool local);
 
+#if 0
 // command
 extern int variable(const char *name, int min, int cur, int max, int *storage, identfun fun, int flags);
 extern float fvariable(const char *name, float min, float cur, float max, float *storage, identfun fun, int flags);
@@ -118,6 +119,7 @@ extern bool execfile(const char *cfgfile, bool msg = true);
 extern void alias(const char *name, const char *action);
 extern void alias(const char *name, tagval &v);
 extern const char *getalias(const char *name);
+#endif 
 
 // console
 
@@ -407,8 +409,7 @@ extern void neterr(const char *s, bool disc = true);
 extern void gets2c();
 
 // crypto
-extern void genprivkey(const char *seed, vector<char> &privstr, vector<char> &pubstr);
-extern void genprivkey(const void * seed, int seedlen, vector<char> & privkeyout, vector<char> & pubkeyout);
+extern void genprivkey(const char *seed, vector<char> &privstr, vector<char> &pubstr, int seedlength = 0);
 extern bool hashstring(const char *str, char *result, int maxlen);
 extern void answerchallenge(const char *privstr, const char *challenge, vector<char> &answerstr);
 extern void *parsepubkey(const char *pubstr);

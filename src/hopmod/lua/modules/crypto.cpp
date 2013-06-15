@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <lua.hpp>
 #include "module.hpp"
+#include "utils.hpp"
 
 static FILE * urandom = NULL;
 
@@ -170,7 +171,7 @@ static int generate_key_pair(lua_State * L)
     unsigned int seed[4];
     make_seed(seed, 4);
     
-    genprivkey(seed, sizeof(seed), privkeyout, pubkeyout);
+    genprivkey((const char *)seed, privkeyout, pubkeyout, sizeof(seed));
     
     lua_pushstring(L, privkeyout.getbuf());
     new (lua_newuserdata(L, sizeof(key))) key(pubkeyout.getbuf());
@@ -357,11 +358,11 @@ void open_crypto(lua_State * L)
     urandom = fopen("/dev/urandom","r");
     if(!urandom)
     {
-        fprintf(stderr, "Crypto module warning: couldn't open /dev/urandom for reading -- will be using randomMT() instead!");
+        fprintf(stderr, "Crypto module warning: couldn't open /dev/urandom for reading -- will be using randomMT() instead!\n");
     }
     else
     {
-        seedMT(time(NULL));
+        seedMT((unsigned int)getnanoseconds());
     }
     
     static luaL_Reg functions[] = {

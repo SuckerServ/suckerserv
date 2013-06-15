@@ -1,5 +1,4 @@
 #include "cube.h"
-#include <string>
 
 ///////////////////////// character conversion ///////////////
 
@@ -86,14 +85,15 @@ extern const uchar uni2cubechars[878] =
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-int decodeutf8(uchar *dstbuf, int dstlen, uchar *srcbuf, int srclen, int *carry)
+int decodeutf8(uchar *dstbuf, int dstlen, const uchar *srcbuf, int srclen, int *carry)
 {
-    uchar *dst = dstbuf, *dstend = &dstbuf[dstlen], *src = srcbuf, *srcend = &srcbuf[srclen];
+    uchar *dst = dstbuf, *dstend = &dstbuf[dstlen];
+    const uchar *src = srcbuf, *srcend = &srcbuf[srclen];
     if(dstbuf == srcbuf)
     {
         int len = min(dstlen, srclen);
-        for(uchar *end4 = &srcbuf[len&~3]; src < end4; src += 4) if(*(int *)src & 0x80808080) goto decode;
-        for(uchar *end = &srcbuf[len]; src < end; src++) if(*src & 0x80) goto decode;
+        for(const uchar *end4 = &srcbuf[len&~3]; src < end4; src += 4) if(*(const int *)src & 0x80808080) goto decode;
+        for(const uchar *end = &srcbuf[len]; src < end; src++) if(*src & 0x80) goto decode;
         if(carry) *carry += len;
         return len;
     }
@@ -139,18 +139,24 @@ decode:
     return dst - dstbuf;
 }
 
-int encodeutf8(uchar *dstbuf, int dstlen, uchar *srcbuf, int srclen, int *carry)
+int encodeutf8(uchar *dstbuf, int dstlen, const uchar *srcbuf, int srclen, int *carry)
 {
-    uchar *dst = dstbuf, *dstend = &dstbuf[dstlen], *src = srcbuf, *srcend = &srcbuf[srclen];
+    uchar *dst = dstbuf, *dstend = &dstbuf[dstlen];
+    const uchar *src = srcbuf, *srcend = &srcbuf[srclen];
     if(src < srcend && dst < dstend) do
     {
         int uni = cube2uni(*src);
         if(uni <= 0x7F)
         {
             if(dst >= dstend) goto done;
-            uchar *end = min(srcend, &src[dstend-dst]);
+            const uchar *end = min(srcend, &src[dstend-dst]);
             do 
             { 
+                if(uni == '\f')
+                {
+                    if(++src >= srcend) goto done;
+                    goto uni1;
+                }
                 *dst++ = uni; 
                 if(++src >= end) goto done; 
                 uni = cube2uni(*src); 
@@ -176,6 +182,7 @@ done:
     if(carry) *carry += src - srcbuf;
     return dst - dstbuf;
 }
+
 
 const char *decodeutf8(const char *src, std::string &buf) {
 
@@ -349,9 +356,9 @@ bool fileexists(const char *path, const char *mode)
     bool exists = true;
     if(mode[0]=='w' || mode[0]=='a') path = parentdir(path);
 #ifdef WIN32
-    if(GetFileAttributes(path) == INVALID_FILE_ATTRIBUTES) exists = false;
+    if(GetFileAttributes(path[0] ? path : ".\\") == INVALID_FILE_ATTRIBUTES) exists = false;
 #else
-    if(access(path, R_OK | (mode[0]=='w' || mode[0]=='a' ? W_OK : 0)) == -1) exists = false;
+    if(access(path[0] ? path : ".", mode[0]=='w' || mode[0]=='a' ? W_OK : (mode[0]=='d' ? X_OK : R_OK)) == -1) exists = false;
 #endif
     return exists;
 }
@@ -450,7 +457,7 @@ const char *findfile(const char *filename, const char *mode)
             while(dir)
             {
                 *dir = '\0';
-                if(!fileexists(dirs, "r") && !createdir(dirs)) return s;
+                if(!fileexists(dirs, "d") && !createdir(dirs)) return s;
                 *dir = PATHDIV;
                 dir = strchr(dir+1, PATHDIV);
             }
@@ -468,15 +475,10 @@ const char *findfile(const char *filename, const char *mode)
     return filename;
 }
 
-bool listdir(const char *dir, bool rel, const char *ext, vector<char *> &files)
+bool listdir(const char *dirname, bool rel, const char *ext, vector<char *> &files)
 {
     int extsize = ext ? (int)strlen(ext)+1 : 0;
-    string dirname;
-    copystring(dirname, dir);
-    path(dirname);
     #ifdef WIN32
-    int dirlen = (int)strlen(dirname);
-    if(dirlen > 0 && dirname[dirlen-1] == '\\') dirname[dirlen-1] = '\0';
     defformatstring(pathname)(rel ? ".\\%s\\*.%s" : "%s\\*.%s", dirname, ext ? ext : "*");
     WIN32_FIND_DATA FindFileData;
     HANDLE Find = FindFirstFile(pathname, &FindFileData);
@@ -486,7 +488,7 @@ bool listdir(const char *dir, bool rel, const char *ext, vector<char *> &files)
             if(!ext) files.add(newstring(FindFileData.cFileName));
             else
             {
-                int namelength = (int)strlen(FindFileData.cFileName) - extsize;
+                int namelength = (int)strlen(FindFileData.cFileName) - extsize; 
                 if(namelength > 0 && FindFileData.cFileName[namelength] == '.' && strncmp(FindFileData.cFileName+namelength+1, ext, extsize-1)==0)
                     files.add(newstring(FindFileData.cFileName, namelength));
             }
@@ -519,28 +521,29 @@ bool listdir(const char *dir, bool rel, const char *ext, vector<char *> &files)
 
 int listfiles(const char *dir, const char *ext, vector<char *> &files)
 {
+    string dirname;
+    copystring(dirname, dir);
+    path(dirname);
+    int dirlen = (int)strlen(dirname);
+    while(dirlen > 1 && dirname[dirlen-1] == PATHDIV) dirname[--dirlen] = '\0';
     int dirs = 0;
-    if(listdir(dir, true, ext, files)) dirs++;
+    if(listdir(dirname, true, ext, files)) dirs++;
     string s;
     if(homedir[0])
     {
-        formatstring(s)("%s%s", homedir, dir);
+        formatstring(s)("%s%s", homedir, dirname);
         if(listdir(s, false, ext, files)) dirs++;
     }
     loopv(packagedirs)
     {
         packagedir &pf = packagedirs[i];
-        if(pf.filter)
-        {
-            int dirlen = strlen(dir);
-            if(strncmp(dir, pf.filter, dirlen == pf.filterlen-1 ? dirlen : pf.filterlen))
-                continue;
-        }
-        formatstring(s)("%s%s", pf.dir, dir);
+        if(pf.filter && strncmp(dirname, pf.filter, dirlen == pf.filterlen-1 ? dirlen : pf.filterlen))
+            continue;
+        formatstring(s)("%s%s", pf.dir, dirname);
         if(listdir(s, false, ext, files)) dirs++;
     }
 #ifndef STANDALONE
-    dirs += listzipfiles(dir, ext, files);
+    dirs += listzipfiles(dirname, ext, files);
 #endif
     return dirs;
 }
@@ -845,7 +848,7 @@ struct gzstream : stream
             if(checkcrc != crc)
                 conoutf(CON_DEBUG, "gzip crc check failed: read %X, calculated %X", checkcrc, crc);
             if(checksize != zfile.total_out)
-                conoutf(CON_DEBUG, "gzip size check failed: read %d, calculated %d", checksize, zfile.total_out);
+                conoutf(CON_DEBUG, "gzip size check failed: read %u, calculated %u", checksize, uint(zfile.total_out));
         }
 #endif
     }

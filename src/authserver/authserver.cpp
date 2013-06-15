@@ -101,7 +101,6 @@ static domains_map users;
 #include "lua/push_function_fwd.hpp"
 namespace lua{
 void push(lua_State * L, string value);
-void push(lua_State * L, __uid_t value);
 } //namespace lua
 
 #include "lua/push_function.hpp"
@@ -113,10 +112,6 @@ namespace lua{
 void push(lua_State * L, string value)
 {
     lua_pushstring(L, value);   
-}
-void push(lua_State * L, __uid_t value)
-{
-    lua_pushinteger(L, value);
 }
 } //namespace lua
 
