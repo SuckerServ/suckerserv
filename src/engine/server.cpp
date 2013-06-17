@@ -5,6 +5,7 @@
 #include <signal.h>
 #include <boost/asio.hpp>
 using namespace boost::asio;
+#include <hopmod/utils.hpp>
 #include <enet/time.h>
 #include <iostream>
 
@@ -562,7 +563,7 @@ uint totalsecs = 0;
 
 static void update_time_vars()
 {
-    int millis = (int)enet_time_get();
+    int millis = (int)getmilliseconds();
     curtime = millis - totalmillis;
     lastmillis = totalmillis = millis;
 

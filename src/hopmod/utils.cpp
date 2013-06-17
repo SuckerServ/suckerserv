@@ -45,7 +45,7 @@ struct initnanotimer
 } initnanotimer;
 #endif //WIN32
 
-unsigned long long getnanoseconds()
+extern "C" unsigned long long getnanoseconds()
 {
     extern unsigned long long nanosecbase;
 #ifdef WIN32
