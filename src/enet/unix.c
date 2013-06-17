@@ -68,24 +68,34 @@ enet_deinitialize (void)
 {
 }
 
+extern unsigned long long getnanoseconds (); //NEW
+
 enet_uint32
 enet_time_get (void)
 {
+#if 0
     struct timeval timeVal;
 
     gettimeofday (& timeVal, NULL);
 
     return timeVal.tv_sec * 1000 + timeVal.tv_usec / 1000 - timeBase;
+#endif
+
+    return (enet_uint32) getnanoseconds () / 1000000 - timeBase; //NEW
 }
 
 void
 enet_time_set (enet_uint32 newTimeBase)
 {
+#if 0
     struct timeval timeVal;
 
     gettimeofday (& timeVal, NULL);
     
     timeBase = timeVal.tv_sec * 1000 + timeVal.tv_usec / 1000 - newTimeBase;
+#endif
+
+    timeBase = (enet_uint32) getnanoseconds () / 1000000 - newTimeBase; //NEW
 }
 
 int

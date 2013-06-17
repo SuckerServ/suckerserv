@@ -1,0 +1,70 @@
+Index: unix.c
+===================================================================
+--- unix.c	(revision 2780)
++++ unix.c	(working copy)
+@@ -68,24 +68,34 @@
+ {
+ }
+ 
++extern unsigned long long getnanoseconds (); //NEW
++
+ enet_uint32
+ enet_time_get (void)
+ {
++#if 0
+     struct timeval timeVal;
+ 
+     gettimeofday (& timeVal, NULL);
+ 
+     return timeVal.tv_sec * 1000 + timeVal.tv_usec / 1000 - timeBase;
++#endif
++
++    return (enet_uint32) getnanoseconds () / 1000000 - timeBase; //NEW
+ }
+ 
+ void
+ enet_time_set (enet_uint32 newTimeBase)
+ {
++#if 0
+     struct timeval timeVal;
+ 
+     gettimeofday (& timeVal, NULL);
+     
+     timeBase = timeVal.tv_sec * 1000 + timeVal.tv_usec / 1000 - newTimeBase;
++#endif
++
++    timeBase = (enet_uint32) getnanoseconds () / 1000000 - newTimeBase; //NEW
+ }
+ 
+ int
+Index: win32.c
+===================================================================
+--- win32.c	(revision 2780)
++++ win32.c	(working copy)
+@@ -40,16 +40,26 @@
+     WSACleanup ();
+ }
+ 
++extern unsigned long long getnanoseconds (); //NEW
++
+ enet_uint32
+ enet_time_get (void)
+ {
++#if 0
+     return (enet_uint32) timeGetTime () - timeBase;
++#endif
++
++    return (enet_uint32) getnanoseconds () / 1000000U - timeBase; //NEW
+ }
+ 
+ void
+ enet_time_set (enet_uint32 newTimeBase)
+ {
++#if 0
+     timeBase = (enet_uint32) timeGetTime () - newTimeBase;
++#endif
++
++    timeBase = (enet_uint32) getnanoseconds () / 1000000U - newTimeBase; //NEW
+ }
+ 
+ int

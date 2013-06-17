@@ -6,6 +6,7 @@
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 using namespace boost::asio;
+#include <hopmod/utils.hpp>
 #include <enet/time.h>
 #include <iostream>
 
@@ -386,7 +387,7 @@ bool serverhost_service();
 
 static void update_time()
 {
-    int millis = (int)enet_time_get(), elapsed = millis - totalmillis;
+    int millis = (int)getmilliseconds(), elapsed = millis - totalmillis;
     static int timeerr = 0;
     int scaledtime = server::scaletime(elapsed) + timeerr;
     curtime = scaledtime/100;

@@ -40,16 +40,26 @@ enet_deinitialize (void)
     WSACleanup ();
 }
 
+extern unsigned long long getnanoseconds (); //NEW
+
 enet_uint32
 enet_time_get (void)
 {
+#if 0
     return (enet_uint32) timeGetTime () - timeBase;
+#endif
+
+    return (enet_uint32) getnanoseconds () / 1000000U - timeBase; //NEW
 }
 
 void
 enet_time_set (enet_uint32 newTimeBase)
 {
+#if 0
     timeBase = (enet_uint32) timeGetTime () - newTimeBase;
+#endif
+
+    timeBase = (enet_uint32) getnanoseconds () / 1000000U - newTimeBase; //NEW
 }
 
 int

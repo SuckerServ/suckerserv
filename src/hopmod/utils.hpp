@@ -4,7 +4,17 @@
 #include <time.h>
 #include <string>
 
-unsigned long long getnanoseconds();
+extern "C" unsigned long long getnanoseconds();
+
+static inline unsigned long long getmicroseconds()
+{
+    return getnanoseconds()/1000;
+}
+
+static inline unsigned long long getmilliseconds()
+{
+    return getmicroseconds()/1000;
+}
 
 class timer
 {
