@@ -20,7 +20,7 @@
 #ifdef WIN32
 static unsigned long long clockspeed;
 
-struct initnanotimer
+static struct initnanotimer
 {
     long long getclockspeed()
     {
@@ -45,7 +45,8 @@ struct initnanotimer
 } initnanotimer;
 #endif //WIN32
 
-extern "C" unsigned long long getnanoseconds()
+extern "C" {
+unsigned long long getnanoseconds()
 {
     extern unsigned long long nanosecbase;
 #ifdef WIN32
@@ -78,6 +79,7 @@ extern "C" unsigned long long getnanoseconds()
 }
 
 unsigned long long nanosecbase = getnanoseconds();
+} // extern "C"
 
 in_addr to_in_addr(in_addr_t x)
 {
