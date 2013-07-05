@@ -49,7 +49,7 @@ enet_time_get (void)
     return (enet_uint32) timeGetTime () - timeBase;
 #endif
 
-    return (enet_uint32) getnanoseconds () / 1000000U - timeBase; //NEW
+    return (enet_uint32) ( getnanoseconds () / 1000000 ) - timeBase; //NEW
 }
 
 void
@@ -59,7 +59,7 @@ enet_time_set (enet_uint32 newTimeBase)
     timeBase = (enet_uint32) timeGetTime () - newTimeBase;
 #endif
 
-    timeBase = (enet_uint32) getnanoseconds () / 1000000U - newTimeBase; //NEW
+    timeBase = (enet_uint32) ( getnanoseconds () / 1000000 ) - newTimeBase; //NEW
 }
 
 int
