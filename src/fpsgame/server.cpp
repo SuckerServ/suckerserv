@@ -294,15 +294,15 @@ namespace server
         bool spy;
         int last_lag;
         
-        int n_text_millis;
-        int n_sayteam_millis;
-        int n_mapvote_millis;
-        int n_switchname_millis;
-        int n_switchteam_millis;
-        int n_kick_millis;
-        int n_remip_millis;
-        int n_newmap_millis;
-        int n_spec_millis;
+        ullong n_text_millis;
+        ullong n_sayteam_millis;
+        ullong n_mapvote_millis;
+        ullong n_switchname_millis;
+        ullong n_switchteam_millis;
+        ullong n_kick_millis;
+        ullong n_remip_millis;
+        ullong n_newmap_millis;
+        ullong n_spec_millis;
         
         std::string disconnect_reason;
         int maploaded;

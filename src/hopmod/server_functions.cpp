@@ -2,31 +2,33 @@ namespace message{
     
     namespace resend_time{
         
-        int text = 0;
-        int sayteam = 0;
-        int mapvote = 0;
-        int switchname = 0;
-        int switchteam = 0;
-        int kick = 0;
-        int remip = 0;
-        int newmap = 0;
-        int spec = 0;
+        unsigned text = 0;
+        unsigned sayteam = 0;
+        unsigned mapvote = 0;
+        unsigned switchname = 0;
+        unsigned switchteam = 0;
+        unsigned kick = 0;
+        unsigned remip = 0;
+        unsigned newmap = 0;
+        unsigned spec = 0;
 
     } //namespace resend_time
     
-    bool limit(clientinfo * ci, int * millis, int resend_time, const char * message_type = NULL)
+    bool limit(clientinfo * ci, unsigned long long * millis, unsigned long long resend_time, const char * message_type = NULL)
     {
         if(ci->privilege == PRIV_ADMIN) return false;
-        int wait = totalmillis - *millis;
-        
+
+        unsigned long long curmillis = getmilliseconds(); // don't use signed-int and overflow prone totalmillis
+        unsigned long long wait = curmillis - *millis;
+
         if(wait >= resend_time){
-            *millis = totalmillis;
+            *millis = curmillis;
         }
         else{
             defformatstring(error_message)(RED "Rejected %s message (wait %i seconds before resending)!", message_type, static_cast<int>(std::ceil((resend_time - wait)/1000.0)));
             ci->sendprivtext(error_message);
         }
-        
+
         return wait < resend_time;
     }
     
