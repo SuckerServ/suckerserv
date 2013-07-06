@@ -67,19 +67,19 @@ namespace server
         
         namespace resend_time{
             
-            extern int text;
-            extern int sayteam;
-            extern int mapvote;
-            extern int switchname;
-            extern int switchteam;
-            extern int kick;
-            extern int remip;
-            extern int newmap;
-            extern int spec;
+            extern unsigned text;
+            extern unsigned sayteam;
+            extern unsigned mapvote;
+            extern unsigned switchname;
+            extern unsigned switchteam;
+            extern unsigned kick;
+            extern unsigned remip;
+            extern unsigned newmap;
+            extern unsigned spec;
             
         } //namespace resend_time
         
-        bool limit(clientinfo *, int * millis, int resend_time, const char * message_type);
+        bool limit(clientinfo *, unsigned long long * millis, unsigned long long resend_time, const char * message_type);
         
     } //namespace message
     
