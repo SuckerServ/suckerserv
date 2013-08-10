@@ -173,6 +173,7 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "version", hopmod::build_date);
     bind_function(L, T, "build_date", hopmod::build_date);
     bind_function(L, T, "build_time", hopmod::build_time);
+    bind_function(L, T, "filtertext", server::extfiltertext);
 
     bind_function(L, T, "net_ban_check", hopmod::netbans::check_ban);
     bind_function(L, T, "net_ban_add", hopmod::netbans::add_ban);
@@ -407,6 +408,7 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "ctf_teamkill_penalty", server::ctftkpenalty);
     bind_var(L, T, "specslots", server::spec_slots);
     bind_var(L, T, "cheatdetection", server::anti_cheat_enabled);
+    bind_var(L, T, "hide_and_seek", server::hide_and_seek);
 
     bind_var(L, T, "flood_protect_text", server::message::resend_time::text);
     bind_var(L, T, "flood_protect_sayteam", server::message::resend_time::sayteam);
