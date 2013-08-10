@@ -5,6 +5,11 @@
 #include "utils.hpp"
 #include "events.hpp"
 
+#include "net/address.hpp"
+#include "net/address_mask.hpp"
+#include "net/address_prefix.hpp"
+#include "netbans.hpp"
+
 void init_hopmod();
 void reload_hopmod();
 void restart_now();

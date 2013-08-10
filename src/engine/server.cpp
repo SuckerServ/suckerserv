@@ -7,8 +7,25 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 using namespace boost::asio;
 #include <hopmod/utils.hpp>
+#include <hopmod/net/address.hpp>
+#include <hopmod/net/address_mask.hpp>
+#include <hopmod/net/address_prefix.hpp>
+#include <hopmod/netbans.hpp>
 #include <enet/time.h>
 #include <iostream>
+
+static int check_net_bans(ENetHost * host, ENetEvent * event)
+{
+    if(!host) return 1;
+    if(hopmod::netbans::check_ban(host->receivedAddress.host)) return 1;
+    return 0;
+}
+
+static int check_net_bans(uint ip)
+{
+    if(hopmod::netbans::check_ban(ip)) return 1;
+    return 0;
+}
 
 static void shutdown_from_signal(int i)
 {
@@ -18,12 +35,12 @@ static void shutdown_from_signal(int i)
 }
 
 #ifdef STANDALONE
-void fatal(const char *s, ...) 
+void fatal(const char *s, ...)
 {
-    stopgameserver(0); 
+    stopgameserver(0);
     defvformatstring(msg,s,s);
-    printf("servererror: %s\n", msg); 
-    exit(EXIT_FAILURE); 
+    printf("servererror: %s\n", msg);
+    exit(EXIT_FAILURE);
 }
 
 void conoutfv(int type, const char *fmt, va_list args)
@@ -74,7 +91,7 @@ vector<client *> clients;
 ENetHost *serverhost = NULL;
 size_t bsend = 0, brec = 0;
 size_t tx_packets = 0 , rx_packets = 0, tx_bytes = 0, rx_bytes = 0;
-int laststatus = 0; 
+int laststatus = 0;
 ENetSocket pongsock = ENET_SOCKET_NULL, lansock = ENET_SOCKET_NULL;
 
 size_t info_queries = 0;
@@ -98,40 +115,40 @@ deadline_timer netstats_timer(main_io_service);
 void stopgameserver(int)
 {
     kicknonlocalclients(DISC_NONE);
-    
+
     boost::system::error_code error;
-    
+
     serverhost_socket.cancel(error);
     if(error)
         std::cerr<<"Error while trying to close game server socket: "<<error.message()<<std::endl;
-    
+
     info_socket.close(error);
     if(error)
         std::cerr<<"Error while trying to close server info socket: "<<error.message()<<std::endl;
-    
+
     laninfo_socket.close(error);
     if(error)
         std::cerr<<"Error while trying to close the server info lan socket: "<<error.message()<<std::endl;
-    
+
     if(serverhost)
     {
         enet_host_flush(serverhost);
         enet_host_destroy(serverhost);
         serverhost = NULL;
     }
-    
+
     if(pongsock != ENET_SOCKET_NULL) enet_socket_destroy(pongsock);
     if(lansock != ENET_SOCKET_NULL) enet_socket_destroy(lansock);
     pongsock = lansock = ENET_SOCKET_NULL;
-    
+
     update_timer.cancel(error);
     if(error)
         std::cerr<<"Error while trying to stop the update timer: "<<error.message()<<std::endl;
-    
+
     netstats_timer.cancel(error);
     if(error)
         std::cerr<<"Error while trying to stop the net stats timer: "<<error.message()<<std::endl;
-    
+
 }
 
 void process(ENetPacket *packet, int sender, int chan);
@@ -188,7 +205,7 @@ ENetPacket *sendf(int cn, int chan, const char *format, ...)
             break;
         }
 
-        case 'i': 
+        case 'i':
         {
             int n = isdigit(*format) ? *format++-'0' : 1;
             loopi(n) putint(p, va_arg(args, int));
@@ -395,9 +412,9 @@ static void update_time()
     if(server::ispaused()) curtime = 0;
     lastmillis += curtime;
     totalmillis = millis;
-    
+
     static int lastsec = 0;
-    if(totalmillis - lastsec >= 1000) 
+    if(totalmillis - lastsec >= 1000)
     {
         int cursecs = (totalmillis - lastsec) / 1000;
         totalsecs += cursecs;
@@ -408,7 +425,7 @@ static void update_time()
 void sched_next_update()
 {
     boost::posix_time::time_duration expires_from_now = update_timer.expires_from_now();
-    
+
     if(expires_from_now.is_special() || expires_from_now.is_negative())
     {
         update_timer.expires_from_now(boost::posix_time::milliseconds(5));
@@ -419,11 +436,11 @@ void sched_next_update()
 void update_server(const boost::system::error_code & error = boost::system::error_code())
 {    
     if(nonlocalclients > 0) sched_next_update();
-    
+
     update_time();
-    
+
     server::serverupdate();
-    
+
     if(serverhost) serverhost_service();
 }
 
@@ -438,11 +455,11 @@ void serverhost_process_event(ENetEvent & event)
             c.peer->data = &c;
             char hn[1024];
             copystring(c.hostname, (enet_address_get_host_ip(&c.peer->address, hn, sizeof(hn))==0) ? hn : "unknown");
-            
+
             printf("client connected (%s)\n", c.hostname);
-            
+
             update_server();
-            
+
             int reason = server::clientconnect(c.num, c.peer->address.host);
             if(reason) disconnect_client(c.num, reason);
             break;
@@ -457,7 +474,7 @@ void serverhost_process_event(ENetEvent & event)
             if(event.packet->referenceCount==0) enet_packet_destroy(event.packet);
             break;
         }
-        case ENET_EVENT_TYPE_DISCONNECT: 
+        case ENET_EVENT_TYPE_DISCONNECT:
         {
             client *c = (client *)event.peer->data;
             if(!c) break;
@@ -480,11 +497,11 @@ bool serverhost_service()
     {
         serverhost_process_event(event);
     }
-    
+
     if(status == -1) return false;
-    
+
     if(server::sendpackets()) enet_host_flush(serverhost); //treat EWOULDBLOCK as packet loss
-    
+
     return true;
 }
 
@@ -501,15 +518,17 @@ void serverinfo_input(int fd)
 {
     ENetBuffer buf;
     uchar pong[MAXTRANS];
-    
+
     buf.data = pong;
     buf.dataLength = sizeof(pong);
     int len = enet_socket_receive(fd, &pongaddr, &buf, 1);
     if(len < 0) return;
-    
+
     info_queries++;
     rx_info_bytes += len;
-    
+
+    if(check_net_bans(pongaddr.host)) return;
+
     ucharbuf req(pong, len), p(pong, sizeof(pong));
     p.len += len;
     server::serverinforeply(req, p);
@@ -532,26 +551,26 @@ void laninfo_input_handler(boost::system::error_code ec, const size_t s)
 void netstats_handler(const boost::system::error_code & ec)
 {
     if(ec) return;
-    
+
     bool has_stats = nonlocalclients || serverhost->totalSentData || serverhost->totalReceivedData;
-    
-    if(has_stats) 
+
+    if(has_stats)
     {
         printf("client traffic: %d remote clients, %.1f send, %.1f rec (KiB/s)\n", nonlocalclients, serverhost->totalSentData/60.0f/1024, serverhost->totalReceivedData/60.0f/1024);
         serverhost->totalSentData = 0;
         serverhost->totalReceivedData = 0;
     }
-    
+
     if(info_queries)
     {
-        printf("info traffic: %llu queries/sec %.2f send, %.2f rec (KiB/s)\n", (ullong)info_queries, 
+        printf("info traffic: %llu queries/sec %.2f send, %.2f rec (KiB/s)\n", (ullong)info_queries,
             tx_info_bytes/60.0f/1024, rx_info_bytes/60.0f/1024);
-        
+
         info_queries = 0;
         rx_info_bytes = 0;
         tx_info_bytes = 0;
     }
-    
+
     netstats_timer.expires_from_now(boost::posix_time::minutes(1));
     netstats_timer.async_wait(netstats_handler);
 }
@@ -571,18 +590,18 @@ void rundedicatedserver()
     #ifdef WIN32
     SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
     #endif
-    
+
     server::started();
-    
+
     printf("dedicated server started, waiting for clients...\n*READY*\n\n");
     fflush(stdout);
     fflush(stderr);
-    
+
     sched_next_update();
-    
+
     netstats_timer.expires_from_now(boost::posix_time::minutes(1));
     netstats_timer.async_wait(netstats_handler);
-    
+
     try
     {
         main_io_service.run();
@@ -596,7 +615,7 @@ void rundedicatedserver()
 
 bool servererror(bool dedicated, const char *desc)
 {
-    printf("servererror: %s\n", desc); 
+    printf("servererror: %s\n", desc);
     delclients();
     server::shutdown();
     return false;
@@ -616,9 +635,10 @@ bool setuplistenserver(bool dedicated)
         }
     }
     else copystring(serverip,"0.0.0.0");
-    
+
     serverhost = enet_host_create(&address, MAXCLIENTS, server::numchannels(), 0, uprate);
     if(!serverhost) return servererror(dedicated, "could not create server host");
+    serverhost->intercept = check_net_bans;
     loopi(MAXCLIENTS) serverhost->peers[i].data = NULL;
     const char * _serverip = serverip[0] == '\0' ? "0.0.0.0" : serverip;
     std::cout<<"Game server socket listening on UDP "<<_serverip<<":"<<serverport<<std::endl;
@@ -641,30 +661,30 @@ bool setuplistenserver(bool dedicated)
     }
     if(lansock == ENET_SOCKET_NULL) conoutf(CON_WARN, "WARNING: could not create LAN server info socket");
     else enet_socket_set_option(lansock, ENET_SOCKOPT_NONBLOCK, 1);
-    
+
     serverhost_socket.assign(ip::udp::v4(), serverhost->socket);
     serverhost_socket.async_receive(null_buffers(), serverhost_receive);
-    
+
     info_socket.assign(ip::udp::v4(), pongsock);
     info_socket.async_receive(null_buffers(), info_input_handler);
-    
+
     laninfo_socket.assign(ip::udp::v4(), lansock);
     laninfo_socket.async_receive(null_buffers(), laninfo_input_handler);
-    
+
     return true;
 }
 
 void initserver(bool listen, bool dedicated)
-{    
+{
     struct sigaction terminate_action;
     sigemptyset(&terminate_action.sa_mask);
     terminate_action.sa_handler = shutdown_from_signal;
     terminate_action.sa_flags = 0;
     sigaction(SIGINT, &terminate_action, NULL);
     sigaction(SIGTERM, &terminate_action, NULL);
-    
+
     server::serverinit();
-    
+
     if(listen) setuplistenserver(dedicated);
 
     if(listen)
@@ -681,9 +701,9 @@ bool serveroption(char *opt)
     switch(opt[1])
     {
         case 'u': uprate = atoi(opt+2); return true;
-        case 'c': 
+        case 'c':
         {
-            int clients = atoi(opt+2); 
+            int clients = atoi(opt+2);
             if(clients > 0) maxclients = min(clients, MAXCLIENTS);
             else maxclients = DEFAULTCLIENTS;
             return true;
@@ -706,22 +726,22 @@ bool restart_program;
 int main(int argc, char* argv[])
 {
     restart_program = false;
-     
+
     
     if(enet_initialize()<0) fatal("Unable to initialise enet");
     atexit(enet_deinitialize);
     enet_time_set(0);
-    
+
     for(int i = 1; i<argc; i++) if(argv[i][0]!='-' || !serveroption(argv[i])) gameargs.add(argv[i]);
     game::parseoptions(gameargs);
-    
+
     initserver(true, true);
-    
+
     if(restart_program)
     {
-        execv(argv[0], argv);   
+        execv(argv[0], argv);
     }
-    
+
     return 0;
 }
 

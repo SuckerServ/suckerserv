@@ -154,6 +154,7 @@ target_link_libraries(lua_modules
 SET(GAME_SERVER_SOURCES
     engine/server.cpp
     fpsgame/server.cpp
+    hopmod/netbans.cpp
     hopmod/startup.cpp
     hopmod/scheduler.cpp
     hopmod/lua.cpp

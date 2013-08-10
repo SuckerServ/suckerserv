@@ -26,7 +26,7 @@ void push(lua_State * L, __uid_t value);
 namespace lua{
 void push(lua_State * L, string value)
 {
-    lua_pushstring(L, value);   
+    lua_pushstring(L, value);
 }
 } //namespace lua
 
@@ -124,12 +124,12 @@ void bind_core_functions(lua_State * L, int T)
 
     bind_function(L, T, "send_auth_request", server::send_auth_request);
     bind_function(L, T, "send_auth_challenge_to_client", server::send_auth_challenge);
-    
+
     bind_function(L, T, "players", server::cs_player_list);
     bind_function(L, T, "spectators", server::cs_spec_list);
     bind_function(L, T, "bots", server::cs_bot_list);
     bind_function(L, T, "clients", server::cs_client_list);
-    
+
     bind_function(L, T, "teams", server::get_teams);
     bind_function(L, T, "team_msg", server::team_msg);
     bind_function(L, T, "team_score", server::get_team_score);
@@ -137,10 +137,10 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "team_draw", server::team_draw);
     bind_function(L, T, "team_players", server::get_team_players);
     bind_function(L, T, "teamsize", server::team_size);
-    
+
     bind_function(L, T, "get_gamemode_info", server::lua_gamemodeinfo);
     bind_function(L, T, "pausegame", (void (*)(bool))server::pausegame);
-    
+
     bind_function(L, T, "msg", server::server_msg);
 
     bind_function(L, T, "changetime", server::changetime);
@@ -153,27 +153,30 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "shutdown", server::shutdown);
     bind_function(L, T, "restart_now", restart_now);
     bind_function(L, T, "reload_lua", reload_hopmod);
-    
+
     bind_function(L, T, "file_exists", file_exists);
     bind_function(L, T, "dir_exists", dir_exists);
-    
+
     bind_function(L, T, "sleep", lua::sleep);
     bind_function(L, T, "interval", lua::interval);
     bind_function(L, T, "cancel_timer", lua::cancel_timer);
-    
+
     bind_function(L, T, "log_event_error", log_event_error);
-    
+
     extern int get_lua_stack_size();
     bind_function(L, T, "lua_stack_size", get_lua_stack_size);
-    
+
     bind_function(L, T, "enet_time_set", enet_time_set);
     bind_function(L, T, "enet_time_get", (int (*)())enet_time_get);
-    
+
     bind_function(L, T, "revision", hopmod::revision);
     bind_function(L, T, "version", hopmod::build_date);
     bind_function(L, T, "build_date", hopmod::build_date);
     bind_function(L, T, "build_time", hopmod::build_time);
-    bind_function(L, T, "filtertext", server::extfiltertext);
+
+    bind_function(L, T, "net_ban_check", hopmod::netbans::check_ban);
+    bind_function(L, T, "net_ban_add", hopmod::netbans::add_ban);
+    bind_function(L, T, "net_ban_clear", hopmod::netbans::clear_bans);
 }
 
 template<int Constant>
@@ -181,11 +184,11 @@ static int get_constant(lua_State * L)
 {
     if(lua_gettop(L)) luaL_error(L, "cannot set constant");
     lua_pushinteger(L, Constant);
-    return 1;   
+    return 1;
 }
 
 void bind_core_constants(lua_State * L, int T)
-{    
+{
     bind_function(L, T, "DISC_NONE", get_constant<DISC_NONE>);
     bind_function(L, T, "DISC_EOP", get_constant<DISC_EOP>);
     bind_function(L, T, "DISC_CN", get_constant<DISC_CN>);
@@ -197,7 +200,7 @@ void bind_core_constants(lua_State * L, int T)
     bind_function(L, T, "DISC_TIMEOUT", get_constant<DISC_TIMEOUT>);
     bind_function(L, T, "DISC_OVERFLOW", get_constant<DISC_OVERFLOW>);
     bind_function(L, T, "DISC_NUM", get_constant<DISC_NUM>);
-    
+
     bind_function(L, T, "DISC_NONE", get_constant<DISC_NONE>);
     bind_function(L, T, "DISC_EOP", get_constant<DISC_EOP>);
     bind_function(L, T, "DISC_CN", get_constant<DISC_CN>);
@@ -224,7 +227,7 @@ void bind_core_constants(lua_State * L, int T)
     bind_function(L, T, "LAGGED", get_constant<CS_LAGGED>);
     bind_function(L, T, "SPECTATOR", get_constant<CS_SPECTATOR>);
     bind_function(L, T, "EDITING", get_constant<CS_EDITING>);
-    
+
     bind_function(L, T, "MM_OPEN", get_constant<MM_OPEN>);
     bind_function(L, T, "MM_VETO", get_constant<MM_VETO>);
     bind_function(L, T, "MM_LOCKED", get_constant<MM_LOCKED>);
@@ -404,8 +407,7 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "ctf_teamkill_penalty", server::ctftkpenalty);
     bind_var(L, T, "specslots", server::spec_slots);
     bind_var(L, T, "cheatdetection", server::anti_cheat_enabled);
-    bind_var(L, T, "hide_and_seek", server::hide_and_seek);
-    
+
     bind_var(L, T, "flood_protect_text", server::message::resend_time::text);
     bind_var(L, T, "flood_protect_sayteam", server::message::resend_time::sayteam);
     bind_var(L, T, "flood_protect_mapvote", server::message::resend_time::mapvote);
@@ -415,19 +417,19 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "flood_protect_remip", server::message::resend_time::remip);
     bind_var(L, T, "flood_protect_newmap", server::message::resend_time::newmap);
     bind_var(L, T, "flood_protect_spectator", server::message::resend_time::spec);
-    
+
     bind_var(L, T, "set_player_privilege_message", server::message::set_player_privilege);
     
     bind_ro_var(L, T, "tx_bytes", tx_bytes);
     bind_ro_var(L, T, "rx_bytes", rx_bytes);
     bind_ro_var(L, T, "tx_packets", tx_packets);
     bind_ro_var(L, T, "rx_packets", rx_packets);
-        
+
     bind_var(L, T, "timer_alarm_threshold", server::timer_alarm_threshold);
     bind_var(L, T, "enable_extinfo", server::enable_extinfo);
 
     bind_ro_var(L, T, "anti_cheat_system_rev", server::anti_cheat_system_rev);
-    
+
     bind_var(L, T, "ext_admin_pass", server::ext_admin_pass);
     
     bind_var(L, T, "mapcrc", server::mcrc);
