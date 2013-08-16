@@ -396,6 +396,7 @@ class anticheat
      
     bool check_gun(int gunselect, bool is_spawn=false)
     {
+#if 0
         if (!initialized) return true;
         //if (mod_gamemode) return true;
         lastgun = gunselect;
@@ -414,6 +415,8 @@ class anticheat
         }
         if (!correct_gun) impossible(2, gunselect);
         return correct_gun;
+#endif
+        return true;
     }
     
     /*
