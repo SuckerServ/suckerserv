@@ -12,11 +12,6 @@ address_mask::address_mask(std::size_t bits)
     m_value = static_cast<address::integral_type>((pow(2, bits)-1)) << (32 - bits);
 }
 
-address::integral_type address_mask::value()const
-{
-    return m_value;
-}
-
 std::size_t address_mask::bits()const
 {
     std::bitset<address::bits> bits(m_value);

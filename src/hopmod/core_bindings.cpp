@@ -176,8 +176,13 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "filtertext", server::extfiltertext);
 
     bind_function(L, T, "net_ban_check", hopmod::netbans::check_ban);
+    bind_function(L, T, "net_ban_push", hopmod::netbans::push_bans);
+    bind_function(L, T, "net_ban_pop", hopmod::netbans::pop_bans);
+    bind_function(L, T, "net_ban_merge", hopmod::netbans::merge_pushed_bans);
     bind_function(L, T, "net_ban_add", hopmod::netbans::add_ban);
+    bind_function(L, T, "net_ban_del", hopmod::netbans::del_ban);
     bind_function(L, T, "net_ban_clear", hopmod::netbans::clear_bans);
+    bind_function(L, T, "net_ban_list", hopmod::netbans::ban_list);
 }
 
 template<int Constant>

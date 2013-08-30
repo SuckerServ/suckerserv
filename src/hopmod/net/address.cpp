@@ -9,13 +9,13 @@ namespace ip{
 address::address()
  :m_value(0)
 {
-    
+
 }
 
 address::address(integral_type value)
  :m_value(value)
 {
-    
+
 }
 
 address::address(octet_type b1, octet_type b2, octet_type b3, octet_type b4)
@@ -25,11 +25,6 @@ address::address(octet_type b1, octet_type b2, octet_type b3, octet_type b4)
     m_value_part[1] = b3;
     m_value_part[2] = b2;
     m_value_part[3] = b1;
-}
-
-address::integral_type address::value()const
-{
-    return m_value;
 }
 
 void address::to_string(cstring_buffer * output)const
