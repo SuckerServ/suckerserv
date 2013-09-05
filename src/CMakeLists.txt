@@ -7,7 +7,9 @@ else(ENET_FOUND)
 endif(ENET_FOUND)
 
 
-find_package(Lua5.2)
+if(NOT (CMAKE_MAJOR_VERSION LESS 2) AND NOT (CMAKE_MINOR_VERSION LESS 8))
+    find_package(Lua5.2)
+endif(NOT (CMAKE_MAJOR_VERSION LESS 2) AND NOT (CMAKE_MINOR_VERSION LESS 8))
 
 if(LUA5.2_FOUND)
     set(LUA_INCLUDE_DIRS ${LUA5.2_INCLUDE_DIR})
@@ -92,9 +94,9 @@ include_directories(
 add_definitions(-Wall -fsigned-char -DSTANDALONE -DREVISION=$ENV{REVISION} -DLUA_COMPAT_MODULE ${LSQLITE3_DEFINITIONS})
 
 
-IF(NOT CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+if(NOT CMAKE_BUILD_TYPE STREQUAL "DEBUG")
     add_definitions( -O3)
-ENDIF(NOT CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+endif(NOT CMAKE_BUILD_TYPE STREQUAL "DEBUG")
 
 set(SAUERTOOLS_SOURCES
     shared/tools.cpp
@@ -151,7 +153,7 @@ target_link_libraries(lua_modules
     ${OPENSSL_LIBRARIES})
 
 
-SET(GAME_SERVER_SOURCES
+set(GAME_SERVER_SOURCES
     engine/server.cpp
     fpsgame/server.cpp
     hopmod/netbans.cpp
