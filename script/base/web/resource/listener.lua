@@ -1,5 +1,5 @@
 require "http_server"
-require "Json"
+local Json = require "Json"
 
 local listeners = {}
 local specialHandlerConstructors = {}

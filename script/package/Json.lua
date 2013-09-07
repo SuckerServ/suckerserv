@@ -66,7 +66,7 @@ local ipairs = ipairs
 local assert = assert
 local Chipmunk = Chipmunk
 
-module("Json")
+local _M = {}
 
 local StringBuilder = {
 	buffer = {}
@@ -513,3 +513,11 @@ function Null()
 	return Null
 end
 
+_M.StringBuilder = StringBuilder
+_M.JsonWriter = JsonWriter
+_M.JsonReader = JsonReader
+_M.Encode = Encode
+_M.Decode = Decode
+_M.Null = Null
+
+return _M

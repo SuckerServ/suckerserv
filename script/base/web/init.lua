@@ -1,4 +1,4 @@
-require "http_server"
+http_server = require "http_server"
 
 local LISTENER_PORT = server.serverport + 3
 

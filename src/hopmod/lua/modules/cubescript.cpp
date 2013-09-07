@@ -4,7 +4,7 @@
 namespace lua{
 namespace module{
 
-void open_cubescript(lua_State * L)
+int open_cubescript(lua_State * L)
 {
     cubescript::lua::proxy_command_stack::register_metatable(L);
     
@@ -15,9 +15,11 @@ void open_cubescript(lua_State * L)
         {NULL, NULL}
     };
     
-    luaL_register(L, "cubescript", cubescript_functions);
-    
-    lua_pop(L, 1);
+    luaL_newlib(L, cubescript_functions);
+
+    lua_setglobal(L, "cubescript");
+
+    return 1;
 }
 
 } //namespace module

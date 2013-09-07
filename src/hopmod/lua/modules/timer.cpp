@@ -30,7 +30,7 @@ public:
             {NULL, NULL}
         };
         
-        luaL_register(L, NULL, funcs);
+        luaL_setfuncs(L, funcs, 0);
         
         lua_pushvalue(L, -1);
         lua_setfield(L, -2, "__index");
@@ -133,7 +133,7 @@ public:
             {NULL, NULL}
         };
         
-        luaL_register(L, NULL, funcs);
+        luaL_setfuncs(L, funcs, 0);
         lua_pushvalue(L, -1);
         lua_setfield(L, -2, "__index");
         
@@ -169,7 +169,7 @@ const char * usec_timer_wrapper::MT = "usec_timer_class";
 namespace lua{
 namespace module{
 
-void open_timer(lua_State * L)
+int open_timer(lua_State * L)
 {
     static luaL_Reg functions[] = {
         {"create", deadline_timer_wrapper::create},
@@ -177,11 +177,12 @@ void open_timer(lua_State * L)
         {NULL, NULL}
     };
     
-    luaL_register(L, "timer", functions);
-    lua_pop(L, 1);
+    luaL_newlib(L, functions);
     
     deadline_timer_wrapper::register_class(L);
     usec_timer_wrapper::register_class(L);
+
+    return 1;
 }
 
 }//namespace module

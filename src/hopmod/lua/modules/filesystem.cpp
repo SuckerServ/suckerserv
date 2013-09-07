@@ -48,7 +48,7 @@ public:
             {NULL, NULL}
         };
         
-        luaL_register(L, NULL, funcs);
+        luaL_setfuncs(L, funcs, 0);
         lua_pop(L, 1);
     }
     
@@ -118,14 +118,14 @@ static int begin_dir_iterator(lua_State * L)
 namespace lua{
 namespace module{
 
-void open_filesystem(lua_State * L)
+int open_filesystem(lua_State * L)
 {    
     static luaL_Reg functions[] = {
         {"dir", begin_dir_iterator},
         {NULL, NULL}
     };
     
-    luaL_register(L, "filesystem", functions);
+    luaL_newlib(L, functions);
     
     lua_pushinteger(L, DT_FIFO);
     lua_setfield(L, -2, "FIFO");
@@ -138,10 +138,10 @@ void open_filesystem(lua_State * L)
     
     lua_pushinteger(L, DT_SOCK);
     lua_setfield(L, -2, "SOCKET");
-    
-    lua_pop(L, 1);
         
     directory_iterator::create_metatable(L);
+
+    return 1;
 }
 
 } //namespace module

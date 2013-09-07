@@ -1,5 +1,5 @@
-require "http.client"
-require "Json"
+local http = require "http.client"
+local Json = require "Json"
 --[[
     You can checkout the bans in a readable form here:
 

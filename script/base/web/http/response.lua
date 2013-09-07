@@ -1,4 +1,4 @@
-require "Json"
+local Json = require "Json"
 
 local function includeHeaders(response, headers)
     for name, value in pairs(headers or {}) do

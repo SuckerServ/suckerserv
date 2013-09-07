@@ -101,6 +101,8 @@ local function load_player_command_script_directories()
         local dir_filename = load_dir[1]
         local permission = load_dir[2]
         
+        local filesystem = require "filesystem"
+
         for file_type, filename in filesystem.dir(dir_filename) do
             if file_type == filesystem.FILE and string.match(filename, ".lua$") then
                 local command_name = string.sub(filename, 1, #filename - 4)

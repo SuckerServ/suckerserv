@@ -65,7 +65,7 @@ static int shutdown_geoip(lua_State * L)
 namespace lua{
 namespace module{
 
-void open_geoip(lua_State * L)
+int open_geoip(lua_State * L)
 {
     static luaL_Reg functions[] = {
         {"load_geoip_database", load_geoip_database},
@@ -76,10 +76,11 @@ void open_geoip(lua_State * L)
         {NULL, NULL}
     };
     
-    luaL_register(L, "geoip", functions);
-    lua_pop(L, 1);
+    luaL_newlib(L, functions);
     
     lua::on_shutdown(L, shutdown_geoip);
+
+    return 1;
 }
 
 } //namespace module
@@ -132,8 +133,7 @@ void open_geoip(lua_State * L)
         {NULL, NULL}
     };
     
-    luaL_register(L, "geoip", functions);
-    lua_pop(L, 1);
+    luaL_newlib(L, functions);
 }
 
 } //namespace module

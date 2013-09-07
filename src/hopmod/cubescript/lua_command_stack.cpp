@@ -383,7 +383,7 @@ int proxy_command_stack::register_metatable(lua_State * L)
         {"__gc", &proxy_command_stack::__gc},
         {NULL, NULL}
     };
-    luaL_register(L, NULL, functions);
+    luaL_newlib(L, functions);
     lua_pop(L, 1);
     return 0;
 }

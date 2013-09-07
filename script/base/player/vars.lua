@@ -1,4 +1,4 @@
-require "journal"
+local journal = require "journal"
 
 local IPMASK_VARS_FILE = "log/player_vars_journal"
 

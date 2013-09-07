@@ -77,7 +77,7 @@ public:
             {NULL, NULL}
         };
         
-        luaL_register(L, NULL, funcs);
+        luaL_setfuncs(L, funcs, 0);
         lua_pop(L, 1);
     }
     
@@ -247,7 +247,7 @@ public:
             {NULL, NULL}
         };
         
-        luaL_register(L, NULL, funcs);
+        luaL_setfuncs(L, funcs, 0);
         lua_pop(L, 1);
     }
 private:
@@ -416,7 +416,7 @@ public:
             {NULL, NULL}
         };
         
-        luaL_register(L, NULL, funcs);
+        luaL_setfuncs(L, funcs, 0);
         lua_pop(L, 1);
         
         return 1;
@@ -573,7 +573,7 @@ public:
             {NULL, NULL}
         };
         
-        luaL_register(L, NULL, funcs);
+        luaL_setfuncs(L, funcs, 0);
         lua_pop(L, 1);
     }
     
@@ -756,7 +756,7 @@ public:
             {NULL, NULL}
         };
         
-        luaL_register(L, NULL, funcs);
+        luaL_setfuncs(L, funcs, 0);
         lua_pop(L, 1);
     }
 private:
@@ -938,7 +938,7 @@ static int shutdown_http_server(lua_State *)
 namespace lua{
 namespace module{
 
-void open_http_server(lua_State * L)
+int open_http_server(lua_State * L)
 {
     lua::on_shutdown(L, shutdown_http_server);
     
@@ -958,14 +958,15 @@ void open_http_server(lua_State * L)
         {NULL, NULL}
     };
     
-    luaL_register(L, "http_server", functions);
-    lua_pop(L, 1);
+    luaL_newlib(L, functions);
     
     request_wrapper::register_class(L);
     response_wrapper::register_class(L);
     resource_wrapper::register_class(L);
     filesystem_resource_wrapper::register_class(L);
     listener::register_class(L);
+
+    return 1;
 }
 
 } //namespace module

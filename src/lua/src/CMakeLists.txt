@@ -63,6 +63,3 @@ install(TARGETS
             ${INSTALL_LIBRARY_DIR}
         ARCHIVE DESTINATION
             ${INSTALL_ARCHIVE_DIR})
-
-add_definitions(-DLUA_COMPAT_MODULE)
-

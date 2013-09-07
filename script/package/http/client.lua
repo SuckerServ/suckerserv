@@ -13,7 +13,7 @@ local type = type
 local print = print
 local debug = debug
 
-module "http.client"
+local _M = {client = {}}
 
 local MAX_REDIRECTS = 5
 
@@ -590,3 +590,9 @@ function connection(hostname, port)
     }
 end
 
+_M.client.unfold_headers = unfold_headers
+_M.client.parse_headers = parse_headers
+_M.client.get = get
+_M.client.connection = connection
+
+return _M

@@ -1,4 +1,4 @@
-
+local Json = require "Json"
 local nonvartype = {["function"] = true, ["userdata"] = true, ["thread"] = true}
 
 http_server_root["queryvars"] = http_server.resource({

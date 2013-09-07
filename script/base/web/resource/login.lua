@@ -1,4 +1,4 @@
-require "crypto"
+local crypto = require "crypto"
 
 local users = {}
 local sessions = {}

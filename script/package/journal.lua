@@ -9,7 +9,7 @@ local pcall = pcall
 local print = print
 local tostring = tostring
 
-module("journal")
+local _M = {}
 
 local READ_SIZE = 8192
 
@@ -133,3 +133,4 @@ end
 _M.load = load_journal
 _M.writer_open = writer_open
 
+return _M

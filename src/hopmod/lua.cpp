@@ -94,14 +94,25 @@ lua_State * get_lua_state()
 
 static void load_lua_modules()
 {
-    //lua::module::open_net(L);
-    lua::module::open_net2(L);
-    lua::module::open_timer(L);
-    lua::module::open_crypto(L);
-    lua::module::open_cubescript(L);
-    lua::module::open_geoip(L);
-    lua::module::open_filesystem(L);
-    lua::module::open_http_server(L);
+
+    static const luaL_Reg loadedlibs[] = {
+       	{"net", lua::module::open_net2},
+       	{"timer", lua::module::open_timer},
+       	{"crypto", lua::module::open_crypto},
+       	{"cubescript", lua::module::open_cubescript},
+        {"filesystem", lua::module::open_filesystem},
+        {"geoip", lua::module::open_geoip},
+       	{"http_server", lua::module::open_http_server},
+        {NULL, NULL}
+    };
+
+    const luaL_Reg *lib;
+
+    for (lib = loadedlibs; lib->func; lib++) {
+        luaL_requiref(L, lib->name, lib->func, 0);
+        lua_pop(L, 1);  /* remove lib */
+    }
+
     lua_packlibopen(L);
 #ifdef HAS_LSQLITE3
     luaopen_lsqlite3(L);
