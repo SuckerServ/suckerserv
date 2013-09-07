@@ -5,7 +5,7 @@
 #include "hopmod.hpp"
 #include "lib/handle_resolver.hpp"
 
-boost::signal<void (int)> signal_shutdown;
+boost::signals2::signal<void (int)> signal_shutdown;
 
 void disconnect_all_slots()
 {

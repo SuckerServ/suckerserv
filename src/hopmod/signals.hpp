@@ -1,10 +1,10 @@
 #ifndef HOPMOD_SIGNALS_HPP
 #define HOPMOD_SIGNALS_HPP
 
-#include <boost/signal.hpp>
+#include <boost/signals2/signal.hpp>
 
 // Generic Server Events
-extern boost::signal<void (int)> signal_shutdown;
+extern boost::signals2::signal<void (int)> signal_shutdown;
 
 #endif
 

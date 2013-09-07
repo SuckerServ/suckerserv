@@ -2,9 +2,9 @@
 #include "hopmod/pch.hpp"
 #endif
 
+#include "hopmod/hopmod.hpp"
 #include "game.h"
 
-#include "hopmod/hopmod.hpp"
 #include "hopmod/server_functions.hpp"
 lua::event_environment & event_listeners();
 
