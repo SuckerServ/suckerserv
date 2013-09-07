@@ -1,5 +1,5 @@
-#include "cube.h"
 #include "hopmod.hpp"
+#include "cube.h"
 #include "server_functions.hpp"
 #include "main_io_service.hpp"
 #include <signal.h>

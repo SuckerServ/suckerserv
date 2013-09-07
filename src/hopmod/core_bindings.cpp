@@ -1,6 +1,6 @@
+#include "hopmod.hpp"
 #include "cube.h"
 #include "game.h"
-#include "hopmod.hpp"
 #include "server_functions.hpp"
 extern bool reloaded; // Defined in startup.cpp
 
