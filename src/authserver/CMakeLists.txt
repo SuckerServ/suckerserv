@@ -18,7 +18,6 @@ target_link_libraries(sauer_authserver
     sauertools
     lua_modules
     ${ENET_LIBRARY}
-    ${BOOST_SIGNALS_LIBRARY}
     ${BOOST_THREAD_LIBRARY}
     -lrt)
 
