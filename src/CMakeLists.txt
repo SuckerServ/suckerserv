@@ -17,12 +17,11 @@ else(LUA5.1_FOUND)
 endif(LUA5.1_FOUND)
 
 
-find_package(Boost 1.35.0 COMPONENTS signals system thread)
+#find_package(Boost 1.35.0 COMPONENTS system thread)
 
 if(Boost_FOUND)
     set(BOOST_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
     set(BOOST_SYSTEM_LIBRARY ${Boost_SYSTEM_LIBRARY})
-    set(BOOST_SIGNALS_LIBRARY ${Boost_SIGNALS_LIBRARY})
     set(BOOST_THREAD_LIBRARY ${Boost_THREAD_LIBRARY})
 else(Boost_FOUND)
     add_subdirectory(boost)
@@ -179,7 +178,6 @@ target_link_libraries(sauer_server
     -lz
     sauertools
     lua_modules
-    ${BOOST_SIGNALS_LIBRARY}
     ${BOOST_THREAD_LIBRARY}
     ${ENET_LIBRARY})
 
