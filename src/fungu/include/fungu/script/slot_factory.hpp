@@ -11,7 +11,7 @@
 #include "../make_function_signature.hpp"
 #include "script_function.hpp"
 #include <boost/function.hpp>
-#include <boost/signal.hpp>
+#include <boost/signals2/signal.hpp>
 #include <map>
 #include <vector>
 #include <list>
@@ -43,7 +43,7 @@ public:
     }
     
     template<typename SignalType>
-    void register_signal(SignalType & sig, const_string name, error_handler_function error_handler, boost::signals::connect_position cp = boost::signals::at_back)
+    void register_signal(SignalType & sig, const_string name, error_handler_function error_handler, boost::signals2::connect_position cp = boost::signals2::at_back)
     {
         m_signal_connectors[name] = boost::bind(&slot_factory::connect_slot<SignalType>, this, boost::ref(sig), error_handler, cp, _1, _2);
     }
@@ -82,13 +82,13 @@ private:
     template<typename SignalType>
     int connect_slot(SignalType & sig,
         error_handler_function error_handler,
-        boost::signals::connect_position cp,
+        boost::signals2::connect_position cp,
         env_object::shared_ptr obj,
         env * environment)
     {
         typedef typename make_function_signature<typename SignalType::slot_function_type>::type SignalSignature;
         
-        std::pair<base_script_function *,boost::signals::connection> newSlot;
+        std::pair<base_script_function *,boost::signals2::connection> newSlot;
         script_function<SignalSignature> * newSlotFunction = new script_function<SignalSignature>(obj, environment, error_handler);
         
         newSlot.first = newSlotFunction;
@@ -106,8 +106,8 @@ private:
     std::map<const_string,slot_connect_function> m_signal_connectors;
     
     typedef detail::base_script_function<std::vector<any>, callargs_serializer, error> base_script_function;
-    typedef std::vector<std::pair<base_script_function *,boost::signals::connection> > slot_vector;
-    typedef std::map<int, std::pair<base_script_function *, boost::signals::connection> > slot_map;
+    typedef std::vector<std::pair<base_script_function *,boost::signals2::connection> > slot_vector;
+    typedef std::map<int, std::pair<base_script_function *, boost::signals2::connection> > slot_map;
     slot_map m_slots;
     int m_next_slot_id;
     

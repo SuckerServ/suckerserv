@@ -1,10 +1,23 @@
 add_subdirectory(enet)
 add_subdirectory(lua)
-add_subdirectory(boost)
 add_subdirectory(fungu)
 add_subdirectory(lsqlite3)
 add_subdirectory(authserver)
 add_subdirectory(luasql)
+
+
+
+find_package(Boost 1.49.0 COMPONENTS system thread)
+
+if(Boost_FOUND)
+    set(BOOST_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
+    set(BOOST_SYSTEM_LIBRARY ${Boost_SYSTEM_LIBRARY})
+    set(BOOST_THREAD_LIBRARY ${Boost_THREAD_LIBRARY})
+else(Boost_FOUND)
+    add_subdirectory(boost)
+endif(Boost_FOUND)
+
+
 
 include(CheckLibraryExists)
 

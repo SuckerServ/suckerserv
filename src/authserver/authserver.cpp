@@ -1,12 +1,13 @@
 // Original source code copied from engine/master.cpp found in Sauerbraten's source tree.
 
-#include "cube.h"
 #include "hopmod/hopmod.hpp"
 #include "hopmod/string_var.hpp"
 #include "hopmod/utils.hpp"
 
 #include "hopmod/lua/modules.hpp"
 #include "hopmod/main_io_service.hpp"
+
+#include "cube.h"
 
 #include <enet/time.h>
 #include <signal.h>

@@ -2,6 +2,7 @@
 #include "hopmod/pch.hpp"
 #endif
 
+#include "hopmod/hopmod.hpp"
 #include "game.h"
 
 #include "hopmod/extapi.hpp"

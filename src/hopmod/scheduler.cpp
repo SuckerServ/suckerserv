@@ -32,7 +32,7 @@ void init_scheduler()
     register_lua_function(sched_free_lua_sleep, "sleep");
     register_lua_function(sched_free_lua_interval, "interval");
     
-    signal_shutdown.connect(cancel_free_scheduled, boost::signals::at_front);
+    signal_shutdown.connect(cancel_free_scheduled, boost::signals2::at_front);
 }
 
 void cancel_free_scheduled(int)

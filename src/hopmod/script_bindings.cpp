@@ -2,9 +2,9 @@
 #include "pch.hpp"
 #endif
 
+#include "hopmod.hpp"
 #include "cube.h"
 #include "game.h"
-#include "hopmod.hpp"
 #include "extapi.hpp"
 #include "string_var.hpp"
 #include <fungu/script.hpp>

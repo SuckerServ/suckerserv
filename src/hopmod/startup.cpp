@@ -2,8 +2,8 @@
 #include "pch.hpp"
 #endif
 
-#include "cube.h"
 #include "hopmod.hpp"
+#include "cube.h"
 #include "lua/modules.hpp"
 #include "main_io_service.hpp"
 
@@ -16,6 +16,7 @@ using namespace fungu;
 #include <iostream>
 
 #include <boost/thread.hpp>
+#include <boost/signals2.hpp>
 
 #ifdef HAS_LSQLITE3
 extern "C"{
@@ -39,7 +40,7 @@ extern "C"{
 int lua_packlibopen(lua_State *L);
 } //extern "C"
 
-static boost::signals::connection close_listenserver_slot;
+static boost::signals2::connection close_listenserver_slot;
 static bool reload = false;
 
 unsigned int maintenance_frequency;
@@ -124,9 +125,9 @@ static void reload_hopmod_now()
 
     reloaded = true;
 
-    close_listenserver_slot.block();  // block close_listenserver_slot to keep clients connected
+    boost::signals2::shared_connection_block b(close_listenserver_slot);  // block close_listenserver_slot to keep clients connected
     signal_shutdown(SHUTDOWN_RELOAD);
-    close_listenserver_slot.unblock();
+    b.unblock();
 
     disconnect_all_slots();
 
