@@ -40,26 +40,22 @@ enet_deinitialize (void)
     WSACleanup ();
 }
 
-extern unsigned long long getnanoseconds (); //NEW
+enet_uint32
+enet_host_random_seed (void)
+{
+    return (enet_uint32) timeGetTime ();
+}
 
 enet_uint32
 enet_time_get (void)
 {
-#if 0
     return (enet_uint32) timeGetTime () - timeBase;
-#endif
-
-    return (enet_uint32) ( getnanoseconds () / 1000000 ) - timeBase; //NEW
 }
 
 void
 enet_time_set (enet_uint32 newTimeBase)
 {
-#if 0
     timeBase = (enet_uint32) timeGetTime () - newTimeBase;
-#endif
-
-    timeBase = (enet_uint32) ( getnanoseconds () / 1000000 ) - newTimeBase; //NEW
 }
 
 int
@@ -206,6 +202,23 @@ enet_socket_set_option (ENetSocket socket, ENetSocketOption option, int value)
 }
 
 int
+enet_socket_get_option (ENetSocket socket, ENetSocketOption option, int * value)
+{
+    int result = SOCKET_ERROR, len;
+    switch (option)
+    {
+        case ENET_SOCKOPT_ERROR:
+            len = sizeof(int);
+            result = getsockopt (socket, SOL_SOCKET, SO_ERROR, (char *) value, & len);
+            break;
+
+        default:
+            break;
+    }
+    return result == SOCKET_ERROR ? -1 : 0;
+}
+
+int
 enet_socket_connect (ENetSocket socket, const ENetAddress * address)
 {
     struct sockaddr_in sin;
@@ -329,7 +342,7 @@ enet_socket_receive (ENetSocket socket,
     }
 
     if (flags & MSG_PARTIAL)
-      return -1;
+      return 0;
 
     if (address != NULL)
     {

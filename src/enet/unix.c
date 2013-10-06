@@ -68,34 +68,30 @@ enet_deinitialize (void)
 {
 }
 
-extern unsigned long long getnanoseconds (); //NEW
+enet_uint32
+enet_host_random_seed (void)
+{
+    return (enet_uint32) time (NULL);
+}
 
 enet_uint32
 enet_time_get (void)
 {
-#if 0
     struct timeval timeVal;
 
     gettimeofday (& timeVal, NULL);
 
     return timeVal.tv_sec * 1000 + timeVal.tv_usec / 1000 - timeBase;
-#endif
-
-    return (enet_uint32) ( getnanoseconds () / 1000000 ) - timeBase; //NEW
 }
 
 void
 enet_time_set (enet_uint32 newTimeBase)
 {
-#if 0
     struct timeval timeVal;
 
     gettimeofday (& timeVal, NULL);
     
     timeBase = timeVal.tv_sec * 1000 + timeVal.tv_usec / 1000 - newTimeBase;
-#endif
-
-    timeBase = (enet_uint32) ( getnanoseconds () / 1000000 ) - newTimeBase; //NEW
 }
 
 int
@@ -276,6 +272,24 @@ enet_socket_set_option (ENetSocket socket, ENetSocketOption option, int value)
 }
 
 int
+enet_socket_get_option (ENetSocket socket, ENetSocketOption option, int * value)
+{
+    int result = -1;
+    socklen_t len;
+    switch (option)
+    {
+        case ENET_SOCKOPT_ERROR:
+            len = sizeof (int);
+            result = getsockopt (socket, SOL_SOCKET, SO_ERROR, value, & len);
+            break;
+
+        default:
+            break;
+    }
+    return result == -1 ? -1 : 0;
+}
+
+int
 enet_socket_connect (ENetSocket socket, const ENetAddress * address)
 {
     struct sockaddr_in sin;
@@ -403,7 +417,7 @@ enet_socket_receive (ENetSocket socket,
 
 #ifdef HAS_MSGHDR_FLAGS
     if (msgHdr.msg_flags & MSG_TRUNC)
-      return -1;
+      return 0;
 #endif
 
     if (address != NULL)
