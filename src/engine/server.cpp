@@ -469,7 +469,7 @@ int connectwithtimeout(ENetSocket sock, const char *hostname, const ENetAddress 
 
 ENetAddress serveraddress = { ENET_HOST_ANY, ENET_PORT_ANY };
 
-static ENetAddress pongaddr;
+ENetAddress pongaddr;
 
 void sendserverinforeply(ucharbuf &p)
 {
@@ -794,6 +794,7 @@ bool setuplistenserver(bool dedicated)
     
     serverhost = enet_host_create(&address, MAXCLIENTS, server::numchannels(), 0, uprate);
     if(!serverhost) return servererror(dedicated, "could not create server host");
+    serverhost->duplicatePeers = 10;
     loopi(MAXCLIENTS) serverhost->peers[i].data = NULL;
     const char * _serverip = serverip[0] == '\0' ? "0.0.0.0" : serverip;
     std::cout<<"Game server socket listening on UDP "<<_serverip<<":"<<serverport<<std::endl;
