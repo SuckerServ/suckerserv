@@ -1,4 +1,5 @@
 local _ = require "underscore"
+local crypto = require "crypto"
 
 function mins(value)
     return value * 1000 * 60
