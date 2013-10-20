@@ -29,7 +29,7 @@
 
 INCLUDE(FindPackageHandleStandardArgs)
 
-# Macro that determines Lua version. Should work for versions 2.2 and above (current release: 5.1.4)
+# Macro that determines Lua version. Should work for versions 2.2 and above (current release: 5.1.5)
 FUNCTION(DETERMINE_LUA_VERSION _file _varname)
   IF(EXISTS ${_file})
     FILE(STRINGS ${_file} _file_content REGEX "LUA_VERSION|LUA_RELEASE")
@@ -39,10 +39,16 @@ FUNCTION(DETERMINE_LUA_VERSION _file _varname)
   ENDIF()
   STRING(REGEX REPLACE "^.*LUA_RELEASE[ \t]+\"Lua[ \t]+([.0-9]+)\".*$" "\\1" ${_varname} "${_file_content}")
   IF(${_varname} STREQUAL "${_file_content}")
-    # At most version 5.1.0
     STRING(REGEX REPLACE "^.*LUA_VERSION[ \t]+\"Lua[ \t]+([.0-9]+)\".*$" "\\1" ${_varname} "${_file_content}")
     IF(${_varname} STREQUAL "${_file_content}")
-      MESSAGE(FATAL_ERROR "Could not determine Lua version which means this script has a bug")
+      FILE(STRINGS ${_file} lua_version_str REGEX "^#define LUA_VERSION_[A-Z]+[ \t]+\"[0-9]+\"")
+      STRING(REGEX REPLACE ".*#define LUA_VERSION_MAJOR[ \t]+\"([0-9]+)\".*" "\\1" LUA_VERSION_MAJOR "${lua_version_str}")
+      STRING(REGEX REPLACE ".*#define LUA_VERSION_MINOR[ \t]+\"([0-9]+)\".*" "\\1" LUA_VERSION_MINOR "${lua_version_str}")
+      STRING(REGEX REPLACE ".*#define LUA_VERSION_RELEASE[ \t]+\"([0-9]+)\".*" "\\1" LUA_VERSION_RELEASE "${lua_version_str}")
+      SET(${_varname} ${LUA_VERSION_MAJOR}.${LUA_VERSION_MINOR}.${LUA_VERSION_RELEASE})
+      IF(!${_varname} MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]$")
+        MESSAGE(WARNING "Could not determine Lua version which means this script has a bug")
+      ENDIF()
     ENDIF()
     IF(${_varname} MATCHES "^[0-9]+\\.[0-9]+$")
       SET(${_varname} "${${_varname}}.0") # E.g. "3.2" is "3.2.0" actually
@@ -54,20 +60,25 @@ ENDFUNCTION(DETERMINE_LUA_VERSION)
 
 # Find include path
 FIND_PATH(LUA5.1_INCLUDE_DIR lua.h
+  PATHS /usr/include/lua5.1 /usr/include/lua51
+    /usr/local/include/lua5.1 /usr/local/include/lua51
+  NO_DEFAULT_PATH
+)
+
+FIND_PATH(LUA5.1_INCLUDE_DIR lua.h
   PATHS $ENV{LUA5.1_DIR} $ENV{LUA_DIR}
   PATH_SUFFIXES include/lua51 include/lua5.1 include/lua include
 )
-
+ 	
 # Check whether we really found Lua version 5.1
 IF(LUA5.1_INCLUDE_DIR)
   DETERMINE_LUA_VERSION(${LUA5.1_INCLUDE_DIR}/lua.h LUA5.1_VERSION)
-  IF((NOT LUA5.1_VERSION VERSION_LESS 5.2 AND NOT LUA5.1_VERSION VERSION_GREATER 5.1) AND NOT LUA5.1_VERSION VERSION_EQUAL 5.1)
+  IF((NOT LUA5.1_VERSION VERSION_LESS 5.2 OR NOT LUA5.1_VERSION VERSION_GREATER 5.1) AND NOT LUA5.1_VERSION VERSION_EQUAL 5.1)
     # Wrong version
-    MESSAGE(SEND_ERROR "Version of Lua header found is not 5.1. Found ${LUA5.1_VERSION}")
+    MESSAGE(STATUS "Version of Lua header found is not 5.1. Found ${LUA5.1_VERSION}")
     SET(LUA5.1_INCLUDE_DIR FALSE)
-  ENDIF((NOT LUA5.1_VERSION VERSION_LESS 5.2 AND NOT LUA5.1_VERSION VERSION_GREATER 5.1) AND NOT LUA5.1_VERSION VERSION_EQUAL 5.1)
-
-  FILE(STRINGS ${LUA5.1_INCLUDE_DIR}/luaconf.h LUA_HAS_BITWISE_OPERATOR_PATCH REGEX "#define LUA_BITWISE_OPERATORS")
+  ENDIF((NOT LUA5.1_VERSION VERSION_LESS 5.2 OR NOT LUA5.1_VERSION VERSION_GREATER 5.1) AND NOT LUA5.1_VERSION VERSION_EQUAL 5.1)
+  FILE(STRINGS ${LUA5.1_INCLUDE_DIR}/luaconf.h LUA5.1_HAS_BITWISE_OPERATOR_PATCH REGEX "#define LUA_BITWISE_OPERATORS")
 ENDIF(LUA5.1_INCLUDE_DIR)
 
 # Find library
@@ -81,7 +92,7 @@ FIND_LIBRARY(LUA5.1_LIBRARY
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(Lua5.1 DEFAULT_MSG
   LUA5.1_LIBRARY
   LUA5.1_INCLUDE_DIR
-  LUA_HAS_BITWISE_OPERATOR_PATCH
+  LUA5.1_HAS_BITWISE_OPERATOR_PATCH
 )
 
 MARK_AS_ADVANCED(
