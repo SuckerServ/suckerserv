@@ -19,7 +19,7 @@ Index: unix.c
      return timeVal.tv_sec * 1000 + timeVal.tv_usec / 1000 - timeBase;
 +#endif
 +
-+    return (enet_uint32) getnanoseconds () / 1000000 - timeBase; //NEW
++    return (enet_uint32) ( getnanoseconds () / 1000000 ) - timeBase; //NEW
  }
  
  void
@@ -33,7 +33,7 @@ Index: unix.c
      timeBase = timeVal.tv_sec * 1000 + timeVal.tv_usec / 1000 - newTimeBase;
 +#endif
 +
-+    timeBase = (enet_uint32) getnanoseconds () / 1000000 - newTimeBase; //NEW
++    timeBase = (enet_uint32) ( getnanoseconds () / 1000000 ) - newTimeBase; //NEW
  }
  
  int
@@ -54,7 +54,7 @@ Index: win32.c
      return (enet_uint32) timeGetTime () - timeBase;
 +#endif
 +
-+    return (enet_uint32) getnanoseconds () / 1000000U - timeBase; //NEW
++    return (enet_uint32) ( getnanoseconds () / 1000000 ) - timeBase; //NEW
  }
  
  void
@@ -64,7 +64,7 @@ Index: win32.c
      timeBase = (enet_uint32) timeGetTime () - newTimeBase;
 +#endif
 +
-+    timeBase = (enet_uint32) getnanoseconds () / 1000000U - newTimeBase; //NEW
++    timeBase = (enet_uint32) ( getnanoseconds () / 1000000 ) - newTimeBase; //NEW
  }
  
  int
