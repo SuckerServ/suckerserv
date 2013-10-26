@@ -6,7 +6,7 @@ then
     return
 end
 
-local MIN_CACHE_TIME	= 3 * 60 * 60 * 1000
+local MIN_CACHE_TIME	= 3600
 
 local failure_message = {
     [auth.request_status.REQUEST_FAILED]	= "You are using a reserved name.",
@@ -123,7 +123,7 @@ end)
 
 server.event_handler("rename", check_name)
 
-server.event_handler("maintenance", function()
+server.event_handler("intermission", function()
 
     local cur_time = server.uptime
     
