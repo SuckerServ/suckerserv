@@ -47,7 +47,7 @@ local function createListener(events)
         listener.queue = {}
         listener.request = nil
         
-        last_request_time = server.uptime
+        last_request_time = server.enet_time_get()
     end
     
     for _, eventName in ipairs(events) do
@@ -57,7 +57,7 @@ local function createListener(events)
     
     server.interval(30000, function()
         
-        if not listener.request and (not last_request_time or server.uptime - last_request_time > 29999) then
+        if not listener.request and (not last_request_time or server.enet_time_get() - last_request_time > 29999) then
             destroy_listener()
             return -1
         end

@@ -250,7 +250,7 @@ server.event_handler("damage", function(client, actor)
             last_warn[actor] = server.uptime
             set = true
         end
-        if (server.uptime - last_warn[actor]) > 10000 or set then
+        if (server.uptime - last_warn[actor]) > 10 or set then
             warn(actor,  "You can't frag your teammates in this mode!")
             last_warn[actor] = server.uptime
         end
@@ -262,7 +262,7 @@ server.event_handler("damage", function(client, actor)
             last_warn[actor] = server.uptime
             set = true
         end
-        if (server.uptime - last_warn[actor]) > 10000 or set then
+        if (server.uptime - last_warn[actor]) > 10 or set then
             warn(actor, "You are not allowed to attack the seek Player!!!")
             last_warn[actor] = server.uptime
         end 
@@ -380,7 +380,7 @@ server.event_handler("intermission", function(actor, client)
     --local starttime = round((server.intermission - server.gamemillis)) -- TODO: always 10000 ???
     
     --server.sleep((starttime - 10), function() -- riscy, but should work :P
-    --    if (server.uptime - last_mapvote) > 10000 then -- check if master/admin changed map
+    --    if (server.uptime - last_mapvote) > 10 then -- check if master/admin changed map
     --            server.changemap(server.map)
     --    end
     --end)
