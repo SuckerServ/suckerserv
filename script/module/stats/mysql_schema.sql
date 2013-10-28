@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS `games` (
   `id`          bigint(11) NOT NULL AUTO_INCREMENT,
-  `servername`  varchar(32) COLLATE latin1_general_ci NOT NULL,
+  `servername`  varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `datetime`    datetime NOT NULL,
   `gamemode`    tinytext NOT NULL,
   `mapname`     tinytext NOT NULL,
@@ -26,9 +26,9 @@ CREATE TABLE IF NOT EXISTS  `players` (
   `id`              bigint(11) NOT NULL AUTO_INCREMENT,
   `game_id`         bigint(11) NOT NULL,
   `team_id`         bigint(11) NOT NULL,
-  `name`            varchar(32) COLLATE latin1_general_ci NOT NULL,
+  `name`            varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `ipaddr`          varchar(16),
-  `country`         tinytext,
+  `country`         char(3),
   `score`           smallint(6) NOT NULL,
   `frags`           smallint(5) unsigned NOT NULL,
   `deaths`          smallint(5) unsigned NOT NULL,
@@ -48,11 +48,12 @@ CREATE TABLE IF NOT EXISTS  `players` (
   KEY `name` (`name`),
   KEY `ipaddr` (`ipaddr`),
   KEY `gameid` (`game_id`)
+  KEY `game_id` (`game_id`,`name`,`ipaddr`,`country`,`score`,`frags`,`deaths`,`teamkills`,`hits`,`misses`)
 ) ENGINE=MyISAM DEFAULT CHARSET=ascii ;
 
 CREATE TABLE IF NOT EXISTS  `playertotals` (
   `id`              bigint(11) NOT NULL AUTO_INCREMENT,
-  `name`            varchar(32) COLLATE latin1_general_ci NOT NULL,
+  `name`            varchar(32) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `ipaddr`          varchar(16) CHARACTER SET ascii,
   `country`         tinytext COLLATE latin1_general_ci,
   `first_game`      text,
