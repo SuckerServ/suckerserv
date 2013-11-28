@@ -8,12 +8,14 @@ include_directories(
     ${BOOST_INCLUDE_DIRS}
     ${FUNGU_INCLUDE_DIRS})
 
-add_definitions(-DSTANDALONE -DFUNGU_WITH_LUA -DHOPMOD_AUTHSERVER_EVENTS ${LSQLITE3_DEFINITIONS})
+add_definitions(-DSTANDALONE)
 
 add_executable(sauer_authserver 
 	authserver.cpp
+	core_bindings.cpp
 	../hopmod/signals.cpp
-	../hopmod/events.cpp)
+	../hopmod/events.cpp
+	../hopmod/lua.cpp)
 target_link_libraries(sauer_authserver
     sauertools
     lua_modules
