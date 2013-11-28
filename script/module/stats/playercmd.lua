@@ -35,7 +35,6 @@ end
 local function periodly_stats(query_backend, period, sendto, player)
 
     ranking = query_backend.player_ranking_by_period(server.player_name(player), period*60*60*24)
-    print(ranking)
     row = query_backend.player_stats_by_period(server.player_name(player), period*60*60*24)
     if not row then
         server.player_msg(sendto, "No stats found.")

@@ -45,8 +45,7 @@ local function open(settings)
     connection = luasql.mysql():connect(settings.database, settings.username, settings.password, settings.hostname, settings.port)
     
     if not connection then
-        server.log_error(string.format("couldn't connect to MySQL server at %s:%s", settings.hostname, settings.port))
-        return nil
+        error(string.format("couldn't connect to MySQL server at %s:%s", settings.hostname, settings.port))
     end
     
     servername = settings.servername
