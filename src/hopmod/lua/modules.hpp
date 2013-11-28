@@ -17,10 +17,6 @@ int open_http_server(lua_State * L);
 
 extern "C" {
     int lua_packlibopen(lua_State *L);
-    
-#ifdef HAS_LSQLITE3
-    int luaopen_lsqlite3(lua_State * L);
-#endif
 }
 
 #endif

@@ -90,7 +90,7 @@ include_directories(
     ${OPENSSL_INCLUDE_DIR}
     ${GEOIP_INCLUDE_DIRS})
 
-add_definitions(-Wall -fsigned-char -DSTANDALONE -DREVISION=$ENV{REVISION} ${LSQLITE3_DEFINITIONS})
+add_definitions(-Wall -fsigned-char -DSTANDALONE -DREVISION=$ENV{REVISION})
 
 
 if(NOT CMAKE_BUILD_TYPE STREQUAL "DEBUG")
@@ -148,7 +148,6 @@ target_link_libraries(lua_modules
     ${GEOIP_LIBRARY}
     ${FUNGU_STRING_LIBRARY}
     ${FUNGU_HTTP_LIBRARY}
-    ${LSQLITE3_LIBRARY}
     ${OPENSSL_LIBRARIES})
 
 

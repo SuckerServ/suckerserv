@@ -1,11 +1,14 @@
-require "sqlite3utils"
+local sqlite3 = require("lsqlite3")
+local sqlite3utils = require "sqlite3utils"
 
 local db, insert_game, insert_team, insert_player, select_player_totals, select_names_by_ip, select_player_ranking
 
 local function open(settings)
 
     db = sqlite3.open(settings.filename)
-    if not db then return nil, db:error_message() end
+    if not db then
+        error(db:error_message())
+    end
     
     sqlite3utils.create_missing_tables(settings.schemafile, db, settings.filename)
     
