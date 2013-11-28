@@ -144,14 +144,12 @@ function internal.addPlayer(cn)
         if server.valid_cn(cn) and not server.player_vars(cn).reserved_name then
             server.sleep(2000, function()
                 if server.valid_cn(cn) and server.player_vars(cn).reserved_name == t.name then
-                    t.auth_name = t.name
-                    return t
+                    server.player_vars(cn).stats_auth_name = t.name
                 end
             end)
         else
             if server.valid_cn(cn) and server.player_vars(cn).reserved_name == t.name then
-                t.auth_name = t.name
-                return t
+                server.player_vars(cn).stats_auth_name = t.name
             end
         end
         
