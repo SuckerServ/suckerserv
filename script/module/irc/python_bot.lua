@@ -29,6 +29,37 @@ local function irc_color_light_grey(str) return string.format("15%s", str) end
 
 local function irc_bold(str) return string.format("%s", str) end
 
+function cube2irc_colors(str)
+	local tmp = ""
+	local ccode = false
+	local colored = false
+
+	for c in str:gmatch(".") do
+		if c == "" then
+			ccode = true
+			if colored == true then
+				tmp = tmp .. ""
+			else
+				colored = true 
+			end
+		elseif ccode then
+			ccode = false
+			if c == "0" then tmp = tmp .. "3" end
+			if c == "1" then tmp = tmp .. "12" end
+			if c == "2" then tmp = tmp .. "8" end
+			if c == "3" then tmp = tmp .. "4" end
+			if c == "4" then tmp = tmp .. "14" end
+			if c == "5" then tmp = tmp .. "13" end
+			if c == "6" then tmp = tmp .. "7" end
+			if c == "f" then tmp = tmp .. "" end
+		else
+			tmp = tmp .. c
+		end
+	end
+	if colored then tmp = tmp .. "" end
+	return tmp
+end
+
 -- end of irc functions
 
 -- begin of security functions
@@ -92,8 +123,6 @@ local function process_irc_command(data)
 		end
 	end
 
-
-
 	if not allow_stream == true then return end
 
 	-- Please do not add command events above of 'allow_stream == true', because they could be executed without password input.
@@ -112,11 +141,21 @@ local function process_irc_command(data)
 		end
 		
 		local code = string.gsub(tmp, "code:", "")
-		local tmp_tonumber = tonumber; tonumber = function(str) local num = tmp_tonumber(str); if num == nil then return -1 else return num end end; local tmp_os_exec = os.execute; os.execute = nil; local pcallret, success, errmsg = pcall(loadstring(check_inject(code))); os.execute = tmp_os_exec; tonumber = tmp_tonumber
-				
-		if success ~= nil then
+		local tmp_tonumber = tonumber
+		tonumber = function(str)
+			local num = tmp_tonumber(str)
+			if num == nil then return -1 else return num end
+		end
+		local tmp_os_exec = os.execute
+		os.execute = nil
+		local success, errmsg = pcall(loadstring(check_inject(code)))
+		os.execute = tmp_os_exec
+		tonumber = tmp_tonumber
+		
+		if not success then
 			sendmsg("command failed.")
-			server.log("irc error -> " .. success) 
+			if type(errmsg) == "table" and type(errmsg[1]) == "string" then errmsg = errmsg[1] end
+			server.log("irc error -> " .. errmsg) 
 		else
 			server.log(string.format("irc -> executed: [[ %s ]]", code))
 		end
@@ -215,7 +254,7 @@ server.event_handler("text", function(cn, msg)
     end
 	
 	--Hide mapbattle votes
-	if not mapbattle.map_changed and mapbattle.running and (msg == "1" or msg == "2") then return end
+	  if mapbattle and not mapbattle.map_changed and mapbattle.running and (msg == "1" or msg == "2") then return end
 	
     local mute_tag = ""
     if server.is_muted(cn) then mute_tag = "(muted)" end
@@ -346,6 +385,7 @@ end)
 server.event_handler("intermission", function()
     server.sleep(250, function()
         local best = server.awards
+        if not best then return end
 
         local function format_message(record_name, record, append)
             if not record.value or #record.cn > 2 then return "" end
