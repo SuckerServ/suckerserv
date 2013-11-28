@@ -1,14 +1,6 @@
-require("io")
-require("string")
+local sqlite3 = require "lsqlite3"
 
-local io = io
-local sqlite3 = sqlite3
-local string = string
-local print = print
-local tostring = tostring
-local type = type
-
-module("sqlite3utils")
+local _M = {}
 
 function first_row(statement)
     statement:reset()
@@ -122,3 +114,10 @@ function set_sqlite3_exclusive_locking(db)
 
     db:exec("PRAGMA locking_mode=EXCLUSIVE")
 end
+
+_M.first_row = first_row
+_M.create_missing_tables = create_missing_tables
+_M.set_sqlite3_synchronous_pragma = set_sqlite3_synchronous_pragma
+_M.set_sqlite3_exclusive_locking = set_sqlite3_exclusive_locking
+
+return _M
