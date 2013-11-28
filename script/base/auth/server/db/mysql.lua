@@ -29,8 +29,13 @@ local function domain_id(domain)
 end
 
 local function is_user(name, domain_id)
-
-    local tab = mysql.row(mysql.exec(connection, string.format("SELECT name FROM users WHERE domain_id = %i AND name = '%s'", domain_id, mysql.escape_string(name))))
+    local sql = [[SELECT *
+                    FROM domains_users
+                    WHERE (SELECT id
+                            FROM users
+                            WHERE name = '%s') = user_id AND domain_id = %i]]
+							
+    local tab = mysql.row(mysql.exec(connection, string.format(sql, mysql.escape_string(name), domain_id)))
     if tab
     then
         return true
@@ -40,11 +45,32 @@ local function is_user(name, domain_id)
 end
 
 local function pubkey(name, domain_id)
+    local sql = [[SELECT users.pubkey
+                    FROM users
+					JOIN domains_users ON users.id = domains_users.user_id
+					JOIN domains ON domains.id = domains_users.domain_id
+                    WHERE users.name = '%s' AND domains.id = %i]]
 
-    local tab = mysql.row(mysql.exec(connection, string.format("SELECT pubkey FROM users WHERE domain_id = %i AND name = '%s'", domain_id, mysql.escape_string(name))))
+    local tab = mysql.row(mysql.exec(connection, string.format(sql, mysql.escape_string(name), domain_id)))
     if tab
     then
         return tab.pubkey
+    end
+    
+    return
+end
+
+local function privilege(name, domain_id)
+    local sql = [[SELECT users.privilege
+                    FROM users
+					JOIN domains_users ON users.id = domains_users.user_id
+					JOIN domains ON domains.id = domains_users.domain_id
+                    WHERE users.name = '%s' AND domains.id = %i]]
+
+    local tab = mysql.row(mysql.exec(connection, string.format(sql, mysql.escape_string(name), domain_id)))
+    if tab
+    then
+        return tab.privilege
     end
     
     return
@@ -56,15 +82,25 @@ local function list_users(domain_id, no_key)
     
     if no_key
     then
-	for tab in mysql.rows(mysql.exec(connection, string.format("SELECT name FROM users WHERE domain_id = %i", domain_id)))
-	do
-	    users[tab.name] = true
-	end
+	    local sql = [[SELECT users.name
+                    FROM users
+					JOIN domains_users ON users.id = domains_users.user_id
+					JOIN domains ON domains.id = domains_users.domain_id
+                    WHERE domains.id = %i]]
+		for tab in mysql.rows(mysql.exec(connection, string.format(sql, domain_id)))
+		do
+			users[tab.name] = true
+		end
     else
-	for tab in mysql.rows(mysql.exec(connection, string.format("SELECT name, pubkey FROM users WHERE domain_id = %i", domain_id)))
-	do
-	    users[tab.name] = tab.pubkey
-	end
+	    local sql = [[SELECT users.name, users.pubkey, domains_users.privilege
+                    FROM users
+					JOIN domains_users ON users.id = domains_users.user_id
+					JOIN domains ON domains.id = domains_users.domain_id
+                    WHERE domains.id = %i]]
+		for tab in mysql.rows(mysql.exec(connection, string.format(sql, domain_id)))
+		do
+			users[tab.name] = {pubkey = tab.pubkey, privilege = tab.privilege}
+		end
     end
     
     return users
@@ -97,18 +133,29 @@ local function add_domain(domain, case_insensitive)
     return
 end
 
-local function add_user(name, domain_id, pubkey, domain)
+local function add_user(name, domain_id, pubkey, domain, priv)
 
     if not mysql.exec(connection, "START TRANSACTION")
     then 
         return msg.mysql.unknown
     end
-    
-    local cursor = mysql.exec(connection, string.format("INSERT INTO users (name, domain_id, pubkey) VALUES('%s', %i, '%s')", mysql.escape_string(name), domain_id, mysql.escape_string(pubkey)))
+	
+	local sql = [[INSERT INTO users (name, pubkey) 
+					VALUES('%s', '%s')]]
+    local cursor = mysql.exec(connection, string.format(sql, mysql.escape_string(name), mysql.escape_string(pubkey)))
     if not cursor
     then
 	return string.format(msg.mysql.no_insert, string.format("%s@%s", name, domain))
     end
+
+        local sql = [[INSERT INTO domains_users (user_id, domain_id, privilege)
+                                        VALUES(LAST_INSERT_ID(), %i, '%s')]]
+    local cursor = mysql.exec(connection, string.format(sql, domain_id, priv))
+    if not cursor
+    then
+        return string.format(msg.mysql.no_insert, string.format("%s@%s", name, domain))
+    end
+
     
     if not mysql.exec(connection, "COMMIT")
     then
@@ -162,21 +209,13 @@ local function external_load(host, port, db, user, pass, install_db)
     local domains_and_users = {}
     local case_insensitive_domains = {}
     
-    for tab in mysql.rows(mysql.exec(connection, "SELECT name, case_insensitive FROM domains"))
+    for tab in mysql.rows(mysql.exec(connection, "SELECT * FROM domains"))
     do
-        domains_and_users[tab.name] = {}
+        domains_and_users[tab.name] = list_users(tab.id, false)
         
         if tab.case_insensitive == "1"
         then
     	    case_insensitive_domains[tab.name] = true
-    	end
-    end
-    
-    for domain, _ in pairs(domains_and_users)
-    do
-        for tab in mysql.rows(mysql.exec(connection, string.format("SELECT users.name as name, users.pubkey as pubkey, users.rights as rights FROM users, domains WHERE domains.name = '%s' AND domains.id = users.domain_id", mysql.escape_string(domain))))
-        do
-    	    domains_and_users[domain][tab.name] = { key = tab.pubkey, rights = tab.rights}
     	end
     end
     
@@ -201,7 +240,7 @@ end
 
 -- internal.add_user(name, domain, pubkey)
 --       err or nil
-local function external_add_user(name, domain, pubkey)
+local function external_add_user(name, domain, pubkey, priv)
 
     local did = domain_id(domain)
     if not did
@@ -214,7 +253,7 @@ local function external_add_user(name, domain, pubkey)
 	string.format(msg.user, name, domain)
     end
     
-    return add_user(name, did, pubkey, domain)
+    return add_user(name, did, pubkey, domain, priv)
 end
 
 -- internal.del_user(name, domain)
@@ -236,8 +275,13 @@ local function external_del_user(name, domain)
     then 
         return msg.mysql.unknown
     end
-    
-    local cursor = mysql.exec(connection, string.format("DELETE FROM users WHERE domain_id = %i AND name = '%s'", did, mysql.escape_string(name)))
+        local sql = [[DELETE
+                    FROM domains_users
+                    WHERE (SELECT id
+                            FROM users
+                            WHERE name = '%s') = user_id AND domain_id = %i]]
+							
+    local cursor = mysql.exec(connection, string.format(sql, mysql.escape_string(name), did))
     if not cursor
     then
         return string.format(msg.mysql.no_delete, string.format("%s@%s", name, domain))
@@ -252,18 +296,74 @@ local function external_del_user(name, domain)
 end
 
 -- internal.change_user_name(name, domain, new_name)
---       nil, err or pubkey, nil
+--       nil, nil, err or pubkey, privilege, nil
 local function external_change_user_name(name, domain, new_name)
 
     if name == new_name
     then
-	return nil, string.format(msg.same, name, new_name)
+	return nil, nil, string.format(msg.same, name, new_name)
     end
     
     local did = domain_id(domain)
     if not did
     then
-	return nil, string.format(msg.no_domain, domain)
+	return nil, nil, string.format(msg.no_domain, domain)
+    end
+    
+    if not is_user(name, did)
+    then
+	return nil, nil, string.format(msg.no_user, name, domain)
+    end
+    
+    if is_user(new_name, did)
+    then
+	return nil, nil, string.format(msg.user, new_name, domain)
+    end
+    
+    if not mysql.exec(connection, "START TRANSACTION")
+    then 
+        return nil, nil, msg.mysql.unknown
+    end
+	
+	local sql = [[UPDATE users
+					JOIN domains_users ON users.id = domains_users.user_id
+					JOIN domains ON domains.id = domains_users.domain_id
+					SET users.name = '%s'
+                    WHERE domains.id = %i AND users.name = '%s']]
+    local cursor = mysql.exec(connection, string.format(sql, mysql.escape_string(new_name), did, mysql.escape_string(name)))
+    if not cursor
+    then
+	return nil, nil, string.format(msg.mysql.no_update, string.format("%s@%s", name, domain))
+    end
+    
+    if not mysql.exec(connection, "COMMIT")
+    then
+        return nil, nil, msg.mysql.unknown
+    end
+    
+    local key = pubkey(new_name, did)
+    if not key
+    then
+	return nil, nil, string.format(msg.mysql.no_select, "pubkey")
+    end
+	
+    local priv = privilege(new_name, did)
+    if not priv
+    then
+		return nil, nil, string.format(msg.mysql.no_select, "privilege")
+    end
+    
+    return key, priv
+end
+
+-- internal.change_user_key(name, domain, pubkey)
+--       nil, err or priv, nil
+local function external_change_user_key(name, domain, new_pubkey)
+
+    local did = domain_id(domain)
+    if not did
+    then
+        return nil, string.format(msg.no_domain, domain)
     end
     
     if not is_user(name, did)
@@ -271,57 +371,17 @@ local function external_change_user_name(name, domain, new_name)
 	return nil, string.format(msg.no_user, name, domain)
     end
     
-    if is_user(new_name, did)
-    then
-	return nil, string.format(msg.user, new_name, domain)
-    end
-    
     if not mysql.exec(connection, "START TRANSACTION")
     then 
         return nil, msg.mysql.unknown
     end
     
-    local cursor = mysql.exec(connection, string.format("UPDATE users SET name = '%s' WHERE domain_id = %i AND name = '%s'", mysql.escape_string(new_name), did, mysql.escape_string(name)))
-    if not cursor
-    then
-	return nil, string.format(msg.mysql.no_update, string.format("%s@%s", name, domain))
-    end
-    
-    if not mysql.exec(connection, "COMMIT")
-    then
-        return nil, msg.mysql.unknown
-    end
-    
-    local key = pubkey(new_name, did)
-    if not key
-    then
-	return nil, string.format(msg.mysql.no_select, "pubkey")
-    end
-    
-    return key
-end
-
--- internal.change_user_key(name, domain, pubkey)
---       err or nil
-local function external_change_user_key(name, domain, new_pubkey)
-
-    local did = domain_id(domain)
-    if not did
-    then
-        return string.format(msg.no_domain, domain)
-    end
-    
-    if not is_user(name, did)
-    then
-	return string.format(msg.no_user, name, domain)
-    end
-    
-    if not mysql.exec(connection, "START TRANSACTION")
-    then 
-        return msg.mysql.unknown
-    end
-    
-    local cursor = mysql.exec(connection, string.format("UPDATE users SET pubkey = '%s' WHERE domain_id = %i AND name = '%s'", mysql.escape_string(new_pubkey), did, mysql.escape_string(name)))
+	local sql = [[UPDATE users
+				JOIN domains_users ON users.id = domains_users.user_id
+				JOIN domains ON domains.id = domains_users.domain_id
+				SET users.pubkey = '%s'
+				WHERE domains.id = %i AND users.name = '%s']]
+    local cursor = mysql.exec(connection, string.format(sql, mysql.escape_string(new_pubkey), did, mysql.escape_string(name)))
     if not cursor
     then
         return string.format(msg.mysql.no_update, string.format("%s@%s", name, domain))
@@ -329,31 +389,26 @@ local function external_change_user_key(name, domain, new_pubkey)
     
     if not mysql.exec(connection, "COMMIT")
     then
-        return msg.mysql.unknown
+        return nil, msg.mysql.unknown
+    end
+	
+	local priv = privilege(new_name, did)
+    if not priv
+    then
+		return nil, string.format(msg.mysql.no_select, "privilege")
     end
     
-    return
+    return priv
 end
 
--- internal.change_user_domain(name, domain, new_domain)
+-- internal.change_user_priv(name, domain, priv)
 --       nil, err or pubkey, nil
-local function external_change_user_domain(name, domain, new_domain)
+local function external_change_user_priv(name, domain, new_priv)
 
-    if domain == new_domain
-    then
-	return nil, string.format(msg.same, domain, new_domain)
-    end
-    
     local did = domain_id(domain)
     if not did
     then
         return nil, string.format(msg.no_domain, domain)
-    end
-    
-    local new_did = domain_id(new_domain)
-    if not new_did
-    then
-        return nil, string.format(msg.no_domain, new_domain)
     end
     
     if not is_user(name, did)
@@ -361,34 +416,109 @@ local function external_change_user_domain(name, domain, new_domain)
 	return nil, string.format(msg.no_user, name, domain)
     end
     
-    if is_user(name, new_did)
-    then
-	return nil, string.format(msg.user, name, new_domain)
-    end
-    
     if not mysql.exec(connection, "START TRANSACTION")
     then 
         return nil, msg.mysql.unknown
     end
     
-    local cursor = mysql.exec(connection, string.format("UPDATE users SET domain_id = %i WHERE domain_id = %i AND name = '%s'", new_did, did, mysql.escape_string(name)))
+	local sql = [[UPDATE users
+				JOIN domains_users ON users.id = domains_users.user_id
+				JOIN domains ON domains.id = domains_users.domain_id
+				SET users.privilege = '%s'
+				WHERE domains.id = %i AND users.name = '%s']]
+    local cursor = mysql.exec(connection, string.format(sql, mysql.escape_string(priv), did, mysql.escape_string(name)))
     if not cursor
     then
-	return nil, string.format(msg.mysql.no_update, string.format("%s@%s", name, domain))
+        return nil, string.format(msg.mysql.no_update, string.format("%s@%s", name, domain))
     end
     
     if not mysql.exec(connection, "COMMIT")
     then
         return nil, msg.mysql.unknown
     end
+	
+    local key = pubkey(new_name, did)
+    if not key
+    then
+		return nil, nil, string.format(msg.mysql.no_select, "pubkey")
+    end
+    
+    return key
+end
+
+-- internal.change_user_domain(name, domain, new_domain)
+--       nil, nil, err or pubkey, privilege, nil
+local function external_change_user_domain(name, domain, new_domain)
+
+    if domain == new_domain
+    then
+	return nil, nil, string.format(msg.same, domain, new_domain)
+    end
+    
+    local did = domain_id(domain)
+    if not did
+    then
+        return nil, nil, string.format(msg.no_domain, domain)
+    end
+    
+    local new_did = domain_id(new_domain)
+    if not new_did
+    then
+        return nil, nil, string.format(msg.no_domain, new_domain)
+    end
+    
+    if not is_user(name, did)
+    then
+	return nil, nil, string.format(msg.no_user, name, domain)
+    end
+    
+    if is_user(name, new_did)
+    then
+	return nil, nil, string.format(msg.user, name, new_domain)
+    end
+    
+    if not mysql.exec(connection, "START TRANSACTION")
+    then 
+        return nil, nil, msg.mysql.unknown
+    end
+    
+	local sql = [[UPDATE domains_users 
+					SET domain_id = %i 
+					WHERE domain_id = %i 
+						AND (SELECT id
+                            FROM users
+                            WHERE name = '%s') = user_id]]
+
+    local cursor = mysql.exec(connection, string.format(sql, new_did, did, mysql.escape_string(name)))
+    if not cursor
+    then
+	return nil, nil, string.format(msg.mysql.no_update, string.format("%s@%s", name, domain))
+    end
+    
+    if not mysql.exec(connection, "COMMIT")
+    then
+        return nil, nil, msg.mysql.unknown
+    end
     
     local key = pubkey(name, new_did)
     if not key
     then
-	return nil, string.format(msg.mysql.no_select, "pubkey")
+	return nil, nil, string.format(msg.mysql.no_select, "pubkey")
+    end
+	
+    local key = pubkey(name, new_did)
+    if not key
+    then
+	return nil, nil, string.format(msg.mysql.no_select, "pubkey")
+    end
+	
+    local priv = privilege(new_name, did)
+    if not priv
+    then
+		return nil, nil, string.format(msg.mysql.no_select, "privilege")
     end
     
-    return key
+    return key, priv
 end
 
 -- internal.list_users(domain)
@@ -402,7 +532,7 @@ local function external_list_users(domain)
         return nil, string.format(msg.no_domain, domain)
     end
     
-    return list_users(did)
+    return list_users(did, true)
 end
 
 -- internal.add_domain(domain, case_insensitive)
@@ -429,7 +559,7 @@ local function external_del_domain(domain)
         return nil, string.format(msg.no_domain, domain)
     end
     
-    local users = list_users(did, "no_key")
+    local users = list_users(did, true)
     
     local err = del_domain(did, domain)
     if err
@@ -456,84 +586,27 @@ local function external_change_domain_name(domain, new_domain)
 	return nil, string.format(msg.no_domain, domain)
     end
     
-    local users = list_users(did)
+    if not mysql.exec(connection, "START TRANSACTION")
+    then 
+        return nil, msg.mysql.unknown
+    end
     
-    local new_did = domain_id(new_domain)
-    if not new_did
+	local sql = [[UPDATE domains
+					SET name = '%s'
+					WHERE name = '%s']]
+
+    local cursor = mysql.exec(connection, string.format(sql, new_domain, domain))
+    if not cursor
     then
-	local domain_case = mysql.row(mysql.exec(connection, string.format("SELECT case_insensitive FROM domains WHERE id = %i", did)))
-	if not domain_case
-	then
-	    return nil, string.format(msg.mysql.no_select, "case_insensitive")
-	else
-	    if domain_case.case_insensitive == "1"
-	    then
-		domain_case = true
-	    else
-		domain_case = nil
-	    end
-	end
-	
-	local add_domain_err = add_domain(new_domain, domain_case)
-	if add_domain_err
-	then
-	    return nil, add_domain_err
-	end
-	
-	new_did = domain_id(new_domain)
-	if not new_did
-	then
-	    return nil, string.format(msg.mysql.no_select, "domain_id")
-	end
-    else
-	local domain_case = mysql.row(mysql.exec(connection, string.format("SELECT case_insensitive FROM domains WHERE id = %i", did)))
-	if not domain_case
-	then
-	    return nil, string.format(msg.mysql.no_select, "case_insensitive")
-	else
-	    if domain_case.case_insensitive == "1"
-	    then
-		domain_case = true
-	    else
-		domain_case = false
-	    end
-	end
-	
-	local new_domain_case = mysql.row(mysql.exec(connection, string.format("SELECT case_insensitive FROM domains WHERE id = %i", new_did)))
-	if not new_domain_case
-	then
-	    return nil, string.format(msg.mysql.no_select, "case_insensitive")
-	else
-	    if new_domain_case.case_insensitive == "1"
-	    then
-		new_domain_case = true
-	    else
-		new_domain_case = false
-	    end
-	end
-	
-	if (domain_case and not new_domain_case) or (not domain_case and new_domain_case)
-        then
-            return nil, "New domain already exists and has not the same case sensitive setting."
-        end
-        
-	for name, _ in pairs(users)
-	do
-	    if is_user(name, new_did)
-	    then
-		return nil, string.format(msg.user, name, new_domain)
-	    end
-	end
+		return nil, string.format(msg.mysql.no_update, string.format("%s@%s", name, domain))
     end
     
-    for name, key in pairs(users)
-    do
-        add_user(name, new_did, key, new_domain)
+    if not mysql.exec(connection, "COMMIT")
+    then
+        return nil, msg.mysql.unknown
     end
     
-    del_domain(did, domain)
-    
-    return users
+    return list_users(domain_id(new_domain), false)
 end
 
 -- internal.change_domain_sensitivity(domain, case_insensitive)
@@ -547,7 +620,7 @@ local function external_change_domain_sensitivity(domain, case_insensitive)
         return nil, string.format(msg.no_domain, domain)
     end
     
-    local users = list_users(did)
+    local users = list_users(did, false)
     
     local case_in = 0
     if case_insensitive
@@ -586,6 +659,7 @@ return {is_user = external_is_user,
     del_user = external_del_user,
     change_user_name = external_change_user_name,
     change_user_key = external_change_user_key,
+	change_user_priv = external_change_user_priv,
     change_user_domain = external_change_user_domain,
     list_users = external_list_users,
     add_domain = external_add_domain,
