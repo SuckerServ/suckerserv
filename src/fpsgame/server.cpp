@@ -3407,9 +3407,9 @@ namespace server
                 filtertext(text, text, false, MAXTEAMLEN);
                 if(!ci->privilege && !ci->local) break;
                 clientinfo *wi = getinfo(who);
+                if(!m_teammode || !text[0] || !wi || !strcmp(wi->team, text)) break;
                 convert2utf8 newteamutf8(text);
                 convert2utf8 oldteamutf8(wi->team);
-                if(!m_teammode || !text[0] || !wi || !strcmp(wi->team, text)) break;
                 if((!smode || smode->canchangeteam(wi, wi->team, text)) && 
                     !message::limit(ci, &ci->n_switchname_millis, message::resend_time::switchteam, "N_SWITCHTEAM") &&
                     event_chteamrequest(event_listeners(), boost::make_tuple(wi->clientnum, oldteamutf8.str(), newteamutf8.str())) == false &&
