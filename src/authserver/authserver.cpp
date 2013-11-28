@@ -1,9 +1,7 @@
 // Original source code copied from engine/master.cpp found in Sauerbraten's source tree.
 
-#include <boost/thread.hpp>
 #include <boost/unordered_map.hpp>
-
-#include <signal.h>
+#include <boost/shared_ptr.hpp>
 
 #include "cube.h"
 #include "hopmod/hopmod.hpp"
@@ -12,277 +10,95 @@
 #include "hopmod/main_io_service.hpp"
 
 #include <enet/time.h>
+#include <signal.h>
 #include <iostream>
-
-#ifdef HAS_LSQLITE3
-extern "C"{
-    int luaopen_lsqlite3(lua_State * L);
-}
-#endif
 
 #define INPUT_LIMIT 4096
 #define OUTPUT_LIMIT (64*1024)
 #define CLIENT_TIME (3*60*1000)
-#define AUTH_TIME (60*1000)
+#define AUTH_TIME (30*1000)
 #define AUTH_LIMIT 100
+#define AUTH_THROTTLE 1000
 #define CLIENT_LIMIT 8192
 #define DUP_LIMIT 16
 #define KEEPALIVE_TIME (65*60*1000)
 #define SERVER_LIMIT (10*1024)
 #define DEFAULT_SERVER_PORT 28787
 
-static bool debug = true;
+using namespace boost::asio;
 
-static boost::thread::id main_thread;
+static io_service main_io_service;
 
-static lua_State * L = NULL;
-static lua::event_environment * event_environment = NULL;
-static int lua_stack_size = 0;
-
-static boost::asio::io_service main_io_service;
-
-class key;
-
-class challenge
-{
-friend class key;
-public:
-    ~challenge()
-    {
-        freechallenge(m_answer);
-    }
-    
-    const char * get_challenge()const
-    {
-        return m_challenge.getbuf();
-    }
-    
-    bool expected_answer(const char * foreign)const
-    {
-        return checkchallenge(foreign, m_answer);
-    }
-private:
-    challenge(){}
-    challenge(const challenge &){}
-    vector<char> m_challenge;
-    void * m_answer;
-};
-
-class key
-{
-public:
-    key(const char * stringform)
-    {
-        m_key = parsepubkey(stringform);
-    }
-    
-    ~key()
-    {
-        if(m_key) freepubkey(m_key);
-    }
-    
-    challenge * create_challenge(const void * seed, size_t seedsize)const
-    {
-        challenge * chal = new challenge;
-        chal->m_answer = genchallenge(m_key, seed, seedsize, chal->m_challenge);
-        return chal;
-    }
-private:
-    key(const key &){}
-    void * m_key;
-};
-
-typedef boost::unordered_map<boost::shared_ptr<key>, const char* > prop_map;
-typedef boost::unordered_map<std::string, prop_map > users_map;
-typedef boost::unordered_map<std::string, users_map> domains_map;
-static domains_map users;
-
-/* Forward declaration of Lua value io functions */
-#include "lua/push_function_fwd.hpp"
-namespace lua{
-void push(lua_State * L, string value);
-} //namespace lua
-
-#include "lua/push_function.hpp"
-
-/*
-    Lua value io functions for cube2 types
-*/
-namespace lua{
-void push(lua_State * L, string value)
-{
-    lua_pushstring(L, value);   
-}
-} //namespace lua
-
-template<typename FunctionPointerType>
-static void bind_function(lua_State * L, int table, const char * name, FunctionPointerType function)
-{
-    lua_pushstring(L, name);
-    lua::push_function(L, function);
-    lua_settable(L, table);
-}
-
-static void bind_function(lua_State * L, int table, const char * name, lua_CFunction function)
-{
-    lua_pushstring(L, name);
-    lua_pushcfunction(L, function);
-    lua_settable(L, table);
-}
-
-template<typename T, bool READ_ONLY, bool WRITE_ONLY>
-static int variable_accessor(lua_State * L)
-{
-    T * var = reinterpret_cast<T *>(lua_touserdata(L, lua_upvalueindex(1)));
-    if(lua_gettop(L) > 0) // Set variable
-    {
-        if(READ_ONLY) luaL_error(L, "variable is read-only");
-        *var = lua::to(L, 1, lua::return_tag<T>());
-        event_varchanged(event_listeners(), boost::make_tuple(lua_tostring(L, lua_upvalueindex(2))));
-        return 0;
-    }
-    else // Get variable
-    {
-        if(WRITE_ONLY) luaL_error(L, "variable is write-only");
-        lua::push(L, *var);
-        return 1;
-    }
-}
-
-template<bool READ_ONLY, bool WRITE_ONLY>
-static int string_accessor(lua_State * L)
-{
-    char * var = reinterpret_cast<char *>(lua_touserdata(L, lua_upvalueindex(1)));
-    if(lua_gettop(L) > 0) // Set variable
-    {
-        if(READ_ONLY) luaL_error(L, "variable is read-only");
-        copystring(var, lua_tostring(L, 1));
-        event_varchanged(event_listeners(), boost::make_tuple(lua_tostring(L, lua_upvalueindex(2))));
-        return 0;
-    }
-    else // Get variable
-    {
-        if(WRITE_ONLY) luaL_error(L, "variable is write-only");
-        lua::push(L, var);
-        return 1;
-    }
-}
-
-template<typename T>
-static void bind_var(lua_State * L, int table, const char * name, T & var)
-{
-    lua_pushstring(L, name);
-    lua_pushlightuserdata(L, &var);
-    lua_pushstring(L, name);
-    lua_pushcclosure(L, variable_accessor<T, false, false>, 2);
-    lua_settable(L, table);
-}
-
-static void bind_var(lua_State * L, int table, const char * name, string var)
-{
-    lua_pushstring(L, name);
-    lua_pushlightuserdata(L, var);
-    lua_pushstring(L, name);
-    lua_pushcclosure(L, string_accessor<false, false>, 2);
-    lua_settable(L, table);
-}
-
-lua::event_environment & event_listeners()
-{
-    static lua::event_environment unready_event_environment;
-    if(!event_environment) return unready_event_environment;
-    lua_stack_size = lua_gettop(L);
-    return *event_environment;
-}
-
-#include "lua/library_extensions.hpp"
-void load_extra_os_functions(lua_State * L)
-{
-    lua_getglobal(L, "os");
-    
-    if(lua_type(L, -1) != LUA_TTABLE)
-    {
-        std::cerr<<"Lua init error: the os table is not loaded"<<std::endl;
-        return;
-    }
-    
-    lua_pushliteral(L, "getcwd");
-    lua_pushcfunction(L, lua::getcwd);
-    lua_settable(L, -3);
-    
-    lua_pushliteral(L, "mkfifo");
-    lua_pushcfunction(L, lua::mkfifo);
-    lua_settable(L, -3);
-    
-    lua_pushliteral(L, "open_fifo");
-    lua_pushcfunction(L, lua::open_fifo);
-    lua_settable(L, -3);
-    
-    lua_pushliteral(L, "usleep");
-    lua_pushcfunction(L, lua::usleep);
-    lua_settable(L, -3);
-    
-    lua_pop(L, 1);
-}
-
-boost::asio::io_service & get_main_io_service()
+io_service & get_main_io_service()
 {
     return main_io_service;
 }
 
-void adduser(const char * username, const char * domain, const char *pubkey, const char *rights)
-{
-    if(!domain) domain = "";
-    users[domain][username][boost::shared_ptr<key>(new key(pubkey))] = rights;
-    //users[domain][username] = rights;
-    if(debug) std::cout<<"Adding user "<<username<<"@"<<(domain[0] ? domain : "<none>") << " with " << rights << " rights" <<std::endl;
-}
+deadline_timer update_timer(main_io_service);
 
-void deleteuser(const char * name, const char * domain)
+namespace authserver {
+
+int port = DEFAULT_SERVER_PORT;
+string ip = "";
+bool debug = true;
+
+struct userkey
 {
-    domains_map::iterator domainIt = users.find(domain);
-    
-    if(domainIt == users.end())
+    const char *name;
+    const char *desc;
+    userkey() : name(NULL), desc(NULL) {}
+    userkey(const char *name, const char *desc) : name(name), desc(desc) {}
+};
+
+static inline uint hthash(const userkey &k) { return ::hthash(k.name); }
+static inline bool htcmp(const userkey &x, const userkey &y) { return !strcmp(x.name, y.name) && !strcmp(x.desc, y.desc); }
+
+struct userinfo : userkey
+{
+    void *pubkey;
+    const char *privilege;
+    userinfo() : pubkey(NULL), privilege(NULL) {}
+    ~userinfo() { delete[] name; delete[] desc; if(pubkey) freepubkey(pubkey); delete[] privilege; }
+};
+hashset<userinfo> users; 
+
+void adduser(const char *name, const char *desc, const char *pubkey, const char *priv)
+{
+    userkey key(name, desc);
+    userinfo &u = users[key];
+    if(u.pubkey) { freepubkey(u.pubkey); u.pubkey = NULL; }
+    if(!u.name) u.name = newstring(name);
+    if(!u.desc) u.desc = newstring(desc);
+    u.pubkey = parsepubkey(pubkey);
+    if(!u.privilege) u.privilege = newstring(priv);
+    if(debug) std::cout<<"Adding user "<<name<<"@"<<(desc[0] ? desc : "<none>")<<" with priv "<<priv<<std::endl;
+} 
+
+void deleteuser(const char *name, const char *desc)
+{
+    userkey key(name, desc);
+    if(users.remove(key))
     {
-        std::cerr<<"Error in removing user: domain '"<<domain<<"' not found."<<std::endl;
-        return;
+        if(debug) std::cout<<"Removing user "<<name<<"@"<<(desc ? desc : "<none>")<<std::endl;
     }
-    
-    if(domainIt->second.erase(name) == 0)
+    else
     {
-        std::cerr<<"Error in removing user: user '"<<name<<"' not found."<<std::endl;
-        return;
+        std::cerr<<"Error in removing user: user "<<name<<"@"<<(desc ? desc : "<none>")<<" not found."<<std::endl;
     }
-    
-    if(debug) std::cout<<"Removing user "<<name<<"@"<<(domain ? domain : "<none>")<<std::endl;
-}
+} 
 
 void clearusers()
 {
     users.clear();
     if(debug) std::cout<<"Cleared all users"<<std::endl;
-}
-
-struct client;
+} 
 
 struct authreq
 {
-    enet_uint32 reqtime; 
+    enet_uint32 reqtime;
     uint id;
-    challenge * authchal;
-    client * c;
-    
-    authreq()
-     :authchal(NULL)
-    {
-        
-    }
-    
-    ~authreq()
-    {
-        delete authchal;
-    }
-};
+    void *answer;
+}; 
 
 struct client
 {
@@ -293,9 +109,12 @@ struct client
     int inputpos, outputpos;
     enet_uint32 connecttime, lastinput;
     int servport;
+    enet_uint32 lastauth;
     vector<authreq> authreqs;
 
-    client() : inputpos(0), outputpos(0), servport(-1) {}
+    bool authed;
+
+    client() : inputpos(0), outputpos(0), servport(-1), lastauth(0), authed(false) {}
 };  
 vector<client *> clients;
 
@@ -317,31 +136,8 @@ void fatal(const char *fmt, ...)
     exit(EXIT_FAILURE);
 }
 
-void conoutfv(int type, const char *fmt, va_list args)
-{
-    char msg[256];
-    vsprintf(msg, fmt, args);
-    std::cout<<msg<<std::endl;
-}
-
-void conoutf(const char *fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    conoutfv(CON_INFO, fmt, args);
-    va_end(args);
-}
-
-void conoutf(int type, const char *fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    conoutfv(type, fmt, args);
-    va_end(args);
-}
-
 void log_status(const char * msg){std::cout<<msg<<std::endl;}
-void log_error(const char * msg){std::cout<<msg<<std::endl;}
+void log_error(const char * msg){std::cerr<<msg<<std::endl;}
 
 void purgeclient(int n)
 {
@@ -393,7 +189,7 @@ void setupserver(int port, const char *ip = NULL)
     starttime = time(NULL);
     char *ct = ctime(&starttime);
     if(strchr(ct, '\n')) *strchr(ct, '\n') = '\0';
-    conoutf("*** Starting auth server on %s %d at %s ***", ip ? ip : "localhost", port, ct);
+    printf("*** Starting auth server on %s %d at %s ***\n", ip ? ip : "localhost", port, ct);
 }
 
 void purgeauths(client &c)
@@ -404,7 +200,8 @@ void purgeauths(client &c)
         if(ENET_TIME_DIFFERENCE(servtime, c.authreqs[i].reqtime) >= AUTH_TIME) 
         {
             outputf(c, "failauth %u\n", c.authreqs[i].id);
-            expired = i + 1;
+            freechallenge(c.authreqs[i].answer);
+            expired = i + 1; 
         }
         else break;
     }
@@ -413,6 +210,10 @@ void purgeauths(client &c)
 
 void reqauth(client & c, uint id, char * name, char * domain)
 {
+    if(ENET_TIME_DIFFERENCE(servtime, c.lastauth) < AUTH_THROTTLE)
+        return;
+    c.lastauth = servtime;
+
     purgeauths(c);
     
     time_t t = time(NULL);
@@ -425,38 +226,35 @@ void reqauth(client & c, uint id, char * name, char * domain)
     
     string ip;
     if(enet_address_get_host_ip(&c.address, ip, sizeof(ip)) < 0) copystring(ip, "-");
-    conoutf("%s: attempting \"%s\"@\"%s\" as %u from %s", ct ? ct : "-", name, domain ? domain : "", id, ip);
+    printf("%s: attempting \"%s\"@\"%s\" as %u from %s", ct ? ct : "-", name, domain ? domain : "", id, ip);
     
-    bool found = false;
-    domains_map::const_iterator domainIt = users.find(domain ? domain : "");
-    users_map::const_iterator userIt;
     
-    if(domainIt != users.end())
+    userinfo *u = users.access(userkey(name, domain));
+    
+    if(!u)
     {
-        userIt = domainIt->second.find(name);
-        if(userIt != domainIt->second.end()) found = true;
+        outputf(c, "failauth %u\n", id);
+        printf("Failed %u from %s: user %s@%s not found.", id, ip, name, domain ? domain : "<none>");
+        return;
     }
     
     if(c.authreqs.length() >= AUTH_LIMIT)
     {
         outputf(c, "failauth %u\n", c.authreqs[0].id);
+        freechallenge(c.authreqs[0].answer);
         c.authreqs.remove(0);
-    }
-    
-    if(!found)
-    {
-        outputf(c, "failauth %u\n", id);
-        conoutf("failed %u from %s", id, ip);
-        return;
     }
     
     authreq &a = c.authreqs.add();
     a.reqtime = servtime;
     a.id = id;
     uint seed[3] = { starttime, servtime, randomMT() };
-    a.authchal = userIt->second.begin()->first->create_challenge(seed, sizeof(seed));
+
+    static vector<char> buf;
+    buf.setsize(0);
+    a.answer = genchallenge(u->pubkey, seed, sizeof(seed), buf);
     
-    outputf(c, "chalauth %u %s\n", id, a.authchal->get_challenge());
+    outputf(c, "chalauth %u %s\n", id, buf.getbuf());
 }
 
 void confauth(client &c, uint id, const char *val)
@@ -468,18 +266,18 @@ void confauth(client &c, uint id, const char *val)
         string ip;
         if(enet_address_get_host_ip(&c.address, ip, sizeof(ip)) < 0) copystring(ip, "-");
         
-        if(c.authreqs[i].authchal->expected_answer(val))
+        if(checkchallenge(val, c.authreqs[i].answer))
         {
             outputf(c, "succauth %u\n", id);
-            conoutf("succeeded %u from %s", id, ip);
+            printf("succeeded %u from %s", id, ip);
         }
         else 
         {
             outputf(c, "failauth %u\n", id);
-            conoutf("failed %u from %s", id, ip);
+            printf("failed %u from %s", id, ip);
         }
+        freechallenge(c.authreqs[i].answer);
         c.authreqs.remove(i--);
-        
         return;
     }
     outputf(c, "failauth %u\n", id);
@@ -487,24 +285,20 @@ void confauth(client &c, uint id, const char *val)
 
 void queryid(client & c, uint id, char * name, char * domain)
 {
-    domains_map::const_iterator domainIt = users.find(domain);
-    users_map::const_iterator userIt;
     
-    if(domainIt == users.end())
+    string ip;
+    if(enet_address_get_host_ip(&c.address, ip, sizeof(ip)) < 0) copystring(ip, "-");
+    
+    userinfo *u = users.access(userkey(name, domain));
+    
+    if(!u)
     {
-        outputf(c, "DomainNotFound %u\n", id);
+        outputf(c, "NotFound %u\n", id);
+        printf("Failed %u from %s: user %s@%s not found.", id, ip, name, domain ? domain : "<none>");
         return;
     }
     
-    userIt = domainIt->second.find(name);
-    if(userIt == domainIt->second.end())
-    {
-        outputf(c, "NameNotFound %u\n", id);
-        return;
-    }
-    const char *rights = userIt->second.begin()->second;
-    
-    outputf(c, "FoundId %u %s\n", id, rights);
+    outputf(c, "FoundId %u %s\n", id, u->privilege);
 }
 
 bool checkclientinput(client &c)
@@ -521,6 +315,11 @@ bool checkclientinput(client &c)
         user[0]='\0';
         domain[0]='\0';
         val[0]='\0';
+
+        if (debug)
+        {
+            std::cout<<c.input<<std::endl;
+        }
         
         if(sscanf(c.input, "reqauth %u %100s %100s", &id, user, domain) >= 2)
         {
@@ -534,7 +333,7 @@ bool checkclientinput(client &c)
         {
             queryid(c, id, user, domain);
         }
-        
+
         c.inputpos = &c.input[c.inputpos] - end;
         memmove(c.input, end, c.inputpos);
 
@@ -627,94 +426,79 @@ void checkclients()
     }
 }
 
-static void shutdown_from_signal(int i)
+void stopauthserver(int)
 {
+    if(serversocket != ENET_SOCKET_NULL) enet_socket_destroy(serversocket);
+    serversocket = ENET_SOCKET_NULL;
+
+    boost::system::error_code error;
+
+    update_timer.cancel(error);
+    if(error)
+        std::cerr<<"Error while trying to stop the update timer: "<<error.message()<<std::endl;
+}
+
+static void initiate_shutdown()
+{
+    authserver::stopauthserver(SHUTDOWN_NORMAL);
+
+    event_shutdown(event_listeners(), boost::make_tuple(static_cast<int>(SHUTDOWN_NORMAL)));
     signal_shutdown(SHUTDOWN_NORMAL);
+
+    // Now wait for the main event loop to process work that is remaining and then exit
     exit(0);
 }
 
-static void _shutdown()
+void shutdown()
 {
-    shutdown_from_signal(SIGTERM);
+    get_main_io_service().post(initiate_shutdown);
 }
 
-void shutdown_lua()
+static void shutdown_from_signal(int i)
 {
-    if(!L) return;
-    
-    delete event_environment;
-    lua_close(L);
-    
-    event_environment = NULL;
-    L = NULL;
+    authserver::shutdown();
 }
+
+} //namespace authserver
+
+void update_server(const boost::system::error_code & error);
+
+void sched_next_update()
+{
+    boost::posix_time::time_duration expires_from_now = update_timer.expires_from_now();
+
+    if(expires_from_now.is_special() || expires_from_now.is_negative())
+    {
+        update_timer.expires_from_now(boost::posix_time::milliseconds(5));
+        update_timer.async_wait(update_server);
+    }
+}
+
+void update_server(const boost::system::error_code & error = boost::system::error_code())
+{
+    sched_next_update();
+
+    authserver::servtime = enet_time_get();
+    authserver::checkclients();
+}
+
 
 int main(int argc, char **argv)
 {
     struct sigaction terminate_action;
     sigemptyset(&terminate_action.sa_mask);
-    terminate_action.sa_handler = shutdown_from_signal;
+    terminate_action.sa_handler = authserver::shutdown_from_signal;
     terminate_action.sa_flags = 0;
     sigaction(SIGINT, &terminate_action, NULL);
     sigaction(SIGTERM, &terminate_action, NULL);
-    
-    int port = DEFAULT_SERVER_PORT;
-    string ip = "";
-    
-    main_thread = boost::this_thread::get_id();
 
     signal_shutdown.connect(boost::bind(&shutdown_lua));
     signal_shutdown.connect(&delete_temp_files_on_shutdown);
 
-    L = luaL_newstate();
-    luaL_openlibs(L);
-    
-    load_extra_os_functions(L);
-    
-#ifndef NO_CORE_TABLE
-    lua_newtable(L);
-    int core_table = lua_gettop(L);
-    
-    
-    bind_function(L, core_table, "adduser", adduser);
-    bind_function(L, core_table, "deleteuser", deleteuser);
-    bind_function(L, core_table, "clearusers", clearusers);
-    
-    bind_function(L, core_table, "log_status", log_status);
-    bind_function(L, core_table, "log_error", log_error);
-    
-    bind_function(L, core_table, "file_exists", file_exists);
-    bind_function(L, core_table, "dir_exists", dir_exists);
-    
-    bind_function(L, core_table, "shutdown", _shutdown);
-    
-    
-    lua_pushliteral(L, "vars");
-    lua_newtable(L);
-    int vars_table = lua_gettop(L);
-    
-    bind_var(L, vars_table, "serverport", port);
-    bind_var(L, vars_table, "serverip", ip);    
-    bind_var(L, vars_table, "debug", debug);
-    
-    lua_settable(L, -3); // Add vars table to core table
-    lua_setglobal(L, "core"); // Add core table to global table
-#endif
-    event_environment = new lua::event_environment(L, NULL);
-#ifndef NO_EVENTS
-    register_event_idents(*event_environment); // Setup and populate the event table
-#endif
+    init_lua();
+    lua_State * L = get_lua_state();
     
     static const char * INIT_SCRIPT = "script/base/auth/server/init.lua";
-    
-    lua::module::open_filesystem(L);
-    lua::module::open_crypto(L);
-    lua::module::open_net2(L);
-    lua::module::open_cubescript(L);
-    
-    #ifdef HAS_LSQLITE3
-    luaopen_lsqlite3(L);
-    #endif
 
     if(luaL_loadfile(L, INIT_SCRIPT) == 0)
     {
@@ -729,28 +513,23 @@ int main(int argc, char **argv)
     
     event_init(event_listeners(), boost::make_tuple());
     
-    setupserver(port, (ip[0] ? ip : NULL));
+    authserver::setupserver(authserver::port, (authserver::ip[0] ? authserver::ip : NULL));
     
     event_started(event_listeners(), boost::make_tuple());
     
     std::cout<<"*READY*"<<std::endl;
     std::cout.flush();
-
-    domains_map::const_iterator domainIt;
-    for(domainIt = users.begin(); domainIt != users.end(); domainIt++)
-    {
-        std::cout<< domainIt->first <<std::endl;
-        users_map::const_iterator userIt;
-        for(userIt = domainIt->second.begin(); userIt != domainIt->second.end(); userIt++)
-        {
-            std::cout<<"    "<< userIt->first <<std::endl;
-        }
-    }
     
-    for(;;)
+    sched_next_update();
+    
+    try
     {
-        servtime = enet_time_get();
-        checkclients();
+        main_io_service.run();
+    }
+    catch(const boost::system::system_error & se)
+    {
+        std::cerr<<se.what()<<std::endl;
+           throw;
     }
     
     return EXIT_SUCCESS;
