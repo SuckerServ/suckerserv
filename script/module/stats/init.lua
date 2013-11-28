@@ -8,33 +8,28 @@ local commit_backends = {}
 local query_backend = nil
 
 if using_sqlite then    
-    (function()
+       
+    commit_backends.sqlite3 = dofile("./script/module/stats/sqlite3.lua")
         
-        if not sqlite3 then
-            server.log_error("Cannot use sqlite3 backend for the stats module: missing lsqlite3 support")
-            return
-        end
-        
-        commit_backends.sqlite3 = dofile("./script/module/stats/sqlite3.lua")
-        
-        catch_error(commit_backends.sqlite3.open, {
-            filename = server.stats_db_filename, 
-            schemafile = "./script/module/stats/schema.sql",
-            exclusive_locking = server.stats_sqlite_exclusive_locking,
-            synchronous = server.stats_sqlite_synchronous
-        })
-    end)()
+    local ret = catch_error(commit_backends.sqlite3.open, {
+        filename = server.stats_db_filename, 
+        schemafile = "./script/module/stats/schema.sql",
+        exclusive_locking = server.stats_sqlite_exclusive_locking,
+        synchronous = server.stats_sqlite_synchronous
+    })
+
+     if not ret[1] then commit_backends.sqlite3 = nil end
 end
 
 if using_json then
-    commit_backends.json = catch_error(loadfile("./script/module/stats/json.lua"))    
+    commit_backends.json = catch_error(loadfile("./script/module/stats/json.lua"))
 end
 
 if using_mysql then
     
     commit_backends.mysql = dofile("./script/module/stats/mysql.lua")
     
-    catch_error(commit_backends.mysql.open, {
+    local ret = catch_error(commit_backends.mysql.open, {
         hostname    = server.stats_mysql_hostname,
         port        = server.stats_mysql_port,
         username    = server.stats_mysql_username,
@@ -45,13 +40,15 @@ if using_mysql then
         install     = server.stats_mysql_install == "true",
         servername  = server.stats_servername
     })
+
+    if not ret[1] then commit_backends.mysql = nil end
 end
 
 if using_psql then
 
     commit_backends.psql = dofile("./script/module/stats/psql.lua")
 
-    catch_error(commit_backends.psql.open, {
+    if not catch_error(commit_backends.psql.open, {
         hostname    = server.stats_psql_hostname,
         port        = server.stats_psql_port,
         username    = server.stats_psql_username,
@@ -62,6 +59,7 @@ if using_psql then
         install     = server.stats_psql_install == "true",
         servername  = server.stats_servername
     })
+    then commit_backends.psql = nil end
 end
 
 query_backend = commit_backends[server.stats_query_backend]
@@ -74,14 +72,14 @@ if query_backend then
         if query_backend[query_function_name] then
             server[query_function_name] = query_backend[query_function_name]
         else
-            server.log_error(string.format("Stats module error: %s query backend is missing function %s", query_backend_name, query_function_name))
+            server[query_function_name] = function(...) return nil end
+            server.log_error(string.format("Stats module warning: %s query backend is missing function %s", query_backend_name, query_function_name))
         end
     end
 else
-    server.find_names_by_ip = function() return nil end
-    server.player_ranking = function() return nil end
-    server.player_stats_by_period = function() return nil end
-    server.player_ranking_by_period = function() return nil end
+    for _, query_function_name in pairs(global_query_interface) do
+        server[query_function_name] = function(...) return nil end
+    end
 
     if server.stats_query_backend ~= "" then
         server.log_error(string.format("Error in stats module: unused/unknown %s commit backend is trying to be used for the query backend.", server.stats_query_backend)) 
