@@ -1,8 +1,9 @@
 -- frontend
--- server.add_user(name, domain, pubkey)
+-- server.add_user(name, domain, pubkey, priv)
 -- server.del_user(name, domain)
 -- server.change_user_name(name, domain, new_name)
 -- server.change_user_key(name, domain, pubkey)
+-- server.change_user_priv(name, domain, priv)
 -- server.change_user_domain(name, domain, new_domain)
 -- server.list_domains()
 -- server.list_users(domain)
@@ -14,19 +15,21 @@
 -- backend
 -- internal.is_user(name, domain)
 --	nil or true
--- internal.add_user(name, domain, pubkey)
+-- internal.add_user(name, domain, pubkey, priv)
 --	err or nil
 -- internal.del_user(name, domain)
 --	err or nil
 -- internal.change_user_name(name, domain, new_name)
---	nil, err or pubkey, nil
+--	nil, nil, err or pubkey, priv, nil
 -- internal.change_user_key(name, domain, pubkey)
---	err or nil
--- internal.change_user_domain(name, domain, new_domain)
+--	nil, err or priv, nil
+-- internal.change_user_priv(name, domain, priv)
 --	nil, err or pubkey, nil
+-- internal.change_user_domain(name, domain, new_domain)
+--	nil, nil, err or pubkey, privilege, nil
 -- internal.list_users(domain)
 --	nil, err or users, nil
---		users[name] = pubkey
+--		users[name] = {pubkey = pubkey, priv = priv}
 -- internal.add_domain(domain, case_insensitive)
 --	err or nil
 -- internal.del_domain(domain)
@@ -34,12 +37,12 @@
 --		users[name] = true
 -- internal.change_domain_name(domain, new_domain)
 --	nil, err or users, nil
---		users[name] = pubkey
+--		users[name] = {pubkey = pubkey, priv = priv}
 -- internal.change_domain_sensitivity(domain, case_insensitive)
 --	nil, err or users, nil
---		users[name] = pubkey
+--		users[name] = {pubkey = pubkey, priv = priv}
 
-function server.add_user(name, domain, pubkey)
+function server.add_user(name, domain, pubkey, priv)
 
     if string.len(name) > 15
     then
@@ -65,7 +68,7 @@ function server.add_user(name, domain, pubkey)
 	return
     end
     
-    local err = internal.add_user(name, domain, pubkey)
+    local err = internal.add_user(name, domain, pubkey, priv)
     if err
     then
 	server.log_error("add_user (backend): " .. err)
@@ -74,10 +77,10 @@ function server.add_user(name, domain, pubkey)
     
     if internal.case_insensitive_domains[domain]
     then
-	server.adduser(string.lower(name), domain, pubkey)
+	server.adduser(string.lower(name), domain, pubkey, priv)
     end
     
-    server.adduser(name, domain, pubkey)
+    server.adduser(name, domain, pubkey, priv)
     
     server.log("Added: " .. name .. "@" .. domain .. ".")
 end
@@ -142,7 +145,7 @@ function server.change_user_name(name, domain, new_name)
 	return
     end
     
-    local pubkey, err = internal.change_user_name(name, domain, new_name)
+    local pubkey, priv, err = internal.change_user_name(name, domain, new_name)
     if err
     then
 	server.log_error("change_user_name (backend): " .. err)
@@ -155,11 +158,11 @@ function server.change_user_name(name, domain, new_name)
 	then
 	    server.deleteuser(string.lower(name), domain)
 	end
-	server.adduser(string.lower(new_name), domain, pubkey)
+	server.adduser(string.lower(new_name), domain, pubkey, priv)
     end
     
     server.deleteuser(name, domain)
-    server.adduser(new_name, domain, pubkey)
+    server.adduser(new_name, domain, pubkey, priv)
     
     server.log("Renamed: " .. name .. "@" .. domain .. " to " .. new_name .. "@" .. domain .. ".")
 end
@@ -178,7 +181,7 @@ function server.change_user_key(name, domain, pubkey)
 	return
     end
     
-    local err = internal.change_user_key(name, domain, pubkey)
+    local priv, err = internal.change_user_key(name, domain, pubkey)
     if err
     then
 	server.log_error("change_user_key (backend): " .. err)
@@ -191,13 +194,49 @@ function server.change_user_key(name, domain, pubkey)
 	then
 	    server.deleteuser(string.lower(name), domain)
 	end
-	server.adduser(string.lower(new_name), domain, pubkey)
+	server.adduser(string.lower(new_name), domain, pubkey, priv)
     end
     
     server.deleteuser(name, domain)
-    server.adduser(name, domain, pubkey)
+    server.adduser(name, domain, pubkey, priv)
     
     server.log("Changed the pubkey of " .. name .. "@" .. domain .. ".")
+end
+
+function server.change_user_priv(name, domain, priv)
+
+    if not internal.domains[domain]
+    then
+	server.log_error("change_user_priv: Domain, " .. domain .. " does not exist.")
+	return
+    end
+    
+    if not internal.is_user(name, domain)
+    then
+	server.log_error("change_user_priv: " .. name .. "@" .. domain .. " does not exist.")
+	return
+    end
+    
+    local pubkey, err = internal.change_user_priv(name, domain, priv)
+    if err
+    then
+	server.log_error("change_user_priv (backend): " .. err)
+	return
+    end
+    
+    if internal.case_insensitive_domains[domain]
+    then
+	if not (name == string.lower(name))
+	then
+	    server.deleteuser(string.lower(name), domain)
+	end
+	server.adduser(string.lower(new_name), domain, pubkey, priv)
+    end
+    
+    server.deleteuser(name, domain)
+    server.adduser(name, domain, pubkey, priv)
+    
+    server.log("Changed the privilege of " .. name .. "@" .. domain .. ".")
 end
 
 function server.change_user_domain(name, domain, new_domain)
@@ -232,7 +271,7 @@ function server.change_user_domain(name, domain, new_domain)
 	return
     end
     
-    local pubkey, err = internal.change_user_domain(name, domain, new_domain)
+    local pubkey, priv, err = internal.change_user_domain(name, domain, new_domain)
     if err
     then
 	server.log_error("change_user_domain (backend): " .. err)
@@ -245,10 +284,10 @@ function server.change_user_domain(name, domain, new_domain)
 	then
 	    server.deleteuser(string.lower(name), domain)
 	end
-	server.adduser(string.lower(name), new_domain, pubkey)
+	server.adduser(string.lower(name), new_domain, pubkey, priv)
     end
     server.deleteuser(name, domain)
-    server.adduser(name, new_domain, pubkey)
+    server.adduser(name, new_domain, pubkey, priv)
     
     server.log("Changed the domain of " .. name .. "@" .. domain .. " to " .. name .. "@" .. new_domain .. ".")
 end
@@ -404,7 +443,7 @@ function server.change_domain_name(domain, new_domain)
 	    then
 		server.deleteuser(string.lower(name), domain)
 	    end
-	    server.adduser(string.lower(name), new_domain, key)
+	    server.adduser(string.lower(name), new_domain, key.pubkey, key.privilege)
 	end
 	
 	internal.case_insensitive_domains[domain] = nil
@@ -414,7 +453,7 @@ function server.change_domain_name(domain, new_domain)
     for name, key in pairs(users)
     do
         server.deleteuser(name, domain)
-        server.adduser(name, new_domain, key)
+        server.adduser(name, new_domain, key.pubkey, key.privilege)
     end
     
     internal.domains[domain] = nil
@@ -449,7 +488,7 @@ function server.change_domain_sensitivity(domain, case_insensitive)
 		    server.deleteuser(string.lower(name), domain)
 		end
 		server.deleteuser(name, domain)
-		server.adduser(name, domain, key)
+		server.adduser(name, domain, key.pubkey, key.privilege)
 	    end
 	    
 	    internal.case_insensitive_domains[domain] = nil
@@ -459,8 +498,8 @@ function server.change_domain_sensitivity(domain, case_insensitive)
 	    for name, key in pairs(users)
 	    do
 		server.deleteuser(name, domain)
-		server.adduser(string.lower(name), domain, key)
-		server.adduser(name, domain, key)
+		server.adduser(string.lower(name), domain, key.pubkey, key.privilege)
+		server.adduser(name, domain, key.pubkey, key.privilege)
 	    end
 	    
 	    internal.case_insensitive_domains[domain] = true
