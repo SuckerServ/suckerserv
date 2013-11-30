@@ -60,37 +60,6 @@ function cube2irc_colors(str)
 	return tmp
 end
 
-function cube2irc_colors(str)
-	local tmp = ""
-	local ccode = false
-	local colored = false
-
-	for c in str:gmatch(".") do
-		if c == "" then
-			ccode = true
-			if colored == true then
-				tmp = tmp .. ""
-			else
-				colored = true 
-			end
-		elseif ccode then
-			ccode = false
-			if c == "0" then tmp = tmp .. "3" end
-			if c == "1" then tmp = tmp .. "12" end
-			if c == "2" then tmp = tmp .. "8" end
-			if c == "3" then tmp = tmp .. "4" end
-			if c == "4" then tmp = tmp .. "14" end
-			if c == "5" then tmp = tmp .. "13" end
-			if c == "6" then tmp = tmp .. "7" end
-			if c == "f" then tmp = tmp .. "" end
-		else
-			tmp = tmp .. c
-		end
-	end
-	if colored then tmp = tmp .. "" end
-	return tmp
-end
-
 -- end of irc functions
 
 -- begin of security functions
