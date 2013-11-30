@@ -10,24 +10,24 @@ The SocketListener will wait on the serverport + 10 (for example 28785 + 10 = 28
 
 -- begin of irc functions
 
-local function irc_color_white(str) return string.format("0%s", str) end
-local function irc_color_black(str) return string.format("1%s", str) end
-local function irc_color_navy(str) return string.format("2%s", str) end
-local function irc_color_green(str) return string.format("3%s", str) end
-local function irc_color_red(str) return string.format("4%s", str) end
-local function irc_color_brown(str) return string.format("5%s", str) end
-local function irc_color_purple(str) return string.format("6%s", str) end
-local function irc_color_orange(str) return string.format("7%s", str) end
-local function irc_color_yellow(str) return string.format("8%s", str) end
-local function irc_color_light_green(str) return string.format("9%s", str) end
-local function irc_color_light_blue(str) return string.format("10%s", str) end
-local function irc_color_neon(str) return string.format("11%s", str) end
-local function irc_color_blue(str) return string.format("12%s", str) end
-local function irc_color_pink(str) return string.format("13%s", str) end
-local function irc_color_grey(str) return string.format("14%s", str) end
-local function irc_color_light_grey(str) return string.format("15%s", str) end
+function irc_color_white(str) return string.format("0%s", str) end
+function irc_color_black(str) return string.format("1%s", str) end
+function irc_color_navy(str) return string.format("2%s", str) end
+function irc_color_green(str) return string.format("3%s", str) end
+function irc_color_red(str) return string.format("4%s", str) end
+function irc_color_brown(str) return string.format("5%s", str) end
+function irc_color_purple(str) return string.format("6%s", str) end
+function irc_color_orange(str) return string.format("7%s", str) end
+function irc_color_yellow(str) return string.format("8%s", str) end
+function irc_color_light_green(str) return string.format("9%s", str) end
+function irc_color_light_blue(str) return string.format("10%s", str) end
+function irc_color_neon(str) return string.format("11%s", str) end
+function irc_color_blue(str) return string.format("12%s", str) end
+function irc_color_pink(str) return string.format("13%s", str) end
+function irc_color_grey(str) return string.format("14%s", str) end
+function irc_color_light_grey(str) return string.format("15%s", str) end
 
-local function irc_bold(str) return string.format("%s", str) end
+function irc_bold(str) return string.format("%s", str) end
 
 function cube2irc_colors(str)
 	local tmp = ""
@@ -123,6 +123,8 @@ local function process_irc_command(data)
 		end
 	end
 
+
+
 	if not allow_stream == true then return end
 
 	-- Please do not add command events above of 'allow_stream == true', because they could be executed without password input.
@@ -155,7 +157,7 @@ local function process_irc_command(data)
 		if not success then
 			sendmsg("command failed.")
 			if type(errmsg) == "table" and type(errmsg[1]) == "string" then errmsg = errmsg[1] end
-			server.log("irc error -> " .. errmsg) 
+			server.log_error("irc error -> " .. errmsg .. "\n" .. code) 
 		else
 			server.log(string.format("irc -> executed: [[ %s ]]", code))
 		end
