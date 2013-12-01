@@ -189,13 +189,10 @@ end
 
 local function player_ranking(player_name)
     local names = {}
-    for row in select_names_by_ip:nrows() do
-        if not exclude_name or exclude_name ~= row.name then
-            names[#names + 1] = row.name
-        end
-    end
-    for rank,name in pairs(names) do
-        if name == player_name then return tostring(rank) end
+    local rank = 1
+    for row in select_player_ranking:nrows() do
+        if row.name == player_name then return tostring(rank) end
+        rank = rank + 1
     end
 end
 
