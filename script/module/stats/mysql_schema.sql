@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS  `players` (
   PRIMARY KEY (`id`),
   KEY `name` (`name`),
   KEY `ipaddr` (`ipaddr`),
-  KEY `gameid` (`game_id`)
+  KEY `gameid` (`game_id`),
   KEY `game_id` (`game_id`,`name`,`ipaddr`,`country`,`score`,`frags`,`deaths`,`teamkills`,`hits`,`misses`)
 ) ENGINE=MyISAM DEFAULT CHARSET=ascii ;
 
