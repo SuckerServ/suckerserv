@@ -64,9 +64,9 @@ end
 
 query_backend = commit_backends[server.stats_query_backend]
 
+local global_query_interface = {"find_names_by_ip", "player_ranking", "player_ranking_by_period", "player_stats_by_period"}
+
 if query_backend then
-    
-    local global_query_interface = {"find_names_by_ip", "player_ranking", "player_ranking_by_period", "player_stats_by_period"}
     
     for _, query_function_name in pairs(global_query_interface) do
         if query_backend[query_function_name] then
