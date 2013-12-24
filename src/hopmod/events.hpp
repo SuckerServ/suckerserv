@@ -21,6 +21,7 @@ extern lua::event< boost::tuple<int,const char *,const char *> >            even
 extern lua::event< boost::tuple<int, const char *,const char *> >           event_setmastermode;
 extern lua::event< boost::tuple<int, const char *,const char *> >           event_setmastermode_request;
 extern lua::event< boost::tuple<int,int> >                                  event_spectator;
+extern lua::event< boost::tuple<int,int> >                                  event_editmode;
 extern lua::event< boost::tuple<int,int,int> >                              event_privilege;
 extern lua::event< boost::tuple<int,int> >                                  event_teamkill;
 extern lua::event< boost::tuple<int,const char *,const char *, int> >       event_authreq;
