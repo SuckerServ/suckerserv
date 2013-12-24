@@ -1208,3 +1208,23 @@ void sendmap(int acn, int tcn)
         target->needclipboard = totalmillis ? totalmillis : 1;
     }
 }
+
+int hitpush(lua_State * L)
+{
+    int target = luaL_checkint(L, 1);
+    int actor = luaL_checkint(L, 2);
+    int damage = luaL_checkint(L, 3);
+    int gun = luaL_checkint(L, 4);
+
+    const vec push (luaL_checknumber(L, 5), luaL_checknumber(L, 6), luaL_checknumber(L, 7));
+    clientinfo *ci = getinfo(target);
+    gamestate &ts = ci->state;
+    if(target==actor) ci->setpushed();
+    else if(!push.iszero())
+    {
+        ivec v = vec(push).rescale(DNF);
+        sendf(ts.health<=0 ? -1 : ci->ownernum, 1, "ri7", N_HITPUSH, target, gun, damage, v.x, v.y, v.z);
+        ci->setpushed();
+    }
+    return 1;
+}

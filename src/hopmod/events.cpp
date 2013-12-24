@@ -32,7 +32,7 @@ lua::event< boost::tuple<int,int> >                                  event_frag(
 lua::event< boost::tuple<int,int,int> >                              event_shot("shot");
 lua::event< boost::tuple<int> >                                      event_suicide("suicide");
 lua::event< boost::tuple<int> >                                      event_spawn("spawn");
-lua::event< boost::tuple<int, int, int, int> >                       event_damage("damage");
+lua::event< boost::tuple<int, int, int, int, double, double, double> >        event_damage("damage");
 lua::event< boost::tuple<int,const char*,bool> >                     event_setmaster("setmaster");
 lua::event< boost::tuple<int,int> >                                  event_respawnrequest("respawnrequest");
 lua::event< boost::tuple<> >                                         event_clearbans_request("clearbans_request");
