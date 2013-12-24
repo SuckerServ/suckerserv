@@ -2713,6 +2713,7 @@ namespace server
                     ci->state.grenades.reset();
                 }
                 else ci->state.state = ci->state.editstate;
+                event_editmode(event_listeners(), boost::make_tuple(ci->clientnum, val));
                 QUEUE_MSG;
                 break;
             }
