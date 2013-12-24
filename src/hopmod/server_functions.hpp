@@ -35,6 +35,7 @@ namespace server
     extern bool gamepaused;
     extern int gamemode;
     extern int intermtime;
+    extern stream *mapdata;
     
     extern int mastermode;
     extern int mastermode_owner;
@@ -161,6 +162,7 @@ namespace server
 
     void updateservinfo(int, const char*);
     void editvar(int, const char *, int);
+    void sendmap(int, int);
     void set_spy(int, bool);
     
     void team_msg(const char *,const char *);
