@@ -159,6 +159,7 @@ namespace server
     void updateservinfo(int, const char*);
     void editvar(int, const char *, int);
     void sendmap(int, int);
+    int hitpush(lua_State * L);
     void set_spy(int, bool);
     
     void team_msg(const char *,const char *);

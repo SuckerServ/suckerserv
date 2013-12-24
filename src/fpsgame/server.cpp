@@ -1876,7 +1876,7 @@ namespace server
 
     void dodamage(clientinfo *target, clientinfo *actor, int damage, int gun, const vec &hitpush = vec(0, 0, 0))
     {
-        if(event_damage(event_listeners(), boost::make_tuple(target->clientnum, actor->clientnum, damage, gun)))
+        if(event_damage(event_listeners(), boost::make_tuple(target->clientnum, actor->clientnum, damage, gun, hitpush[0], hitpush[1], hitpush[2])))
         {
             return;
         }
