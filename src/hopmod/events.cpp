@@ -19,6 +19,7 @@ lua::event< boost::tuple<int, const char *,const char *> >           event_setma
 lua::event< boost::tuple<int, const char *, const char *> >          event_setmastermode_request("setmastermode_request");
 lua::event< boost::tuple<int,int> >                                  event_spectator("spectator");
 lua::event< boost::tuple<int,int> >                                  event_editmode("editmode");
+lua::event< boost::tuple<int> >                                      event_editpacket("editpacket");
 lua::event< boost::tuple<int,int,int> >                              event_privilege("privilege");
 lua::event< boost::tuple<int,int> >                                  event_teamkill("teamkill");
 lua::event< boost::tuple<int,const char *,const char *, int> >       event_authreq("request_auth_challenge");
@@ -83,6 +84,7 @@ void register_event_idents(lua::event_environment & env)
         & event_setmastermode_request,
         & event_spectator,
         & event_editmode,
+        & event_editpacket,
         & event_privilege,
         & event_teamkill,
         & event_authreq,
