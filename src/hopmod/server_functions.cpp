@@ -1165,3 +1165,18 @@ void editvar(int cn, const char *var, int value)
     if (!ci) return;
     sendf(cn, 1, "ri5si", N_CLIENT, cn, 100/*should be safe*/, N_EDITVAR, ID_VAR, var, value);
 }
+
+void sendmap(int acn, int tcn)
+{
+    clientinfo *target = getinfo(tcn);
+    if(!target) return;
+    if(!mapdata) sendf(acn, 1, "ris", N_SERVMSG, "no map to send");
+    else if(target->getmap) sendf(acn, 1, "ris", N_SERVMSG, "already sending map");
+    else
+    {
+        sendservmsgf("[%s is getting the map]", colorname(target));
+        if((target->getmap = sendfile(target->clientnum, 2, mapdata, "ri", N_SENDMAP)))
+            target->getmap->freeCallback = freegetmap;
+        target->needclipboard = totalmillis ? totalmillis : 1;
+    }
+}
