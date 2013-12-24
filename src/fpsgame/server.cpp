@@ -1842,15 +1842,9 @@ namespace server
             if(demorecord) enddemorecord();
             if((!ci->local || hasnonlocalclients()) && !mapreload && !ci->spy)
             {
-<<<<<<< HEAD
                 defformatstring(msg)("%s forced %s on map %s", ci->privilege && mastermode>=MM_VETO ? privname(ci->privilege) : "local player", modename(ci->modevote), ci->mapvote);
                 sendservmsg(msg);
             }
-            sendf(-1, 1, "risii", N_MAPCHANGE, ci->mapvote, ci->modevote, 1);
-=======
-                sendservmsgf("%s %s forced %s on map %s", ci->privilege && mastermode>=MM_VETO ? privname(ci->privilege) : "local player", colorname(ci), modename(ci->modevote), ci->mapvote);
-            }
->>>>>>> b422787... Fix map changing + Fix #help command another time + Fix visibility of privileges after hide_privilege = true + Customize core privilege change message (v5)
             changemap(ci->mapvote, ci->modevote);
         }
         else
@@ -2444,6 +2438,7 @@ namespace server
         if(!m_edit || len > 1024*1024) return;
         clientinfo *ci = getinfo(sender);
         if(ci->state.state==CS_SPECTATOR && !ci->privilege && !ci->local) return;
+        if(event_editpacket(event_listeners(), boost::make_tuple(ci->clientnum))) return;
         if(mapdata) DELETEP(mapdata);
         if(!len) return;
         mapdata = opentempfile("mapdata", "w+b");
@@ -2456,6 +2451,7 @@ namespace server
     void sendclipboard(clientinfo *ci)
     {
         if(!ci->lastclipboard || !ci->clipboard) return;
+        if(event_editpacket(event_listeners(), boost::make_tuple(ci->clientnum))) return;
         bool flushed = false;
         loopv(clients)
         {
@@ -3058,6 +3054,7 @@ namespace server
                 int type = getint(p);
                 loopk(5) getint(p);
                 if(!ci || ci->state.state==CS_SPECTATOR) break;
+                if(event_editpacket(event_listeners(), boost::make_tuple(ci->clientnum))) return;
                 QUEUE_MSG;
                 bool canspawn = canspawnitem(type);
                 if(i<MAXENTS && (sents.inrange(i) || canspawnitem(type)))
@@ -3084,6 +3081,7 @@ namespace server
                     case ID_FVAR: getfloat(p); break;
                     case ID_SVAR: getstring(text, p);
                 }
+                if(event_editpacket(event_listeners(), boost::make_tuple(ci->clientnum))) return;
                 if(ci && ci->state.state!=CS_SPECTATOR) QUEUE_MSG;
                 break;
             }
@@ -3263,6 +3261,7 @@ namespace server
                 int size = getint(p);
                 if(!ci->privilege && !ci->local && ci->state.state==CS_SPECTATOR) break;
                 if(message::limit(ci, &ci->n_newmap_millis, message::resend_time::newmap, "map change")) break;
+                if(event_editpacket(event_listeners(), boost::make_tuple(ci->clientnum))) return;
                 if(size>=0)
                 {
                     smapname[0] = '\0';
@@ -3375,6 +3374,27 @@ namespace server
                 break;
             } 
 
+            case N_REMIP:
+            case N_EDITF:
+            case N_EDITT:
+            case N_EDITM:
+            case N_FLIP:
+            case N_ROTATE:
+            case N_REPLACE:
+            case N_DELCUBE:
+            {
+                int size = server::msgsizelookup(type);
+                if(size<=0) {
+                    if (anti_cheat_enabled) ci->ac.unknown_packet(type);
+                    else disconnect_client(sender, DISC_TAGT);
+                    return;
+                }
+                loopi(size-1) getint(p);
+                if(event_editpacket(event_listeners(), boost::make_tuple(ci->clientnum))) return;
+                if(ci && cq && (ci != cq || ci->state.state!=CS_SPECTATOR)) { QUEUE_AI; QUEUE_MSG; }
+                break;
+            }
+
             #define PARSEMESSAGES 1
             #include "capture.h"
             #include "ctf.h"
@@ -3386,7 +3406,7 @@ namespace server
                 getint(p);
                 break;
             }
-            
+
             case -1:
             {
                 if(anti_cheat_enabled) ci->ac.unknown_packet(-1);
