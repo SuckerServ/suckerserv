@@ -1,5 +1,5 @@
 
-require "crypto"
+local crypto = require "crypto"
 
 auth = {} -- create table for auth namespace
 local internal = {} -- internal namespace to keep local functions in reference
