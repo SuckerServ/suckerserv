@@ -21,5 +21,5 @@ install(TARGETS
         ARCHIVE DESTINATION
             ${INSTALL_ARCHIVE_DIR})
 
-add_definitions(-DGEOIPDATADIR="~" -DPACKAGE_VERSION="1.4.8")
+add_definitions(-DGEOIPDATADIR="~" -DPACKAGE_VERSION="1.6.0")
 

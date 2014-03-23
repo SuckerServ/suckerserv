@@ -28,18 +28,20 @@ static int load_geocity_database(lua_State * L)
 
 static int ip_to_country(lua_State * L)
 {
+    GeoIPLookup gl;
     if(!geoip) return luaL_error(L, "missing GeoIP database");
     const char * ipaddr = luaL_checkstring(L, 1);
-    const char * country = GeoIP_country_name_by_addr(geoip, ipaddr); 
+    const char * country = GeoIP_country_name_by_addr_gl(geoip, ipaddr, &gl); 
     lua_pushstring(L, (country ? country : ""));
     return 1;
 }
 
 static int ip_to_country_code(lua_State * L)
 {
+    GeoIPLookup gl;
     if(!geoip) return luaL_error(L, "missing GeoIP database");
     const char * ipaddr = luaL_checkstring(L, 1);
-    const char * code = GeoIP_country_code_by_addr(geoip, ipaddr);
+    const char * code = GeoIP_country_code_by_addr_gl(geoip, ipaddr, &gl);
     lua_pushstring(L, (code ? code : ""));
     return 1;
 }
