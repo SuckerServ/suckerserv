@@ -368,9 +368,7 @@ bool resolverwait(const char *name, ENetAddress *address)
 
 int connectwithtimeout(ENetSocket sock, const char *hostname, const ENetAddress &remoteaddress)
 {
-    int result = enet_socket_connect(sock, &remoteaddress);
-    if(result<0) enet_socket_destroy(sock);
-    return result;
+    return enet_socket_connect(sock, &remoteaddress);
 }
 #endif
 
@@ -394,7 +392,7 @@ string serverip = "";
 int serverport = server::serverport();
 
 #ifdef STANDALONE
-int curtime = 0, lastmillis = 0, totalmillis = 0;
+int curtime = 0, lastmillis = 0, elapsedtime = 0, totalmillis = 0;
 #endif
 
 uint totalsecs = 0;
@@ -404,9 +402,10 @@ bool serverhost_service();
 
 static void update_time()
 {
-    int millis = (int)getmilliseconds(), elapsed = millis - totalmillis;
+    int millis = (int)getmilliseconds();
+    elapsedtime = millis - totalmillis;
     static int timeerr = 0;
-    int scaledtime = server::scaletime(elapsed) + timeerr;
+    int scaledtime = server::scaletime(elapsedtime) + timeerr;
     curtime = scaledtime/100;
     timeerr = scaledtime%100;
     if(server::ispaused()) curtime = 0;
@@ -453,7 +452,7 @@ void serverhost_process_event(ENetEvent & event)
             client &c = addclient(ST_TCPIP);
             c.peer = event.peer;
             c.peer->data = &c;
-            char hn[1024];
+            string hn;
             copystring(c.hostname, (enet_address_get_host_ip(&c.peer->address, hn, sizeof(hn))==0) ? hn : "unknown");
 
             printf("client connected (%s)\n", c.hostname);

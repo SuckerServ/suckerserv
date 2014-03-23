@@ -28,21 +28,6 @@ typedef unsigned long long int ullong;
 #endif
 
 #if 0
-inline void *operator new(size_t size)
-{
-    void *p = malloc(size);
-    if(!p) abort();
-    return p;
-}
-inline void *operator new[](size_t size)
-{
-    void *p = malloc(size);
-    if(!p) abort();
-    return p;
-}
-inline void operator delete(void *p) { if(p) free(p); }
-inline void operator delete[](void *p) { if(p) free(p); }
-
 inline void *operator new(size_t, void *p) { return p; }
 inline void *operator new[](size_t, void *p) { return p; }
 inline void operator delete(void *, void *) {}
@@ -139,7 +124,13 @@ static inline T clamp(T a, U b, U c)
 typedef char string[MAXSTRLEN];
 
 inline void vformatstring(char *d, const char *fmt, va_list v, int len = MAXSTRLEN) { _vsnprintf(d, len, fmt, v); d[len-1] = 0; }
-inline char *copystring(char *d, const char *s, size_t len = MAXSTRLEN) { strncpy(d, s, len); d[len-1] = 0; return d; }
+inline char *copystring(char *d, const char *s, size_t len = MAXSTRLEN)
+{
+    size_t slen = min(strlen(s)+1, len);
+    memcpy(d, s, slen);
+    d[slen-1] = 0;
+    return d;
+}
 inline char *concatstring(char *d, const char *s, size_t len = MAXSTRLEN) { size_t used = strlen(d); return used < len ? copystring(d+used, s, len-used) : d; }
 
 struct stringformatter
@@ -946,46 +937,6 @@ struct unionfind
     }
 };
 
-template <class T, int SIZE> struct ringbuf
-{
-    int index, len;
-    T data[SIZE];
-
-    ringbuf() { clear(); }
-
-    void clear()
-    {
-        index = len = 0;
-    }
-
-    bool empty() const { return !len; }
-
-    int length() const { return len; }
-
-    T &add()
-    {
-        T &t = data[index];
-        index++;
-        if(index >= SIZE) index -= SIZE;
-        if(len < SIZE) len++;
-        return t;
-    }
-
-    T &add(const T &e) { return add() = e; }
-
-    T &operator[](int i)
-    {
-        i += index - len;
-        return data[i < 0 ? i + SIZE : i%SIZE];
-    }
-
-    const T &operator[](int i) const
-    {
-        i += index - len;
-        return data[i < 0 ? i + SIZE : i%SIZE];
-    }
-};
-
 template <class T, int SIZE> struct queue
 {
     int head, tail, len;
@@ -999,35 +950,55 @@ template <class T, int SIZE> struct queue
     bool empty() const { return !len; }
     bool full() const { return len == SIZE; }
 
+    bool inrange(size_t i) const { return i<size_t(len); }
+    bool inrange(int i) const { return i>=0 && i<len; }
+
     T &added() { return data[tail > 0 ? tail-1 : SIZE-1]; }
     T &added(int offset) { return data[tail-offset > 0 ? tail-offset-1 : tail-offset-1 + SIZE]; }
     T &adding() { return data[tail]; }
     T &adding(int offset) { return data[tail+offset >= SIZE ? tail+offset - SIZE : tail+offset]; }
     T &add()
     {
-        ASSERT(len < SIZE);
         T &t = data[tail];
-        tail = (tail + 1)%SIZE;
-        len++;
+        tail++;
+        if(tail >= SIZE) tail -= SIZE;
+        if(len < SIZE) len++;
         return t;
+    }
+    T &add(const T &e) { return add() = e; }
+
+    T &pop()
+    {
+        tail--;
+        if(tail < 0) tail += SIZE;
+        len--;
+        return data[tail];
     }
 
     T &removing() { return data[head]; }
     T &removing(int offset) { return data[head+offset >= SIZE ? head+offset - SIZE : head+offset]; }
     T &remove()
     {
-        ASSERT(len > 0);
         T &t = data[head];
-        head = (head + 1)%SIZE;
-        len--;
+        head++;
+        if(head >= SIZE) head -= SIZE;
+        len--; 
         return t;
     }
+
+    T &operator[](int offset) { return removing(offset); }
+    const T &operator[](int offset) const { return removing(offset); }
+};
+
+template <class T, int SIZE> struct reversequeue : queue<T, SIZE>
+{
+    T &operator[](int offset) { return queue<T, SIZE>::added(offset); }
+    const T &operator[](int offset) const { return queue<T, SIZE>::added(offset); }
 };
 
 inline char *newstring(size_t l)                { return new char[l+1]; }
 inline char *newstring(const char *s, size_t l) { return copystring(newstring(l), s, l+1); }
-inline char *newstring(const char *s)           { return newstring(s, strlen(s));          }
-inline char *newstringbuf(const char *s)        { return newstring(s, MAXSTRLEN-1);       }
+inline char *newstring(const char *s)           { size_t l = strlen(s); char *d = newstring(l); memcpy(d, s, l+1); return d; }
 
 const int islittleendian = 1;
 #ifdef SDL_BYTEORDER
@@ -1160,6 +1131,17 @@ static inline uchar uni2cube(int c)
     extern const uchar uni2cubechars[];
     return uint(c) <= 0x7FF ? uni2cubechars[uni2cubeoffsets[c>>8] + (c&0xFF)] : 0;
 }
+static inline uchar cubelower(uchar c)
+{
+    extern const uchar cubelowerchars[256];
+    return cubelowerchars[c];
+}
+static inline uchar cubeupper(uchar c)
+{
+    extern const uchar cubeupperchars[256];
+    return cubeupperchars[c];
+}
+
 extern int decodeutf8(uchar *dst, int dstlen, const uchar *src, int srclen, int *carry = NULL);
 extern int encodeutf8(uchar *dstbuf, int dstlen, const uchar *srcbuf, int srclen, int *carry = NULL);
 
