@@ -2674,7 +2674,7 @@ namespace server
 
     void setspectator(clientinfo * spinfo, bool val, bool broadcast)
     {
-        if(!spinfo || (spinfo->state.state==CS_SPECTATOR ? val : !val) || spinfo->state.aitype != AI_NONE || spinfo->spy) return;
+        if(!spinfo || !spinfo->connected || (spinfo->state.state==CS_SPECTATOR ? val : !val) || spinfo->state.aitype != AI_NONE || spinfo->spy) return;
         
         if(spinfo->state.state!=CS_SPECTATOR && val)
         {
@@ -3412,7 +3412,7 @@ namespace server
                 filtertext(text, text, false, MAXTEAMLEN);
                 if(!ci->privilege && !ci->local) break;
                 clientinfo *wi = getinfo(who);
-                if(!m_teammode || !text[0] || !wi || !strcmp(wi->team, text)) break;
+                if(!m_teammode || !text[0] || !wi || !wi->connected || !strcmp(wi->team, text)) break;
                 convert2utf8 newteamutf8(text);
                 convert2utf8 oldteamutf8(wi->team);
                 if((!smode || smode->canchangeteam(wi, wi->team, text)) && 
@@ -3508,7 +3508,7 @@ namespace server
                 {
                     if(!ci->privilege && !ci->local) break;
                     clientinfo *minfo = (clientinfo *)getclientinfo(mn);
-                    if(!minfo || (!ci->local && minfo->privilege >= ci->privilege) || (val && minfo->privilege)) break;
+                    if(!minfo || !minfo->connected || (!ci->local && minfo->privilege >= ci->privilege) || (val && minfo->privilege)) break;
                     set_player_master(mn);
                 }
                 else setmaster(ci, val!=0, text);
@@ -3714,7 +3714,7 @@ namespace server
 
     void serverinforeply(ucharbuf &req, ucharbuf &p)
     {
-        if(!getint(req))
+        if(req.remaining() && !getint(req))
         {
             if(!enable_extinfo) return;
             extserverinforeply(req, p);
