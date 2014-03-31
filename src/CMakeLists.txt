@@ -57,13 +57,8 @@ add_subdirectory(authserver)
 
 include(CheckLibraryExists)
 
-check_library_exists(z gzopen "" ZLIB_EXISTS)
 check_library_exists(pthread pthread_self "" PTHREAD_EXISTS)
 check_library_exists(rt clock_gettime "" RTLIB_EXISTS)
-
-if(NOT ${ZLIB_EXISTS})
-    message(FATAL_ERROR "missing required library: ZLIB")
-endif(NOT ${ZLIB_EXISTS})
 
 option(WITH_OPENSSL "Enable SSL support" ON)
 
