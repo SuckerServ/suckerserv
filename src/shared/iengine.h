@@ -9,13 +9,15 @@ extern int gamespeed, paused;
 
 enum
 {
-    MATF_VOLUME_SHIFT = 0,
-    MATF_CLIP_SHIFT   = 3,
-    MATF_FLAG_SHIFT   = 5,
+    MATF_INDEX_SHIFT  = 0,
+    MATF_VOLUME_SHIFT = 2,
+    MATF_CLIP_SHIFT   = 5,
+    MATF_FLAG_SHIFT   = 8,
 
+    MATF_INDEX  = 3 << MATF_INDEX_SHIFT,
     MATF_VOLUME = 7 << MATF_VOLUME_SHIFT,
-    MATF_CLIP   = 3 << MATF_CLIP_SHIFT,
-    MATF_FLAGS  = 7 << MATF_FLAG_SHIFT
+    MATF_CLIP   = 7 << MATF_CLIP_SHIFT,
+    MATF_FLAGS  = 0xFF << MATF_FLAG_SHIFT
 };
 
 enum // cube empty-space materials
@@ -67,6 +69,19 @@ struct selinfo
     int size() const    { return s.x*s.y*s.z; }
     int us(int d) const { return s[d]*grid; }
     bool operator==(const selinfo &sel) const { return o==sel.o && s==sel.s && grid==sel.grid && orient==sel.orient; }
+    bool validate()
+    {
+        extern int worldsize;
+        if(grid <= 0 || grid >= worldsize) return false;
+        if(o.x >= worldsize || o.y >= worldsize || o.z >= worldsize) return false;
+        if(o.x < 0) { s.x -= (grid - 1 - o.x)/grid; o.x = 0; } 
+        if(o.y < 0) { s.y -= (grid - 1 - o.y)/grid; o.y = 0; } 
+        if(o.z < 0) { s.z -= (grid - 1 - o.z)/grid; o.z = 0; } 
+        s.x = clamp(s.x, 0, (worldsize - o.x)/grid);
+        s.y = clamp(s.y, 0, (worldsize - o.y)/grid);
+        s.z = clamp(s.z, 0, (worldsize - o.z)/grid);
+        return s.x > 0 && s.y > 0 && s.z > 0;
+    }
 };
 
 struct editinfo;
@@ -109,18 +124,46 @@ extern int getvarmax(const char *name);
 extern bool identexists(const char *name);
 extern ident *getident(const char *name);
 extern ident *newident(const char *name, int flags = 0);
+extern ident *readident(const char *name);
+extern ident *writeident(const char *name, int flags = 0);
 extern bool addcommand(const char *name, identfun fun, const char *narg);
+extern bool addkeyword(int type, const char *name);
 extern uint *compilecode(const char *p);
-extern void executeret(const uint *code, tagval &result);
-extern void executeret(const char *p, tagval &result);
-extern char *executeret(const char *p);
+extern void keepcode(uint *p);
+extern void freecode(uint *p);
+extern void executeret(const uint *code, tagval &result = *commandret);
+extern void executeret(const char *p, tagval &result = *commandret);
+extern char *executestr(const uint *code);
+extern char *executestr(const char *p);
 extern int execute(const uint *code);
 extern int execute(const char *p);
+extern bool executebool(const uint *code);
+extern bool executebool(const char *p);
 extern bool execfile(const char *cfgfile, bool msg = true);
 extern void alias(const char *name, const char *action);
 extern void alias(const char *name, tagval &v);
 extern const char *getalias(const char *name);
-#endif 
+extern const char *escapestring(const char *s);
+extern const char *escapeid(const char *s);
+static inline const char *escapeid(ident &id) { return escapeid(id.name); }
+extern bool validateblock(const char *s);
+extern void explodelist(const char *s, vector<char *> &elems, int limit = -1);
+extern char *indexlist(const char *s, int pos);
+extern int listlen(const char *s);
+extern void printvar(ident *id);
+extern void printvar(ident *id, int i);
+extern void printfvar(ident *id, float f);
+extern void printsvar(ident *id, const char *s);
+extern int clampvar(ident *id, int i, int minval, int maxval);
+extern float clampfvar(ident *id, float f, float minval, float maxval);
+extern void loopiter(ident *id, identstack &stack, const tagval &v);
+extern void loopend(ident *id, identstack &stack);
+
+#define loopstart(id, stack) if((id)->type != ID_ALIAS) return; identstack stack;
+static inline void loopiter(ident *id, identstack &stack, int i) { tagval v; v.setint(i); loopiter(id, stack, v); }
+static inline void loopiter(ident *id, identstack &stack, float f) { tagval v; v.setfloat(f); loopiter(id, stack, v); }
+static inline void loopiter(ident *id, identstack &stack, const char *s) { tagval v; v.setstr(newstring(s)); loopiter(id, stack, v); }
+#endif
 
 // console
 
@@ -134,18 +177,19 @@ enum
     CON_ECHO  = 1<<5
 };
 
-extern void conoutf(const char *s, ...);
-extern void conoutf(int type, const char *s, ...);
+extern void conoutf(const char *s, ...) PRINTFARGS(1, 2);
+extern void conoutf(int type, const char *s, ...) PRINTFARGS(2, 3);
 extern void conoutfv(int type, const char *fmt, va_list args);
 
+extern FILE *getlogfile();
 extern void setlogfile(const char *fname);
 extern void closelogfile();
 extern void logoutfv(const char *fmt, va_list args);
-extern void logoutf(const char *fmt, ...);
+extern void logoutf(const char *fmt, ...) PRINTFARGS(1, 2);
 
 // menus
 extern vec menuinfrontofplayer();
-extern void newgui(char *name, char *contents, char *header = NULL);
+extern void newgui(char *name, char *contents, char *header = NULL, char *init = NULL);
 extern void showgui(const char *name);
 extern int cleargui(int n = 0);
 
@@ -180,7 +224,7 @@ extern void renderentsphere(const extentity &e, float radius);
 extern void renderentring(const extentity &e, float radius, int axis = 0);
 
 // main
-extern void fatal(const char *s, ...);
+extern void fatal(const char *s, ...) PRINTFARGS(1, 2);
 extern void keyrepeat(bool on);
 
 // rendertext
@@ -189,11 +233,32 @@ extern void pushfont();
 extern bool popfont();
 extern void gettextres(int &w, int &h);
 extern void draw_text(const char *str, int left, int top, int r = 255, int g = 255, int b = 255, int a = 255, int cursor = -1, int maxwidth = -1);
-extern void draw_textf(const char *fstr, int left, int top, ...);
-extern int text_width(const char *str);
-extern void text_bounds(const char *str, int &width, int &height, int maxwidth = -1);
-extern int text_visible(const char *str, int hitx, int hity, int maxwidth);
-extern void text_pos(const char *str, int cursor, int &cx, int &cy, int maxwidth);
+extern void draw_textf(const char *fstr, int left, int top, ...) PRINTFARGS(1, 4);
+extern float text_widthf(const char *str);
+extern void text_boundsf(const char *str, float &width, float &height, int maxwidth = -1);
+extern int text_visible(const char *str, float hitx, float hity, int maxwidth);
+extern void text_posf(const char *str, int cursor, float &cx, float &cy, int maxwidth);
+
+static inline int text_width(const char *str)
+{
+    return int(ceil(text_widthf(str)));
+}
+
+static inline void text_bounds(const char *str, int &width, int &height, int maxwidth = -1)
+{
+    float widthf, heightf;
+    text_boundsf(str, widthf, heightf, maxwidth);
+    width = int(ceil(widthf));
+    height = int(ceil(heightf));
+}
+
+static inline void text_pos(const char *str, int cursor, int &cx, int &cy, int maxwidth)
+{
+    float cxf, cyf;
+    text_posf(str, cursor, cxf, cyf, maxwidth);
+    cx = int(cxf);
+    cy = int(cyf);
+}
 
 // renderva
 enum
@@ -233,6 +298,7 @@ enum
     PART_STREAK, PART_LIGHTNING,
     PART_EXPLOSION, PART_EXPLOSION_BLUE,
     PART_SPARK, PART_EDIT,
+    PART_SNOW,
     PART_MUZZLE_FLASH1, PART_MUZZLE_FLASH2, PART_MUZZLE_FLASH3,
     PART_HUD_ICON,
     PART_HUD_ICON_GREY,
@@ -269,14 +335,19 @@ extern bool load_world(const char *mname, const char *cname = NULL);
 extern bool save_world(const char *mname, bool nolms = false);
 extern void getmapfilenames(const char *fname, const char *cname, char *pakname, char *mapname, char *cfgname);
 extern uint getmapcrc();
+extern void clearmapcrc();
 extern bool loadents(const char *fname, vector<entity> &ents, uint *crc = NULL);
 
 // physics
+extern vec collidewall;
+extern bool collideinside;
+extern physent *collideplayer;
+
 extern void moveplayer(physent *pl, int moveres, bool local);
 extern bool moveplayer(physent *pl, int moveres, bool local, int curtime);
 extern bool collide(physent *d, const vec &dir = vec(0, 0, 0), float cutoff = 0.0f, bool playercol = true);
-extern bool bounce(physent *d, float secs, float elasticity, float waterfric);
-extern bool bounce(physent *d, float elasticity, float waterfric);
+extern bool bounce(physent *d, float secs, float elasticity, float waterfric, float grav);
+extern bool bounce(physent *d, float elasticity, float waterfric, float grav);
 extern void avoidcollision(physent *d, const vec &dir, physent *obstacle, float space);
 extern bool overlapsdynent(const vec &o, float radius);
 extern bool movecamera(physent *pl, const vec &dir, float dist, float stepdist);
@@ -294,8 +365,15 @@ extern bool entinmap(dynent *d, bool avoidplayers = false);
 extern void findplayerspawn(dynent *d, int forceent = -1, int tag = 0);
 
 // sound
-extern int playsound(int n, const vec *loc = NULL, extentity *ent = NULL, int loops = 0, int fade = 0, int chanid = -1, int radius = 0, int expire = -1);
-extern int playsoundname(const char *s, const vec *loc = NULL, int vol = 0, int loops = 0, int fade = 0, int chanid = -1, int radius = 0, int expire = -1);
+enum
+{
+    SND_MAP = 1<<0
+};
+
+extern int playsound(int n, const vec *loc = NULL, extentity *ent = NULL, int flags = 0, int loops = 0, int fade = 0, int chanid = -1, int radius = 0, int expire = -1);
+extern int playsoundname(const char *s, const vec *loc = NULL, int vol = 0, int flags = 0, int loops = 0, int fade = 0, int chanid = -1, int radius = 0, int expire = -1);
+extern void preloadsound(int n);
+extern void preloadmapsound(int n);
 extern bool stopsound(int n, int chanid, int fade = 0);
 extern void stopsounds();
 extern void initsound();
@@ -327,7 +405,7 @@ extern void setbbfrommodel(dynent *d, const char *mdl);
 extern const char *mapmodelname(int i);
 extern model *loadmodel(const char *name, int i = -1, bool msg = false);
 extern void preloadmodel(const char *name);
-extern void flushpreloadedmodels();
+extern void flushpreloadedmodels(bool msg = true);
 
 // ragdoll
 
@@ -350,7 +428,7 @@ extern size_t rx_bytes;
 extern int prog_argc;
 extern char * const * prog_argv;
 
-enum { DISC_NONE = 0, DISC_EOP, DISC_CN, DISC_KICK, DISC_TAGT, DISC_IPBAN, DISC_PRIVATE, DISC_MAXCLIENTS, DISC_TIMEOUT, DISC_OVERFLOW, DISC_NUM };
+enum { DISC_NONE = 0, DISC_EOP, DISC_LOCAL, DISC_KICK, DISC_MSGERR, DISC_IPBAN, DISC_PRIVATE, DISC_MAXCLIENTS, DISC_TIMEOUT, DISC_OVERFLOW, DISC_PASSWORD, DISC_NUM };
 
 inline const char * disconnect_reason(int code)
 {
@@ -369,33 +447,18 @@ extern ENetPacket *sendf(int cn, int chan, const char *format, ...);
 extern ENetPacket *sendfile(int cn, int chan, stream *file, const char *format = "", ...);
 extern void sendpacket(int cn, int chan, ENetPacket *packet, int exclude = -1);
 extern void flushserver(bool force);
-extern int getnumclients();
 extern int getservermtu();
+extern int getnumclients();
 extern uint getclientip(int n);
-extern void putint(ucharbuf &p, int n);
-extern void putint(packetbuf &p, int n);
-extern void putint(vector<uchar> &p, int n);
-extern int getint(ucharbuf &p);
-extern void putuint(ucharbuf &p, int n);
-extern void putuint(packetbuf &p, int n);
-extern void putuint(vector<uchar> &p, int n);
-extern int getuint(ucharbuf &p);
-extern void putfloat(ucharbuf &p, float f);
-extern void putfloat(packetbuf &p, float f);
-extern void putfloat(vector<uchar> &p, float f);
-extern float getfloat(ucharbuf &p);
-extern void sendstring(const char *t, ucharbuf &p);
-extern void sendstring(const char *t, packetbuf &p);
-extern void sendstring(const char *t, vector<uchar> &p);
-extern void getstring(char *t, ucharbuf &p, int len = MAXTRANS);
 extern void localconnect();
+extern const char *disconnectreason(int reason);
 extern void disconnect_client(int n, int reason);
 extern void kicknonlocalclients(int reason = DISC_NONE);
 extern bool hasnonlocalclients();
 extern bool haslocalclients();
 extern void sendserverinforeply(ucharbuf &p);
 extern bool requestmaster(const char *req);
-extern bool requestmasterf(const char *fmt, ...);
+extern bool requestmasterf(const char *fmt, ...) PRINTFARGS(1, 2);
 extern bool isdedicatedserver();
 extern void stopgameserver(int);
 
@@ -408,9 +471,10 @@ extern const ENetAddress *connectedpeer();
 extern bool multiplayer(bool msg = true);
 extern void neterr(const char *s, bool disc = true);
 extern void gets2c();
+extern void notifywelcome();
 
 // crypto
-extern void genprivkey(const char *seed, vector<char> &privstr, vector<char> &pubstr, int seedlength = 0);
+extern void genprivkey(const char *seed, vector<char> &privstr, vector<char> &pubstr, int seedlength);
 extern bool hashstring(const char *str, char *result, int maxlen);
 extern void answerchallenge(const char *privstr, const char *challenge, vector<char> &answerstr);
 extern void *parsepubkey(const char *pubstr);
@@ -435,42 +499,46 @@ struct g3d_gui
     virtual void end() = 0;
 
     virtual int text(const char *text, int color, const char *icon = NULL) = 0;
-    int textf(const char *fmt, int color, const char *icon = NULL, ...)
+    int textf(const char *fmt, int color, const char *icon = NULL, ...) PRINTFARGS(2, 5)
     {
         defvformatstring(str, icon, fmt);
         return text(str, color, icon);
     }
     virtual int button(const char *text, int color, const char *icon = NULL) = 0;
-    int buttonf(const char *fmt, int color, const char *icon = NULL, ...)
+    int buttonf(const char *fmt, int color, const char *icon = NULL, ...) PRINTFARGS(2, 5)
     {
         defvformatstring(str, icon, fmt);
         return button(str, color, icon);
     }
     virtual int title(const char *text, int color, const char *icon = NULL) = 0;
-    int titlef(const char *fmt, int color, const char *icon = NULL, ...)
+    int titlef(const char *fmt, int color, const char *icon = NULL, ...) PRINTFARGS(2, 5)
     {
         defvformatstring(str, icon, fmt);
         return title(str, color, icon);
     }
     virtual void background(int color, int parentw = 0, int parenth = 0) = 0;
 
-    virtual void pushlist(int align = -1) {}
+    virtual void pushlist() {}
     virtual void poplist() {}
 
-    virtual void allowautotab(bool on) = 0;
+    virtual bool allowautotab(bool on) = 0;
     virtual bool shouldtab() { return false; }
 	virtual void tab(const char *name = NULL, int color = 0) = 0;
     virtual int image(Texture *t, float scale, bool overlaid = false) = 0;
     virtual int texture(VSlot &vslot, float scale, bool overlaid = true) = 0;
-    virtual void slider(int &val, int vmin, int vmax, int color, char *label = NULL) = 0;
+    virtual int playerpreview(int model, int team, int weap, float scale, bool overlaid = false) { return 0; }
+    virtual int modelpreview(const char *name, int anim, float scale, bool overlaid = false) { return 0; }
+    virtual void slider(int &val, int vmin, int vmax, int color, const char *label = NULL) = 0;
     virtual void separator() = 0;
 	virtual void progress(float percent) = 0;
 	virtual void strut(float size) = 0;
     virtual void space(float size) = 0;
+    virtual void spring(int weight = 1) = 0;
+    virtual void column(int col) = 0;
     virtual char *keyfield(const char *name, int color, int length, int height = 0, const char *initval = NULL, int initmode = EDITORFOCUSED) = 0;
     virtual char *field(const char *name, int color, int length, int height = 0, const char *initval = NULL, int initmode = EDITORFOCUSED) = 0;
     virtual void textbox(const char *text, int width, int height, int color = 0xFFFFFF) = 0;
-    virtual void mergehits(bool on) = 0;
+    virtual bool mergehits(bool on) = 0;
 };
 
 struct g3d_callback

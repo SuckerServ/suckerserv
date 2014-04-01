@@ -2416,7 +2416,7 @@ namespace server
                             ac->ignore_exceed = totalmillis + 2500;
                         }
                     }
-                    else disconnect_client(c.clientnum, DISC_TAGT);
+                    else disconnect_client(c.clientnum, DISC_MSGERR);
                 }
                 else c.scheduleexceeded();
             }
@@ -2743,7 +2743,7 @@ namespace server
         if(ci && !ci->connected)
         {
             if(chan==0) return;
-            else if(chan!=1) { disconnect_client(sender, DISC_TAGT); return; }
+            else if(chan!=1) { disconnect_client(sender, DISC_MSGERR); return; }
             else while(p.length() < p.maxlen) switch(checktype(getint(p), ci, NULL, p))
             {
                 case N_CONNECT:
@@ -2784,7 +2784,7 @@ namespace server
                     (void)id; // remove this line once we support it
                     /*if(!answerchallenge(ci, id, ans, desc))*/ // not supported in hopmod for now
                     {
-                        disconnect_client(sender, DISC_TAGT/*ci->connectauth*/);
+                        disconnect_client(sender, DISC_MSGERR/*ci->connectauth*/);
                         return;
                     }
                     break;
@@ -2795,7 +2795,7 @@ namespace server
                     break;
 
                 default:
-                    disconnect_client(sender, DISC_TAGT);
+                    disconnect_client(sender, DISC_MSGERR);
                     return;
             }
             return;
@@ -3659,7 +3659,7 @@ namespace server
                 int size = server::msgsizelookup(type);
                 if(size<=0) {
                     if (anti_cheat_enabled) ci->ac.unknown_packet(type);
-                    else disconnect_client(sender, DISC_TAGT);
+                    else disconnect_client(sender, DISC_MSGERR);
                     return;
                 }
                 loopi(size-1) getint(p);
@@ -3677,7 +3677,7 @@ namespace server
             case -1:
             {
                 if (anti_cheat_enabled) ci->ac.unknown_packet(-1);
-                else disconnect_client(sender, DISC_TAGT);
+                else disconnect_client(sender, DISC_MSGERR);
                 return;
             }
             
@@ -3690,7 +3690,7 @@ namespace server
                 int size = server::msgsizelookup(type);
                 if(size<=0) { 
                     if (anti_cheat_enabled) ci->ac.unknown_packet(type);
-                    else disconnect_client(sender, DISC_TAGT);
+                    else disconnect_client(sender, DISC_MSGERR);
                     return;
                 }
                 loopi(size-1) getint(p);

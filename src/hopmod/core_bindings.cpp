@@ -199,9 +199,9 @@ void bind_core_constants(lua_State * L, int T)
 {
     bind_function(L, T, "DISC_NONE", get_constant<DISC_NONE>);
     bind_function(L, T, "DISC_EOP", get_constant<DISC_EOP>);
-    bind_function(L, T, "DISC_CN", get_constant<DISC_CN>);
+    bind_function(L, T, "DISC_LOCAL", get_constant<DISC_LOCAL>);
     bind_function(L, T, "DISC_KICK", get_constant<DISC_KICK>);
-    bind_function(L, T, "DISC_TAGT", get_constant<DISC_TAGT>);
+    bind_function(L, T, "DISC_MSGERR", get_constant<DISC_MSGERR>);
     bind_function(L, T, "DISC_IPBAN", get_constant<DISC_IPBAN>);
     bind_function(L, T, "DISC_PRIVATE", get_constant<DISC_PRIVATE>);
     bind_function(L, T, "DISC_MAXCLIENTS", get_constant<DISC_MAXCLIENTS>);
@@ -211,9 +211,9 @@ void bind_core_constants(lua_State * L, int T)
 
     bind_function(L, T, "DISC_NONE", get_constant<DISC_NONE>);
     bind_function(L, T, "DISC_EOP", get_constant<DISC_EOP>);
-    bind_function(L, T, "DISC_CN", get_constant<DISC_CN>);
+    bind_function(L, T, "DISC_LOCAL", get_constant<DISC_LOCAL>);
     bind_function(L, T, "DISC_KICK", get_constant<DISC_KICK>);
-    bind_function(L, T, "DISC_TAGT", get_constant<DISC_TAGT>);
+    bind_function(L, T, "DISC_MSGERR", get_constant<DISC_MSGERR>);
     bind_function(L, T, "DISC_IPBAN", get_constant<DISC_IPBAN>);
     bind_function(L, T, "DISC_PRIVATE", get_constant<DISC_PRIVATE>);
     bind_function(L, T, "DISC_MAXCLIENTS", get_constant<DISC_MAXCLIENTS>);

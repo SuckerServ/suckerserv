@@ -194,4 +194,3 @@ void filtertext(char *dst, const char *src, bool whitespace, int len)
     *dst = '\0';
 }
 
-

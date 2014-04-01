@@ -686,7 +686,7 @@ template <class T> struct vector
         return e;
     }
 
-    template<class K>
+    template<class K> 
     int htfind(const K &key)
     {
         loopi(ulen) if(htcmp(key, buf[i])) return i;
@@ -1066,6 +1066,7 @@ struct stream
     virtual offset rawsize() { return size(); }
     virtual int read(void *buf, int len) { return 0; }
     virtual int write(const void *buf, int len) { return 0; }
+    virtual bool flush() { return true; }
     virtual int getchar() { uchar c; return read(&c, 1) == 1 ? c : -1; }
     virtual bool putchar(int n) { uchar c = n; return write(&c, 1) == 1; }
     virtual bool getline(char *str, int len);
@@ -1141,7 +1142,6 @@ static inline uchar cubeupper(uchar c)
     extern const uchar cubeupperchars[256];
     return cubeupperchars[c];
 }
-
 extern int decodeutf8(uchar *dst, int dstlen, const uchar *src, int srclen, int *carry = NULL);
 extern int encodeutf8(uchar *dstbuf, int dstlen, const uchar *srcbuf, int srclen, int *carry = NULL);
 
@@ -1224,5 +1224,4 @@ template<size_t N> static inline void getstring(char (&t)[N], ucharbuf &p) { get
 extern void filtertext(char *dst, const char *src, bool whitespace = true, int len = sizeof(string)-1);
 
 #endif
-
 
