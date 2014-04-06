@@ -27,10 +27,12 @@ find_path(GeoIP_INCLUDE_DIR NAMES GeoIP.h GeoIPCity.h)
 
 find_library(GeoIP_LIBRARY NAMES GeoIP)
 
+FILE(STRINGS ${GeoIP_INCLUDE_DIR}/GeoIP.h GeoIP_HAS_GeoIPLookup REGEX "typedef struct GeoIPLookup")
+
 # handle the QUIETLY and REQUIRED arguments and set GeoIP_FOUND to TRUE if
 # all listed variables are TRUE
 INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(GeoIP DEFAULT_MSG GeoIP_LIBRARY GeoIP_INCLUDE_DIR)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(GeoIP DEFAULT_MSG GeoIP_LIBRARY GeoIP_INCLUDE_DIR GeoIP_HAS_GeoIPLookup)
 
 set(GeoIP_FOUND ${GEOIP_FOUND})
 
