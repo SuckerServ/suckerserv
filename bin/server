@@ -74,7 +74,7 @@ p_start_server() {
     ERROR_START=
     if `echo $v_system | grep -q "BSD"` || `echo $v_system | grep -q "Darwin"`
     then
-	ERROR_START=$(stat -f %Sp log/error.log)
+	ERROR_START=$(stat -f %z log/error.log)
     else
 	ERROR_START=$(stat -c %s log/error.log)
     fi

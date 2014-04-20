@@ -169,9 +169,9 @@ SET(GAME_SERVER_SOURCES
 
 add_executable(sauer_server ${GAME_SERVER_SOURCES})
 
-if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin") 
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     target_link_libraries(sauer_server -lrt)
-endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin") 
+endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 target_link_libraries(sauer_server 
     -lz
