@@ -63,9 +63,11 @@ unsigned long long getnanoseconds()
 #else
 #ifndef __IPHONE_OS_VERSION_MAX_ALLOWED 
     unsigned long long tmp;
+    static mach_timebase_info_data_t sTimebaseInfo;
     tmp = mach_absolute_time();
-    Nanoseconds ns = AbsoluteToNanoseconds(*(AbsoluteTime*)&tmp);
-    tmp = UnsignedWideToUInt64(ns)-nanosecbase;
+    if (sTimebaseInfo.denom == 0) mach_timebase_info(&sTimebaseInfo);
+    unsigned long long ns = tmp * sTimebaseInfo.numer / sTimebaseInfo.denom;
+    tmp = ns-nanosecbase;
     return tmp;
 #endif //!__IPHONE_OS_VERSION_MAX_ALLOWED
 #endif //__APPLE__

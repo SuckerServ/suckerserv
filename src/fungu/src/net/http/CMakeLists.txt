@@ -19,7 +19,11 @@ ENDIF(NOT CMAKE_BUILD_TYPE STREQUAL "DEBUG")
 
 add_library(${FUNGU_HTTP_LIBRARY} STATIC ${SOURCES})
 
-target_link_libraries(${FUNGU_HTTP_LIBRARY} ${FUNGU_STRING_LIBRARY} -pthread ${BOOST_SYSTEM_LIBRARY})
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    target_link_libraries(${FUNGU_HTTP_LIBRARY} -pthread)
+endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
+target_link_libraries(${FUNGU_HTTP_LIBRARY} ${FUNGU_STRING_LIBRARY} ${BOOST_SYSTEM_LIBRARY})
 
 install(TARGETS 
             ${FUNGU_HTTP_LIBRARY}
