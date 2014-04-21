@@ -16,11 +16,11 @@ global allowed_gamemodes [
     "coop edit"
     "teamplay"
     "instagib"
-    "instagib team"
+    "insta team"
     "efficiency"
-    "efficiency team"
+    "effic team"
     "tactics"
-    "tactics teams"
+    "tac teams"
     "capture"
     "regen capture"
     "ctf"
@@ -29,9 +29,9 @@ global allowed_gamemodes [
     "insta protect"
     "hold"
     "insta hold"
-    "efficiency ctf"
-    "efficiency protect"
-    "efficiency hold"
+    "effic ctf"
+    "effic protect"
+    "effic hold"
 ]
 
 global use_server_maprotation 1
