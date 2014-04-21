@@ -8,12 +8,12 @@ if not map_rotation then
     return
 end
 
-if not server.valid_gamemode(server.default_gamemode) then
+if not server.valid_gamemode(server.parse_mode(server.default_gamemode)) then
     error(string.format("Error in the normalize module: %s is not a valid gamemode", server.default_gamemode))
     return
 end
 
-local DEFAULT_GAMEMODE = server.default_gamemode
+local DEFAULT_GAMEMODE = server.parse_mode(server.default_gamemode)
 
 local function changemap()
     local nextmap = map_rotation.get_map_name(DEFAULT_GAMEMODE)

@@ -95,7 +95,7 @@ var GamemodeInfo = {
         "instagib"  : true
     },
     
-    "instagib team" : {
+    "insta team" : {
         "teams"     : true,
         "items"     : false,
         "instagib"  : true
@@ -107,7 +107,7 @@ var GamemodeInfo = {
         "instagib"  : false
     },
     
-    "efficiency team" : {
+    "effic team" : {
         "teams"     : true,
         "items"     : false,
         "instagib"  : false
@@ -119,7 +119,7 @@ var GamemodeInfo = {
         "instagib"  : false
     },
     
-    "tactics team" : {
+    "tac team" : {
         "teams"     : true,
         "items"     : false,
         "instagib"  : false
@@ -147,6 +147,12 @@ var GamemodeInfo = {
         "teams"     : true,
         "items"     : false,
         "instagib"  : true
+    },
+
+    "effic ctf" : {
+        "teams"     : true,
+        "items"     : false,
+        "instagib"  : false
     },
     
     "protect" : {
@@ -179,7 +185,7 @@ var GamemodeInfo = {
         "instagib"  : true
     },
 
-    "efficiency collect" : {
+    "effic collect" : {
         "teams"     : true,
         "items"     : false,
         "instagib"  : false
