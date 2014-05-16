@@ -1163,7 +1163,8 @@ void try_respawn(clientinfo * ci, clientinfo * cq)
     if(!ci->clientmap[0] && !ci->mapcrc) 
     {
         ci->mapcrc = -1;
-        if(ci == cq ? ci->state.state!=CS_DEAD : cq->ownernum != ci->clientnum) return;
+        if(ci == cq) { if(ci->state.state != CS_DEAD) break; }
+        else if(cq->ownernum != ci->clientnum) { cq = NULL; break; }
     }
     if(cq->state.deadflush)
     {
