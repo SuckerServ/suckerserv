@@ -7,13 +7,11 @@
 
 ]]
 
-module("server.mapsucks", package.seeall)
-
 local mapsucks = 0
 local plural_time, plural_players, conjugate = "", "", ""
 local ratio, lower_time = server.mapsucks_ratio, server.mapsucks_lower_time
 
-function vote(cn)
+function server.mapsucks_vote(cn)
   if not server.player_vars(cn).votesucks then
     server.player_vars(cn).votesucks = true
     mapsucks = mapsucks + 1

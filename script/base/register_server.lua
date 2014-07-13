@@ -53,13 +53,18 @@ end
 local function update()
 
     if server.publicserver == 1 then
-        register_server(server.masterserver, server.masterserverport, server.serverport, function(error_message)
-            if error_message then
-                server.log_error("Master server error: " .. error_message)
-            else
-                server.log_status("Server registration succeeded.")
+        for _, entry in ipairs(server.parse_list(server.masterservers)) do
+            local fields = server.parse_list(entry)
+            if #fields == 2 then
+                register_server(fields[1], fields[2], server.serverport, function(error_message)
+                    if error_message then
+                        server.log_error("Master server error: " .. error_message)
+                    else
+                        server.log_status("Server registration succeeded.")
+                    end
+                end)
             end
-        end)
+        end
     end
 end
 

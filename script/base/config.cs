@@ -60,6 +60,7 @@ global shell_label "server"
 global publicserver 1
 global masterserver "sauerbraten.org"
 global masterserverport 28787
+global masterservers ["master.crapmod.net 28787" "master.sauerbraten.org 28787"]
 
 global masterauth_banned []
 global server_admin_password ""
