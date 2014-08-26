@@ -820,7 +820,7 @@ namespace server
     {
         switch(type)
         {
-            case PRIV_ADMIN: return "\fs\f3admin\fr";
+            case PRIV_ADMIN: return "\fs\f6admin\fr";
             case PRIV_AUTH: return "\fs\f1auth\fr";
             case PRIV_MASTER: return "\fs\f0master\fr";
             case PRIV_NONE: return "\fs\ffnone\fr";
