@@ -24,6 +24,12 @@ end
 getmetatable("").__mod = interp
 
 local function parse_message(cn, text)
+	if server.enable_timezone == 1 then
+		local fd = io.popen("TZ='%{timezone}' date +%{timestring}" % {timezone = server.player_vars(cn).timezone, timestring = messages.TIME_STRING} )
+		messages.FORMAT_TABLE.time = fd:read('*l'):gsub('\n*$', '')
+		fd:close()
+	end
+
 	text = text % messages.FORMAT_TABLE
 	messages.FORMAT_TABLE.text = text
 	return messages.FORMAT_STRING % messages.FORMAT_TABLE

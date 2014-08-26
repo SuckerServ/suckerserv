@@ -6,6 +6,8 @@ global display_country_on_connect 1
 global display_city_on_connect 0
 global display_rank_on_connect 0
 
+global enable_timezone 1
+
 global mmdb_file "share/GeoLite2-City.mmdb"
 
 global allow_mapvote 1
