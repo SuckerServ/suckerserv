@@ -1,4 +1,4 @@
-require "geoip"
+require "mmdb"
 dofile("script/base/logging_base.lua")
 
 local after_startup = false
@@ -33,7 +33,7 @@ server.event_handler("connect", function (cn)
     if server.player_isbot(cn) then return end
 
     local ip = server.player_ip(cn)
-    local country = geoip.ip_to_country(ip)
+    local country = mmdb.lookup_ip(ip, "country", "names", "en")
     
     log(string.format("%s(%i)(%s)(%s) connected",server.player_name(cn),cn,ip,country))
 
