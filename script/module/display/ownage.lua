@@ -24,20 +24,19 @@
 
 -- Keep these messages at the top of the file so users can find them easily
 local killingspree_message = {}
-killingspree_message[5]  = yellow("%s is on a ") .. orange("KILLING SPREE!!")
-killingspree_message[10] = yellow("%s is on a ") .. orange("RAMPAGE!!")
-killingspree_message[15] = yellow("%s is ")      .. orange("DOMINATING!!")
-killingspree_message[20] = yellow("%s is ")      .. orange("UNSTOPPABLE!!")
-killingspree_message[30] = yellow("%s is ")      .. orange("GODLIKE!!")
+killingspree_message[5]  = blue("%s") .. " is on a " .. orange("KILLING SPREE") .. "!"
+killingspree_message[10] = blue("%s") .. " is on a " .. orange("RAMPAGE") .. "!"
+killingspree_message[15] = blue("%s") .. " is "      .. orange("DOMINATING") .. "!"
+killingspree_message[20] = blue("%s") .. " is "      .. orange("UNSTOPPABLE") .. "!"
+killingspree_message[30] = blue("%s") .. " is "      .. orange("GODLIKE") .. "!"
 
-local broadcast_minimum = 10
 local long_killingspree = 15
 local multikill_timelimit = 2000
 local first_frag = true
 
 local function send_first_frag_message(target, actor)
     if not first_frag or target == actor then return end
-    server.msg(string.format(yellow("%s made the ") .. orange("FIRST KILL!!"), server.player_displayname(actor)))
+    server.msg(string.format(blue("%s") .. " made the " .. orange("FIRST KILL") .. "!", server.player_displayname(actor)))
     first_frag = false
 end
 
@@ -57,11 +56,7 @@ local function send_killingspree_message(target_cn, target_vars, actor_cn, actor
     
         local message = string.format(killingspree_message[actor_killingspree], server.player_displayname(actor_cn))
         
-        if actor_killingspree < broadcast_minimum then
-            server.player_msg(actor_cn, message)
-        else
-            server.msg(message)
-        end
+        server.msg(message)
     end
     
     if target_killingspree >= long_killingspree then
