@@ -58,4 +58,4 @@ end)
 
 exec_if_found("conf/server.conf")
 exec("base/saveconf.lua")
-
+exec("base/messages.lua")
