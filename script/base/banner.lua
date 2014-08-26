@@ -18,27 +18,30 @@ local function send_connect_message(cn)
         if not city or #city < 1 then city = "Unknown" end
     end
 
-    if server.player_ranking then
-        player_ranking = server.player_ranking(server.player_name(cn))
-    end
-    if not player_ranking then
-        player_ranking = "Unknown"
+    if server.display_rank_on_connect then
+        if server.player_ranking then
+            player_ranking = server.player_ranking(server.player_name(cn))
+        end
+        if not player_ranking then
+            player_ranking = "Unknown"
+        end
     end
 
-    local name = server.player_displayname(cn)
-
-    if server.player_vars(cn).reserved_name then
-        name = green(server.player_name(cn)) .. " (" .. cn .. "): " .. yellow(server.player_vars(cn).reserved_name)
-    elseif server.player_vars(cn).stats_auth_name then
-        name = green(server.player_name(cn)) .. " (" .. cn .. "): " .. yellow(server.player_vars(cn).stats_auth_name)
-    end
+    local priv = ""
 
     if server.player_priv_code(cn) > server.PRIV_NONE then
-        name = name .. "(" .. server.player_priv(cn) .. ")"
+        priv = server.player_priv(cn)
     end
 
-    local normal_message = string.format(server.client_connect_message, name, city, country, player_ranking)
-    local admin_message = string.format(server.client_connect_admin_message, normal_message, server.player_ip(cn))
+    local normal_message = server.client_connect_message % {country = country, name = server.player_name(cn), cn = cn, priv = priv}
+    local admin_message = server.client_connect_admin_message % {ip = server.player_ip(cn)}
+
+    if priv == "" then
+        normal_message = normal_message:sub(1, -3)
+        admin_message = normal_message .. " (" .. admin_message .. ")"
+    else
+        admin_message = normal_message:sub(1, -2) .. " ; " .. admin_message .. ")"
+    end
 
     for _, cn in ipairs(server.clients()) do
 

@@ -43,8 +43,9 @@ return function(cn, command_name)
 
   server.player_msg(cn, "Command descriptions: #help <command>")
 
+  server.player_msg(cn, blue("List") .. " of" .. green(" commands") .. ":")
+
   for i,v in ipairs(list_of_command_names) do
-    if i == 1 then v = "List of command names: " .. v end
     server.player_msg(cn, v)
   end
 end, "[command]", "List all player commands available or show command description and usage", { "commands" }
