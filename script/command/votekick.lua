@@ -52,7 +52,7 @@ local function run(cn,victim)
   
   local actor_id = tostring(cn)
   
-  if victim == cn then
+  if victim == actor_id then
     return false, "You can't vote to kick yourself"
   elseif server.player_priv_code(victim) == server.PRIV_ADMIN then
     return false, "You can't vote to kick a server admin!"
