@@ -57,6 +57,10 @@ end
 
 local function sendServerBanner(cn)
 
+    if server.enable_timezone == 1 then
+        server.player_vars(cn).timezone = mmdb.lookup_ip(server.player_ip(cn), "location", "time_zone")
+    end
+
     server.player_vars(cn).maploaded = true
     
     if server.player_vars(cn).shown_banner then return end
