@@ -101,7 +101,7 @@ static void load_lua_modules()
        	{"crypto", lua::module::open_crypto},
        	{"cubescript", lua::module::open_cubescript},
         {"filesystem", lua::module::open_filesystem},
-        {"geoip", lua::module::open_geoip},
+        {"mmdb", lua::module::open_mmdb},
        	{"http_server", lua::module::open_http_server},
         {NULL, NULL}
     };

@@ -32,20 +32,13 @@ endif(Boost_FOUND)
 
 find_package(OpenSSL)
 
+find_package(MMDB)
 
-find_package(GeoIP)
+option(WITH_MMDB "Enable MMDB support" ON)
 
-option(WITH_GEOIP "Enable GeoIP support" ON)
-
-if(WITH_GEOIP)
-    add_definitions(-DWITH_GEOIP)
-    if(GeoIP_FOUND)
-        set(GEOIP_INCLUDE_DIRS ${GeoIP_INCLUDE_DIRS})
-        set(GEOIP_LIBRARY ${GeoIP_LIBRARY})
-    else(GeoIP_FOUND)
-        add_subdirectory(geoip)
-    endif(GeoIP_FOUND)
-endif(WITH_GEOIP)
+if(WITH_MMDB)
+    add_definitions(-DWITH_MMDB)
+endif(WITH_MMDB)
 
 
 add_subdirectory(fungu)
@@ -85,14 +78,16 @@ include_directories(
     ${BOOST_INCLUDE_DIRS}
     ${FUNGU_INCLUDE_DIRS}
     ${OPENSSL_INCLUDE_DIR}
-    ${GEOIP_INCLUDE_DIRS})
+    ${MMDB_INCLUDE_DIRS})
 
 add_definitions(-Wall -fsigned-char -DSTANDALONE -DREVISION=$ENV{REVISION})
 
 
-if(NOT CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+if(CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+    add_definitions( -g)
+else(CMAKE_BUILD_TYPE STREQUAL "DEBUG")
     add_definitions( -O3)
-endif(NOT CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+endif(CMAKE_BUILD_TYPE STREQUAL "DEBUG")
 
 set(SAUERTOOLS_SOURCES
     shared/tools.cpp
@@ -128,7 +123,7 @@ set(LUA_MODULES_SOURCES
     hopmod/lua/modules/module.cpp
     hopmod/lua/modules/crypto.cpp
     hopmod/lua/modules/timer.cpp
-    hopmod/lua/modules/geoip.cpp
+    hopmod/lua/modules/mmdb.cpp
     hopmod/lua/modules/filesystem.cpp
     hopmod/lua/modules/packlib.c
     hopmod/lua/modules/cubescript.cpp
@@ -155,7 +150,7 @@ endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 target_link_libraries(lua_modules 
     sauertools
     ${LUA_LIBRARY}
-    ${GEOIP_LIBRARY}
+    ${MMDB_LIBRARY}
     ${FUNGU_STRING_LIBRARY}
     ${FUNGU_HTTP_LIBRARY}
     ${OPENSSL_LIBRARIES})
@@ -183,8 +178,8 @@ target_link_libraries(sauer_server
     sauertools
     lua_modules
     ${BOOST_THREAD_LIBRARY}
+    ${BOOST_SYSTEM_LIBRARY}
     ${ENET_LIBRARY})
-
 
 add_executable(keygen hopmod/standalone/keygen.cpp)
 target_link_libraries(keygen sauertools)

@@ -2,10 +2,11 @@
 
 global motd "Running Hopmod"
 
-global show_country_message 1
+global display_country_on_connect 1
+global display_city_on_connect 0
+global display_rank_on_connect 0
 
-global geoip_db_file "share/GeoIP.dat"
-global geocity_db_file "share/GeoLiteCity.dat"
+global mmdb_file "share/GeoLite2-City.mmdb"
 
 global allow_mapvote 1
 global mapvote_disallow_unknown_map 0

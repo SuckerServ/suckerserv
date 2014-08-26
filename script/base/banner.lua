@@ -1,20 +1,22 @@
-require "geoip"
+require "mmdb"
 
 local BANNER_DELAY = 2000
-local show_country_message = server.show_country_message == 1
 
 local function send_connect_message(cn)
 
     if server.player_is_spy(cn) or server.is_bot(cn) then return end
 
-    local country = geoip.ip_to_country(server.player_ip(cn))
-    local city = geoip.ip_to_city(server.player_ip(cn))
-    if not city or #city < 1 then city = "Unknown" end
+    local country = ""
 
+    if server.display_country_on_connect == 1 then
+        country = mmdb.lookup_ip(server.player_ip(cn), "country", "names", "en")
+        if not country or #country < 1 then country = "Unknown" end
+    end
 
-   if not show_country_message or #country < 1 then
-        country = "Unknown"
-   end
+    if server.display_city_on_connect == 1 then
+        local city = mmdb.lookup_ip(server.player_ip(cn), "city", "names", "en")
+        if not city or #city < 1 then city = "Unknown" end
+    end
 
     if server.player_ranking then
         player_ranking = server.player_ranking(server.player_name(cn))

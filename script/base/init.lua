@@ -46,9 +46,8 @@ server.event_handler("started", function()
     
     server.reload_maprotation()
     
-    geoip = require("geoip")
-    geoip.load_geoip_database(server.geoip_db_file)
-    geoip.load_geocity_database(server.geocity_db_file)
+    mmdb = require("mmdb")
+    mmdb.load_mmdb_database(server.mmdb_file)
     
     server.log_status(server.server_start_message)
 end)
