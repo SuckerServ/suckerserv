@@ -12,6 +12,12 @@ messages.TIME_STRING = "%H:%M:%S"
 messages.FORMAT_TABLE = {
 	time = os.date(messages.TIME_STRING),
 	green = "0",
+	blue = "1",
+	yellow = "2",
+	red = "3",
+	gray = "4",
+	magenta = "5",
+	orange = "6",
 	white = "7",
 }
 
@@ -44,6 +50,19 @@ function server.msg(text)
 		client:msg(text)
 	end
 end
+
+server.event_handler("disconnect", function(cn)
+	local normal_message = server.client_disconnect_message % {name = server.player_name(cn), cn = cn}
+	local admin_message = normal_message .. server.client_disconnect_admin_message % {ip = server.player_ip(cn)}
+
+	for _, cn in ipairs(server.clients()) do
+		if server.player_priv_code(cn) == server.PRIV_ADMIN then
+			server.player_msg(cn, admin_message)
+		else
+			server.player_msg(cn, normal_message)
+		end
+	end
+end)
 
 return {unload = function()
 	messages = nil
