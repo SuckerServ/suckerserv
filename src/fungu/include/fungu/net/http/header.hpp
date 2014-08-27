@@ -12,6 +12,7 @@
 #include <vector>
 #include <utility>
 #include <stack>
+#include <time.h>
 
 namespace fungu{
 namespace http{
