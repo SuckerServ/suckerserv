@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 export REVISION=`git rev-list HEAD --count`
-PROJECT="$(tput bold ; tput setaf 3)SuckerServ-v5 $(tput setaf 2)r$REVISION$(tput sgr0)"
+PROJECT="$(tput bold ; tput setaf 3)SuckerServ-master $(tput setaf 2)r$REVISION$(tput sgr0)"
 if [ -z $THREADS ]; then 
     THREADS=1
     case "$(uname -s)" in
