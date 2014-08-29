@@ -580,7 +580,6 @@ player_command_function("has", function(cn, enable)
         hide_and_seek = true
         server.hide_and_seek = 1 -- changes weapon ammo amount
         server.mastermode = 2
-        server.msg("mastermode is now locked (2)")
         server.msg(green() .. "Hide and Seek Mode enabled!")
         can_vote = true
     else
@@ -596,7 +595,6 @@ player_command_function("has", function(cn, enable)
         server.hide_and_seek = 0
         server.msg(blue() .. "Hide and Seek Mode disabled!")
         server.mastermode = 0
-        server.msg("mastermode is now open (0)")
         hide_and_seek = false
         for i, cn_ in ipairs(server.clients()) do
             server.player_nospawn(cn_, 0)
