@@ -1240,3 +1240,44 @@ int hitpush(lua_State * L)
     }
     return 1;
 }
+
+void baseammo(int cn, int gun, int k = 2, int scale = 1)
+{
+    clientinfo *ci = getinfo(cn);
+    gamestate &gs = ci->state;
+
+    packetbuf p(MAXTRANS, ENET_PACKET_FLAG_RELIABLE);
+
+    putint(p, N_SPAWNSTATE);
+    putint(p, cn);
+
+    putint(p, gs.lifesequence);
+    putint(p, gs.health);
+    putint(p, gs.maxhealth);
+    putint(p, gs.armour);
+    putint(p, gs.armourtype);
+    putint(p, gs.gunselect);
+    loopi(GUN_PISTOL-GUN_SG+1)
+    {
+        gs.ammo[GUN_SG+i] = (itemstats[GUN_SG+i].add*k)/scale;
+        putint(p, gs.ammo[GUN_SG+i]);
+    }
+
+    sendpacket(cn, 1, p.finalize());
+}
+
+int player_dodamage(lua_State * L)
+{
+    int target = luaL_checkint(L, 1);
+    int actor = luaL_checkint(L, 2);
+    int damage = luaL_checkint(L, 3);
+    int gun = luaL_checkint(L, 4);
+
+    const vec push (luaL_checknumber(L, 5), luaL_checknumber(L, 6), luaL_checknumber(L, 7));
+    clientinfo *ci_actor = getinfo(actor);
+    clientinfo *ci_target = getinfo(target);
+
+    dodamage(ci_target, ci_actor, damage, gun, push);
+
+    return 1;
+}

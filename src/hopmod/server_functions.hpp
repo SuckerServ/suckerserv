@@ -167,8 +167,10 @@ namespace server
     void editvar(int, const char *, int);
     void sendmap(int, int);
     int hitpush(lua_State * L);
+    void baseammo(int, int, int, int);
+    int player_dodamage(lua_State * L);
     void set_spy(int, bool);
-    
+
     void team_msg(const char *,const char *);
     std::vector<std::string> get_teams();
     int lua_team_list(lua_State * L);
