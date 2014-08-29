@@ -2181,6 +2181,8 @@ namespace server
     
     void suicide(clientinfo *ci)
     {
+        if(event_suicide(event_listeners(), boost::make_tuple(ci->clientnum))) return;
+
         gamestate &gs = ci->state;
         if(gs.state!=CS_ALIVE) return;
         int fragvalue = smode ? smode->fragvalue(ci, ci) : -1;
@@ -2194,7 +2196,6 @@ namespace server
         gs.state = CS_DEAD;
         gs.lastdeath = gamemillis;
         gs.respawn();
-        event_suicide(event_listeners(), boost::make_tuple(ci->clientnum));
     }
 
 
@@ -3001,7 +3002,6 @@ namespace server
                 {
                     convert2utf8 utf8map(ci->clientmap);
                     event_modmap(event_listeners(), boost::make_tuple(ci->clientnum, utf8map.str(), ci->mapcrc));
-                    sendservmsgf("%s is using a modified map", colorname(ci, ci->name));
                 }
                 break;
             }
@@ -3015,7 +3015,6 @@ namespace server
                     {
                         convert2utf8 utf8map(ci->clientmap);
                         event_modmap(event_listeners(), boost::make_tuple(ci->clientnum, utf8map.str(), ci->mapcrc));
-                        sendservmsgf("%s is using a modified map", colorname(ci, ci->name));
                     }
                 }
                 break;
@@ -3044,7 +3043,6 @@ namespace server
                 {
                     convert2utf8 utf8map(ci->clientmap);
                     event_modmap(event_listeners(), boost::make_tuple(cq->clientnum, utf8map.str(), cq->mapcrc));
-                    sendservmsgf("%s is using a modified map", colorname(cq, cq->name));
                     cq->mapcrc = 1;
                 }
                 if (ci->spy)

@@ -14,6 +14,14 @@ server.event_handler("modmap", function(cn, map, crc)
         return
     end
 
+    for c in server.gclients() do
+        if c.cn == cn then
+            c:msg(server.client_crcfail_player_message)
+        else
+            c:msg(server.client_crcfail_message % { name = server.player_displayname(cn) } )
+        end
+    end
+
     server.log(string.format("%s(%i) is using a modified map: %s (crc %s)", server.player_name(cn), cn, map, crc))  
     failed_action(cn)
 
