@@ -37,7 +37,7 @@ local function send_connect_message(cn)
     local admin_message = server.client_connect_admin_message % {ip = server.player_ip(cn)}
 
     if priv == "" then
-        normal_message = normal_message:sub(1, -3)
+        normal_message = normal_message:sub(1, -4)
         admin_message = normal_message .. " (" .. admin_message .. ")"
     else
         admin_message = normal_message:sub(1, -2) .. " ; " .. admin_message .. ")"
