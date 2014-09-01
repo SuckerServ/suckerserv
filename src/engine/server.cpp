@@ -644,7 +644,6 @@ bool setuplistenserver(bool dedicated)
     if(!serverhost) return servererror(dedicated, "could not create server host");
     serverhost->duplicatePeers = 10;
     serverhost->intercept = check_net_bans;
-    loopi(MAXCLIENTS) serverhost->peers[i].data = NULL;
     const char * _serverip = serverip[0] == '\0' ? "0.0.0.0" : serverip;
     std::cout<<"Game server socket listening on UDP "<<_serverip<<":"<<serverport<<std::endl;
     address.port = server::serverinfoport(serverport > 0 ? serverport : -1);
