@@ -3693,7 +3693,11 @@ namespace server
                 }
                 loopi(size-1) getint(p);
                 if(event_editpacket(event_listeners(), boost::make_tuple(ci->clientnum))) return;
-                if(ci && cq && (ci != cq || ci->state.state!=CS_SPECTATOR)) { QUEUE_AI; QUEUE_MSG; }
+                if(ci) switch(msgfilter[type])
+                {
+                    case 2: case 3: if(ci->state.state != CS_SPECTATOR) QUEUE_MSG; break;
+                    default: if(cq && (ci != cq || ci->state.state!=CS_SPECTATOR)) { QUEUE_AI; QUEUE_MSG; } break;
+                }
                 break;
             }
 
@@ -3723,7 +3727,11 @@ namespace server
                     return;
                 }
                 loopi(size-1) getint(p);
-                if(ci && cq && (ci != cq || ci->state.state!=CS_SPECTATOR)) { QUEUE_AI; QUEUE_MSG; }
+                if(ci) switch(msgfilter[type])
+                {
+                    case 2: case 3: if(ci->state.state != CS_SPECTATOR) QUEUE_MSG; break;
+                    default: if(cq && (ci != cq || ci->state.state!=CS_SPECTATOR)) { QUEUE_AI; QUEUE_MSG; } break;
+                }
                 break;
             }
         }
