@@ -1,7 +1,7 @@
 
 auth.directory.server{
     id = "MASTER",
-    hostname = "sauerbraten.org",
+    hostname = "master.sauerbraten.org",
     port = 28787
 }
 
