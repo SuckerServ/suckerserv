@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-export REVISION=`svn log -l1 -q | cut --delimiter=" " -f1 -s | cut -c2-`
+export REVISION=`git rev-list HEAD --count`
 PROJECT="$(tput bold ; tput setaf 3)SuckerServ-v4 $(tput setaf 2)r$REVISION$(tput sgr0)"
 if [ -z $THREADS ]; then 
     THREADS=1
