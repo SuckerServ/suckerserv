@@ -2,6 +2,8 @@ require "http_server"
 
 local LISTENER_PORT = server.serverport + 3
 
+local filename = "log/sauer_server_http.port"
+
 local listener, errorMessage = http_server.listener("0.0.0.0", LISTENER_PORT)
 
 if not listener then
@@ -44,6 +46,10 @@ local function startHttpServer()
     
     if started then
         server.log_status(string.format("HTTP server listening on TCP 0.0.0.0:%s", LISTENER_PORT))
+        local portfile = io.open(filename,"w")
+        portfile:write(LISTENER_PORT)
+        portfile:flush()
+        portfile:close()
     end
 end
 
@@ -51,6 +57,7 @@ startHttpServer()
 
 local function unload()
     listener:stop()
+    os.remove(filename)
     http_server_root = nil
 end
 
