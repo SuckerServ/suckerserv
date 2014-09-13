@@ -118,7 +118,7 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "editvar", server::editvar);
     bind_function(L, T, "sendmap", server::sendmap);
     bind_function(L, T, "hitpush", server::hitpush);
-    bind_function(L, T, "baseammo", server::baseammo);
+    bind_function(L, T, "player_change_ammo", server::player_change_ammo);
     bind_function(L, T, "player_dodamage", server::player_dodamage);
     bind_function(L, T, "setspy", server::set_spy);
     bind_function(L, T, "set_invisible_admin", server::set_player_private_admin);

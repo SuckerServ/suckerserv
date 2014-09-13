@@ -1231,6 +1231,9 @@ int hitpush(lua_State * L)
 
     const vec push (luaL_checknumber(L, 5), luaL_checknumber(L, 6), luaL_checknumber(L, 7));
     clientinfo *ci = getinfo(target);
+
+    if(!ci) return 0;
+
     gamestate &ts = ci->state;
     if(target==actor) ci->setpushed();
     else if(!push.iszero())
@@ -1242,10 +1245,14 @@ int hitpush(lua_State * L)
     return 1;
 }
 
-void baseammo(int cn, int gun, int k = 2, int scale = 1)
+void player_change_ammo(int cn, int gun, int num)
 {
     clientinfo *ci = getinfo(cn);
+    if(!ci) return;
     gamestate &gs = ci->state;
+
+    if(num < 0) num = itemstats[gun].add;
+    gs.ammo[gun] = num;
 
     packetbuf p(MAXTRANS, ENET_PACKET_FLAG_RELIABLE);
 
@@ -1260,11 +1267,10 @@ void baseammo(int cn, int gun, int k = 2, int scale = 1)
     putint(p, gs.gunselect);
     loopi(GUN_PISTOL-GUN_SG+1)
     {
-        gs.ammo[GUN_SG+i] = (itemstats[GUN_SG+i].add*k)/scale;
         putint(p, gs.ammo[GUN_SG+i]);
     }
 
-    sendpacket(cn, 1, p.finalize());
+    sendpacket(-1, 1, p.finalize());
 }
 
 int player_dodamage(lua_State * L)
@@ -1277,6 +1283,8 @@ int player_dodamage(lua_State * L)
     const vec push (luaL_checknumber(L, 5), luaL_checknumber(L, 6), luaL_checknumber(L, 7));
     clientinfo *ci_actor = getinfo(actor);
     clientinfo *ci_target = getinfo(target);
+
+    if(!ci_actor || !ci_target) return 0;
 
     dodamage(ci_target, ci_actor, damage, gun, push);
 

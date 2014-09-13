@@ -167,7 +167,7 @@ namespace server
     void editvar(int, const char *, int);
     void sendmap(int, int);
     int hitpush(lua_State * L);
-    void baseammo(int, int, int, int);
+    void player_change_ammo(int, int, int);
     int player_dodamage(lua_State * L);
     void set_spy(int, bool);
 
