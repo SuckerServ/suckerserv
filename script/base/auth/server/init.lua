@@ -14,6 +14,7 @@ add_exec_search_path("script")
 add_exec_search_path("script/module")
 
 exec("script/base/serverexec.lua")
+exec("script/base/auth/server/config.cs")
 exec("script/base/logging_base.lua")
 exec("script/base/utils.lua")
 exec("script/base/auth/server/core.lua")
@@ -83,3 +84,5 @@ end
 
 local conf_file = "conf/authserver.conf"
 exec_if_found(conf_file)
+
+exec("base/auth/server/web/init.lua")
