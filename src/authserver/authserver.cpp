@@ -4,7 +4,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "cube.h"
-#include "hopmod/hopmod.hpp"
+#include "hopmod.hpp"
 
 #include "hopmod/lua/modules.hpp"
 #include "hopmod/main_io_service.hpp"
@@ -35,6 +35,10 @@ io_service & get_main_io_service()
 }
 
 deadline_timer update_timer(main_io_service);
+
+size_t tx_packets = 0 , rx_packets = 0, tx_bytes = 0, rx_bytes = 0;
+bool reloaded = false;
+bool restart_program;
 
 namespace authserver {
 
@@ -71,6 +75,7 @@ void adduser(const char *name, const char *desc, const char *pubkey, const char 
     if(!u.desc) u.desc = newstring(desc);
     u.pubkey = parsepubkey(pubkey);
     if(!u.privilege) u.privilege = newstring(priv);
+    event_adduser(event_listeners(), boost::make_tuple(name, desc, pubkey, priv));
     if(debug) std::cout<<"Adding user "<<name<<"@"<<(desc[0] ? desc : "<none>")<<" with priv "<<priv<<std::endl;
 } 
 
@@ -79,6 +84,7 @@ void deleteuser(const char *name, const char *desc)
     userkey key(name, desc);
     if(users.remove(key))
     {
+        event_deleteuser(event_listeners(), boost::make_tuple(name, desc));
         if(debug) std::cout<<"Removing user "<<name<<"@"<<(desc ? desc : "<none>")<<std::endl;
     }
     else
@@ -90,6 +96,7 @@ void deleteuser(const char *name, const char *desc)
 void clearusers()
 {
     users.clear();
+    event_clearusers(event_listeners(), boost::make_tuple());
     if(debug) std::cout<<"Cleared all users"<<std::endl;
 } 
 
@@ -166,6 +173,9 @@ void outputf(client &c, const char *fmt, ...)
 
 void setupserver(int port, const char *ip = NULL)
 {
+    if(enet_initialize()<0) fatal("Unable to initialise enet");
+    atexit(enet_deinitialize);
+
     ENetAddress address;
     address.host = ENET_HOST_ANY;
     address.port = port;
@@ -395,6 +405,8 @@ void checkclients()
             ENetBuffer buf;
             buf.data = (void *)&data[c.outputpos];
             buf.dataLength = len-c.outputpos;
+            tx_bytes += buf.dataLength;
+            tx_packets++;
             int res = enet_socket_send(c.socket, NULL, &buf, 1);
             if(res>=0) 
             {
@@ -412,6 +424,8 @@ void checkclients()
             ENetBuffer buf;
             buf.data = &c.input[c.inputpos];
             buf.dataLength = sizeof(c.input) - c.inputpos;
+            rx_bytes += buf.dataLength;
+            rx_packets++;
             int res = enet_socket_receive(c.socket, NULL, &buf, 1);
             if(res>0)
             {
@@ -446,7 +460,7 @@ static void initiate_shutdown()
     signal_shutdown(SHUTDOWN_NORMAL);
 
     // Now wait for the main event loop to process work that is remaining and then exit
-    exit(0);
+    get_main_io_service().stop();
 }
 
 void shutdown()
@@ -482,16 +496,8 @@ void update_server(const boost::system::error_code & error = boost::system::erro
     authserver::checkclients();
 }
 
-
-int main(int argc, char **argv)
+static void init_authserver()
 {
-    struct sigaction terminate_action;
-    sigemptyset(&terminate_action.sa_mask);
-    terminate_action.sa_handler = authserver::shutdown_from_signal;
-    terminate_action.sa_flags = 0;
-    sigaction(SIGINT, &terminate_action, NULL);
-    sigaction(SIGTERM, &terminate_action, NULL);
-
     signal_shutdown.connect(boost::bind(&shutdown_lua));
     signal_shutdown.connect(&delete_temp_files_on_shutdown);
 
@@ -502,16 +508,63 @@ int main(int argc, char **argv)
 
     if(luaL_loadfile(L, INIT_SCRIPT) == 0)
     {
-        event_listeners().add_listener("init"); // Take the value of the top of the stack to add
+     	event_listeners().add_listener("init"); // Take the value of the top of the stack to add
         // to the init listeners table
     }
     else
     {
         std::cerr<<"error during initialization: "<<lua_tostring(L, -1)<<std::endl;
-        lua_pop(L, 1);
+       	lua_pop(L, 1);
     }
     
     event_init(event_listeners(), boost::make_tuple());
+}
+
+static void reload_authserver_now()
+{
+    event_reloadhopmod(event_listeners(), boost::make_tuple());
+
+    reloaded = true;
+
+    event_shutdown(event_listeners(), boost::make_tuple(static_cast<int>(SHUTDOWN_RELOAD)));
+
+    signal_shutdown(SHUTDOWN_RELOAD);
+
+    signal_shutdown.disconnect_all_slots();
+
+    init_authserver();
+
+    event_started(event_listeners(), boost::make_tuple());
+
+    std::cout<<"-> Reloaded Authserver."<<std::endl;
+
+    reloaded = false;
+}
+
+void reload_authserver()
+{
+    get_main_io_service().post(reload_authserver_now);
+}
+
+void restart_now()
+{
+    std::cout<<"-> Authserver restarting..."<<std::endl;
+    restart_program = true;
+    authserver::shutdown();
+}
+
+int main(int argc, char **argv)
+{
+    restart_program = false;
+
+    struct sigaction terminate_action;
+    sigemptyset(&terminate_action.sa_mask);
+    terminate_action.sa_handler = authserver::shutdown_from_signal;
+    terminate_action.sa_flags = 0;
+    sigaction(SIGINT, &terminate_action, NULL);
+    sigaction(SIGTERM, &terminate_action, NULL);
+
+    init_authserver();
     
     authserver::setupserver(authserver::port, (authserver::ip[0] ? authserver::ip : NULL));
     
@@ -532,5 +585,10 @@ int main(int argc, char **argv)
            throw;
     }
     
+    if(restart_program)
+    {
+       	execv(argv[0], argv);
+    }
+
     return EXIT_SUCCESS;
 }

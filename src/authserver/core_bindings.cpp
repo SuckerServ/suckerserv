@@ -57,7 +57,15 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "file_exists", file_exists);
     bind_function(L, T, "dir_exists", dir_exists);
     
+    bind_function(L, T, "reload_lua", reload_authserver);
+    bind_function(L, T, "restart_now", restart_now);
     bind_function(L, T, "shutdown", authserver::shutdown);
+
+    bind_function(L, T, "sleep", lua::sleep);
+    bind_function(L, T, "interval", lua::interval);
+    bind_function(L, T, "cancel_timer", lua::cancel_timer);
+
+    bind_function(L, T, "enet_time_get", (int (*)())enet_time_get);
 }
 
 template<int Constant>
@@ -205,4 +213,11 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "serverport", authserver::port);
     bind_var(L, T, "serverip", authserver::ip);    
     bind_var(L, T, "debug", authserver::debug);
+
+    bind_ro_var(L, T, "tx_bytes", tx_bytes);
+    bind_ro_var(L, T, "rx_bytes", rx_bytes);
+    bind_ro_var(L, T, "tx_packets", tx_packets);
+    bind_ro_var(L, T, "rx_packets", rx_packets);
+
+    bind_ro_var(L, T, "reloaded", reloaded);
 }
