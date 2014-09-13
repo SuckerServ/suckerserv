@@ -92,14 +92,14 @@ local function list_users(domain_id, no_key)
 			users[tab.name] = true
 		end
     else
-	    local sql = [[SELECT users.name, users.pubkey, domains_users.privilege
+	    local sql = [[SELECT domains_users.id, users.name, users.pubkey, domains_users.privilege
                     FROM users
 					JOIN domains_users ON users.id = domains_users.user_id
 					JOIN domains ON domains.id = domains_users.domain_id
                     WHERE domains.id = %i]]
 		for tab in mysql.rows(mysql.exec(connection, string.format(sql, domain_id)))
 		do
-			users[tab.name] = {pubkey = tab.pubkey, privilege = tab.privilege}
+			users[tab.name] = {id = tab.id, pubkey = tab.pubkey, privilege = tab.privilege}
 		end
     end
     
@@ -275,12 +275,21 @@ local function external_del_user(name, domain)
     then 
         return msg.mysql.unknown
     end
+--        local sql = [[DELETE du
+--                          FROM domains_users du
+--                          JOIN users ON users.id = du.user_id
+--                          WHERE users.name = '%s'
+--                              AND du.domain_id = %i]]
+
         local sql = [[DELETE
-                    FROM domains_users
-                    WHERE (SELECT id
-                            FROM users
-                            WHERE name = '%s') = user_id AND domain_id = %i]]
-							
+                          FROM domains_users
+                          WHERE user_id IN (
+                              SELECT id
+                              FROM users
+                              WHERE name = '%s')
+                              AND domain_id = %i]]
+
+
     local cursor = mysql.exec(connection, string.format(sql, mysql.escape_string(name), did))
     if not cursor
     then
@@ -524,7 +533,8 @@ end
 -- internal.list_users(domain)
 --       nil, err or users, nil
 --               users[name] = pubkey
-local function external_list_users(domain)
+local function external_list_users(domain, no_key)
+    if no_key == nil then no_key = true end
 
     local did = domain_id(domain)
     if not did
@@ -532,7 +542,7 @@ local function external_list_users(domain)
         return nil, string.format(msg.no_domain, domain)
     end
     
-    return list_users(did, true)
+    return list_users(did, no_key)
 end
 
 -- internal.add_domain(domain, case_insensitive)
@@ -659,7 +669,7 @@ return {is_user = external_is_user,
     del_user = external_del_user,
     change_user_name = external_change_user_name,
     change_user_key = external_change_user_key,
-	change_user_priv = external_change_user_priv,
+    change_user_priv = external_change_user_priv,
     change_user_domain = external_change_user_domain,
     list_users = external_list_users,
     add_domain = external_add_domain,
