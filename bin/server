@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Hopmod Game Server Control Script
+# SuckerServ Game Server Control Script
 #
 
 ################################################################################
@@ -133,7 +133,7 @@ p_status() {
     
     if [ -n "$1" ]
     then
-	out="$2"
+	out="$1"
     fi
     
     if ! p_exec "write_server_status [$out]"
@@ -157,7 +157,7 @@ p_update_conf() {
 
 p_password() {
 
-    if ! p_exec "admin_password $2"
+    if ! p_exec "admin_password $1"
     then
 	return 1
     fi
@@ -228,23 +228,23 @@ case "$1" in
 		p_luapp "$*"
 	    ;;
 	    'shell')
-		ret_val=$(p_open_shell "$3" ; echo $?)
-		if [ ! "$ret_val" = "0" ]
-		then
-		    case "$ret_val" in
-			'1')
-		    	    p_msg_no_server
-			;;
-			'2')
-		    	    echo "You must specify a shell: ruby or perl."
-		    	    exit 2
-			;;
-			*)
-		    	    echo "Unexpected error."
-		    	    exit 3
-			;;
-		    esac
-		fi
+		p_open_shell "$3"
+		case "$?" in
+		    '0')
+			exit 0
+		    ;;
+		    '1')
+		    	p_msg_no_server
+		    ;;
+		    '2')
+		    	echo "You must specify a shell: ruby or perl."
+		    	exit 2
+		    ;;
+		    *)
+		    	echo "Unexpected error."
+		    	exit 3
+		    ;;
+		esac
 	    ;;
 	    *)
 		if [ "x$2" = "x--no-statuslog" ]
