@@ -1,11 +1,10 @@
 #ifndef HOPMOD_LUA_NET_READ_STREAM_BUFFER_HPP
 #define HOPMOD_LUA_NET_READ_STREAM_BUFFER_HPP
 
-#include <boost/bind.hpp>
-#include <boost/bind/protect.hpp>
-#include <boost/asio/error.hpp>
-#include <boost/asio/read.hpp>
-#include <boost/asio/read_until.hpp>
+#include "utils/protect_wrapper.hpp"
+#include <asio/error.hpp>
+#include <asio/read.hpp>
+#include <asio/read_until.hpp>
 
 #include <iostream>
 
@@ -26,23 +25,23 @@ public:
         
         if(read_size < m_buffer.size())
         {
-            stream.get_io_service().post(boost::bind(&read_stream_buffer<StreamBufferClass, PodType>::template read_complete<ReadHandler>, 
-               this, read_size, read_size, boost::system::error_code(), 0, handler));
+            stream.get_io_service().post(std::bind(&read_stream_buffer<StreamBufferClass, PodType>::template read_complete<ReadHandler>, 
+               this, read_size, read_size, std::error_code(), 0, handler));
             return;
         }
         
-        boost::asio::async_read(stream, m_buffer, boost::asio::transfer_at_least(
+        asio::async_read(stream, m_buffer, asio::transfer_at_least(
             read_size - m_buffer.size()), 
-            boost::bind(&read_stream_buffer::template read_complete<ReadHandler>, this, 
-            m_buffer.size(), read_size, _1, _2, handler));
+            std::bind(&read_stream_buffer::template read_complete<ReadHandler>, this, 
+            m_buffer.size(), read_size, std::placeholders::_1, std::placeholders::_2, handler));
     }
     
     template<typename AsyncReadStream, typename ReadHandler>
     void async_read_until(AsyncReadStream & stream, const std::string & delim, ReadHandler handler)
     {
         if(!lock_read(stream, handler)) return;
-        boost::asio::async_read_until(stream, m_buffer, delim, boost::bind(
-            &read_stream_buffer::template read_complete<ReadHandler>, this, 0, -1, _1, _2, handler));
+        asio::async_read_until(stream, m_buffer, delim, std::bind(
+            &read_stream_buffer::template read_complete<ReadHandler>, this, 0, -1, std::placeholders::_1, std::placeholders::_2, handler));
     }
     
     void unlock_read()
@@ -57,7 +56,7 @@ private:
     {
         if(m_read_lock)
         {
-            object.get_io_service().post(boost::bind(handler, boost::asio::error::already_started, static_cast<const char *>(NULL), 0));
+            object.get_io_service().post(std::bind(handler, asio::error::already_started, static_cast<const char *>(NULL), 0));
             return false;
         }
         m_read_lock = true;
@@ -66,10 +65,10 @@ private:
     
     template<typename ReadHandler>
     void read_complete(std::size_t bytes_buffered, std::size_t max_consume,
-        boost::system::error_code ec, std::size_t bytes_transferred, ReadHandler handler)
+        std::error_code ec, std::size_t bytes_transferred, ReadHandler handler)
     {
         m_consume = std::min(bytes_buffered + bytes_transferred, max_consume);
-        handler(ec, boost::asio::buffer_cast<const PodType *>(
+        handler(ec, asio::buffer_cast<const PodType *>(
             *m_buffer.data().begin()), static_cast<std::size_t>(m_consume/sizeof(PodType)));
         if (!m_consume) return; // not the best solution, but doesn't "crash" the server at least.
     }

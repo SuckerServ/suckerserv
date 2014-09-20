@@ -3,8 +3,8 @@
 #include "lua/event.hpp"
 #include "hopmod.hpp"
 #include <iostream>
-#include <boost/asio.hpp>
-using namespace boost::asio;
+#include <asio.hpp>
+using namespace asio;
 
 static io_service main_io_service;
 
@@ -59,7 +59,7 @@ int main(int argc, char ** argv)
     {
         main_io_service.run();
     }
-    catch(const boost::system::system_error & se)
+    catch(const std::system_error & se)
     {
         std::cerr<<se.what()<<std::endl;
         throw;

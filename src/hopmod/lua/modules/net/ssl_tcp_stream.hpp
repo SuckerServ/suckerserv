@@ -4,23 +4,22 @@
 #include "tcp_socket.hpp"
 #include "ssl_context.hpp"
 #include <lua.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/asio/ssl.hpp>
+#include <asio/ssl.hpp>
 
 namespace lua{
 
 struct ssl_tcp_stream
 {
-    ssl_tcp_stream(boost::shared_ptr<tcp_socket>, boost::shared_ptr<boost::asio::ssl::context>);
-    boost::shared_ptr<tcp_socket> socket;
-    boost::shared_ptr<boost::asio::ssl::context> ssl_context;
-    boost::asio::ssl::stream<boost::asio::ip::tcp::socket &> stream;
+    ssl_tcp_stream(std::shared_ptr<tcp_socket>, std::shared_ptr<asio::ssl::context>);
+    std::shared_ptr<tcp_socket> socket;
+    std::shared_ptr<asio::ssl::context> ssl_context;
+    asio::ssl::stream<asio::ip::tcp::socket &> stream;
 };
 
 class managed_ssl_tcp_stream
 {
 public:
-    typedef boost::shared_ptr<ssl_tcp_stream> target_type;
+    typedef std::shared_ptr<ssl_tcp_stream> target_type;
     static const char * CLASS_NAME;
     static int register_class(lua_State * L);
     static int create_object(lua_State * L);

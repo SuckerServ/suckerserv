@@ -3,10 +3,11 @@
 
 #include "cube.h"
 #include <signal.h>
-#include <boost/asio.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-using namespace boost::asio;
-#include <hopmod/utils.hpp>
+#include <asio.hpp>
+#include <asio/high_resolution_timer.hpp>
+
+using namespace asio;
+#include <hopmod/utils/time.hpp>
 #include <hopmod/net/address.hpp>
 #include <hopmod/net/address_mask.hpp>
 #include <hopmod/net/address_prefix.hpp>
@@ -109,14 +110,14 @@ ip::udp::socket serverhost_socket(main_io_service);
 ip::udp::socket info_socket(main_io_service);
 ip::udp::socket laninfo_socket(main_io_service);
 
-deadline_timer update_timer(main_io_service);
-deadline_timer netstats_timer(main_io_service);
+high_resolution_timer update_timer(main_io_service);
+high_resolution_timer netstats_timer(main_io_service);
 
 void stopgameserver(int)
 {
     kicknonlocalclients(DISC_NONE);
 
-    boost::system::error_code error;
+    std::error_code error;
 
     serverhost_socket.cancel(error);
     if(error)
@@ -402,7 +403,7 @@ int curtime = 0, lastmillis = 0, elapsedtime = 0, totalmillis = 0;
 
 uint totalsecs = 0;
 
-void update_server(const boost::system::error_code & error);
+void update_server(const std::error_code & error);
 bool serverhost_service();
 
 static void update_time()
@@ -428,16 +429,16 @@ static void update_time()
 
 void sched_next_update()
 {
-    boost::posix_time::time_duration expires_from_now = update_timer.expires_from_now();
+    std::chrono::duration<long int, std::ratio<1l, 1000000000l> > expires_from_now = update_timer.expires_from_now();
 
-    if(expires_from_now.is_special() || expires_from_now.is_negative())
+    if(expires_from_now < std::chrono::duration<long int, std::ratio<1l, 1000000000l> >::zero())
     {
-        update_timer.expires_from_now(boost::posix_time::milliseconds(5));
+        update_timer.expires_from_now(std::chrono::duration<long int, std::milli>(5));
         update_timer.async_wait(update_server);
     }
 }
 
-void update_server(const boost::system::error_code & error = boost::system::error_code())
+void update_server(const std::error_code & error = std::error_code())
 {    
     if(nonlocalclients > 0) sched_next_update();
 
@@ -491,7 +492,7 @@ void serverhost_process_event(ENetEvent & event)
     }
 }
 
-void serverhost_receive(boost::system::error_code error,const size_t s);
+void serverhost_receive(std::error_code error,const size_t s);
 
 bool serverhost_service()
 {
@@ -509,7 +510,7 @@ bool serverhost_service()
     return true;
 }
 
-void serverhost_receive(boost::system::error_code error,const size_t s)
+void serverhost_receive(std::error_code error,const size_t s)
 {
     if(error) return;
     if(serverhost_service())
@@ -538,21 +539,21 @@ void serverinfo_input(int fd)
     server::serverinforeply(req, p);
 }
 
-void info_input_handler(boost::system::error_code ec, const size_t s)
+void info_input_handler(std::error_code ec, const size_t s)
 {
     if(ec) return;
     serverinfo_input(pongsock);
     info_socket.async_receive(null_buffers(), info_input_handler);
 }
 
-void laninfo_input_handler(boost::system::error_code ec, const size_t s)
+void laninfo_input_handler(std::error_code ec, const size_t s)
 {
     if(ec) return;
     serverinfo_input(lansock);
     laninfo_socket.async_receive(null_buffers(), laninfo_input_handler);
 }
 
-void netstats_handler(const boost::system::error_code & ec)
+void netstats_handler(const std::error_code & ec)
 {
     if(ec) return;
 
@@ -575,7 +576,7 @@ void netstats_handler(const boost::system::error_code & ec)
         tx_info_bytes = 0;
     }
 
-    netstats_timer.expires_from_now(boost::posix_time::minutes(1));
+    netstats_timer.expires_from_now(std::chrono::duration<int, std::ratio<60> >(1));
     netstats_timer.async_wait(netstats_handler);
 }
 
@@ -603,14 +604,14 @@ void rundedicatedserver()
 
     sched_next_update();
 
-    netstats_timer.expires_from_now(boost::posix_time::minutes(1));
+    netstats_timer.expires_from_now(std::chrono::duration<int, std::ratio<60> >(1));
     netstats_timer.async_wait(netstats_handler);
 
     try
     {
         main_io_service.run();
     }
-    catch(const boost::system::system_error & se)
+    catch(const std::system_error & se)
     {
         std::cerr<<se.what()<<std::endl;
         throw;

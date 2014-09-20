@@ -4,8 +4,6 @@
 #include "serverexec.hpp"
 #include "../hopmod.hpp"
 #include <fungu/net/http/response.hpp>
-#include <boost/bind.hpp>
-#include <boost/bind/protect.hpp>
 #include <fungu/script.hpp>
 
 using namespace fungu;
@@ -18,7 +16,7 @@ public:
       m_request(req),
       m_response(NULL)
     {
-        m_request.async_read_content(*this, boost::bind(&script_post::read_content_completed, this, _1));
+        m_request.async_read_content(*this, std::bind(&script_post::read_content_completed, this, std::placeholders::_1));
     }
     
     virtual ~script_post()
@@ -50,7 +48,7 @@ private:
         
         if(m_eval_result.length())
         {
-            m_response->async_send_body(m_eval_result.data(), m_eval_result.length(), boost::bind(&script_post::send_body_completed, this, _1));
+            m_response->async_send_body(m_eval_result.data(), m_eval_result.length(), std::bind(&script_post::send_body_completed, this, std::placeholders::_1));
         }
     }
     

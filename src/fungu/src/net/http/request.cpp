@@ -32,7 +32,7 @@ request * request::create(connection & conn, resource & handler_dispatcher)
 
 void request::destroy(request & req)
 {
-    req.m_connection.io_service().post(boost::bind(delete_request, &req));
+    req.m_connection.io_service().post(std::bind(delete_request, &req));
 }
 
 request::request(connection & conn, resource & root_resource)
@@ -46,7 +46,7 @@ request::request(connection & conn, resource & root_resource)
   m_transfer_encoding(IDENTITY),
   m_content_length(0)
 {
-    m_connection.async_read_header(boost::bind(&request::process_header, this, _1, _2, _3));
+    m_connection.async_read_header(std::bind(&request::process_header, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 }
 
 request::~request()

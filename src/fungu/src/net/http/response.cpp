@@ -101,7 +101,7 @@ void response::send_header()
     m_sent_header = false;
 #endif
     
-    m_connection.async_send(m_header, boost::bind(&response::send_header_complete, this, _1));
+    m_connection.async_send(m_header, std::bind(&response::send_header_complete, this, std::placeholders::_1));
 }
 
 void response::send_header_complete(const connection::error &)
@@ -123,7 +123,7 @@ void response::send_body(const char * content, std::size_t content_length)
 {
     char * content_copy = new char[content_length];
     memcpy(content_copy, content, content_length);
-    async_send_body(content_copy, content_length, boost::bind(&response::sent_body, this, content_copy, _1));
+    async_send_body(content_copy, content_length, std::bind(&response::sent_body, this, content_copy, std::placeholders::_1));
 }
 
 void send_response(request & req, status status_code, const char * content)

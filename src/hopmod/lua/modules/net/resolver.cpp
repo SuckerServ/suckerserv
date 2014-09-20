@@ -5,17 +5,14 @@
 #include "../../to.hpp"
 #include "../../create_object.hpp"
 #include "../../error_handler.hpp"
-#include <boost/asio.hpp>
-using namespace boost::asio;
-#include <boost/system/error_code.hpp>
-#include <boost/bind.hpp>
-#include <boost/bind/protect.hpp>
+#include <asio.hpp>
+using namespace asio;
 
 namespace lua{
 
-static void async_resolve_handler(boost::shared_ptr<ip::tcp::resolver>,
+static void async_resolve_handler(std::shared_ptr<ip::tcp::resolver>,
     lua_State * L, lua::weak_ref callback, 
-    const boost::system::error_code & ec, ip::tcp::resolver::iterator iterator)
+    const std::error_code & ec, ip::tcp::resolver::iterator iterator)
 {
     if(callback.is_expired()) return;
     
@@ -48,7 +45,7 @@ static void async_resolve_handler(boost::shared_ptr<ip::tcp::resolver>,
 
 int async_resolve(lua_State * L)
 {
-    boost::shared_ptr<ip::tcp::resolver> resolver(new ip::tcp::resolver(get_main_io_service(L)));
+    std::shared_ptr<ip::tcp::resolver> resolver(new ip::tcp::resolver(get_main_io_service(L)));
     
     const char * hostname = luaL_checkstring(L, 1);
     luaL_checktype(L, 2, LUA_TFUNCTION);
@@ -56,8 +53,8 @@ int async_resolve(lua_State * L)
     lua::weak_ref callback_ref = lua::weak_ref::create(L);
     
     ip::tcp::resolver::query query(hostname, "");
-    resolver->async_resolve(query, boost::bind(async_resolve_handler, resolver, 
-        L, callback_ref, _1, _2));
+    resolver->async_resolve(query, std::bind(async_resolve_handler, resolver, 
+        L, callback_ref, std::placeholders::_1, std::placeholders::_2));
     
     return 0;
 }

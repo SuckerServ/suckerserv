@@ -15,7 +15,7 @@
 #include "info.hpp"
 #include "status.hpp"
 #include <map>
-#include <boost/function.hpp>
+#include <functional>
 
 struct ltstr
 {
@@ -108,7 +108,7 @@ private:
     std::size_t m_content_length;
     content_type m_content_type;
     
-    boost::function0<void> m_finished_callback;
+    std::function<void()> m_finished_callback;
 };
 
 } //namespace server

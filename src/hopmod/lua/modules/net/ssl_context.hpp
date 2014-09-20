@@ -2,15 +2,14 @@
 #define HOPMOD_LUA_NET_SSL_CONTEXT_HPP
 
 #include <lua.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/asio/ssl.hpp>
+#include <asio/ssl.hpp>
 
 namespace lua{
 
 class ssl_context
 {
 public:
-    typedef boost::shared_ptr<boost::asio::ssl::context> target_type;
+    typedef std::shared_ptr<asio::ssl::context> target_type;
     static const char * CLASS_NAME;
     static int register_class(lua_State * L);
     static int create_object(lua_State * L);

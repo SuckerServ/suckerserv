@@ -97,7 +97,6 @@ static void load_lua_modules()
 
     static const luaL_Reg loadedlibs[] = {
        	{"net", lua::module::open_net2},
-       	{"timer", lua::module::open_timer},
        	{"crypto", lua::module::open_crypto},
        	{"cubescript", lua::module::open_cubescript},
         {"filesystem", lua::module::open_filesystem},

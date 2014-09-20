@@ -6,11 +6,8 @@
 #include "../../create_object.hpp"
 #include "../../pcall.hpp"
 #include "../../error_handler.hpp"
-#include <boost/asio.hpp>
-using namespace boost::asio;
-#include <boost/system/error_code.hpp>
-#include <boost/bind.hpp>
-#include <boost/bind/protect.hpp>
+#include <asio.hpp>
+using namespace asio;
 
 namespace lua{
 
@@ -33,10 +30,10 @@ int file_stream::create_object(lua_State * L)
     int fd = luaL_checkint(L, 1);
     try
     {
-        lua::create_object<file_stream>(L, boost::shared_ptr<posix::stream_descriptor>(
+        lua::create_object<file_stream>(L, std::shared_ptr<posix::stream_descriptor>(
             new posix::stream_descriptor(get_main_io_service(L), fd)));
     }
-    catch(const boost::system::system_error & error)
+    catch(const std::system_error & error)
     {
         return luaL_error(L, "%s", error.code().message().c_str());
     }
@@ -46,14 +43,14 @@ int file_stream::create_object(lua_State * L)
 int file_stream::__gc(lua_State * L)
 {
     file_stream::target_type self = *lua::to<file_stream>(L, 1);
-    boost::system::error_code ec;
+    std::error_code ec;
     self->close(ec);
     self.~target_type();
     return 0;
 }
 
 static void async_read_some_handler(lua_State * L, lua::weak_ref callback, char * char_buffer, 
-    const boost::system::error_code & ec, std::size_t bytes_transferred)
+    const std::error_code & ec, std::size_t bytes_transferred)
 {
     if(callback.is_expired())
     {   
@@ -111,7 +108,7 @@ int file_stream::async_read_some(lua_State * L)
     }
     
     self->async_read_some(buffer(char_buffer, max_length), 
-        boost::bind(async_read_some_handler, L, callback_ref, char_buffer, _1, _2));
+        std::bind(async_read_some_handler, L, callback_ref, char_buffer, std::placeholders::_1, std::placeholders::_2));
     
     return 0;
 }
@@ -119,7 +116,7 @@ int file_stream::async_read_some(lua_State * L)
 int file_stream::cancel(lua_State * L)
 {
     target_type self = *lua::to<file_stream>(L, 1);
-    boost::system::error_code ec;
+    std::error_code ec;
     self->cancel(ec);
     if(ec) return luaL_error(L, ec.message().c_str());
     return 0;
@@ -128,7 +125,7 @@ int file_stream::cancel(lua_State * L)
 int file_stream::close(lua_State * L)
 {
     target_type self = *lua::to<file_stream>(L, 1);
-    boost::system::error_code ec;
+    std::error_code ec;
     self->close(ec);
     if(ec) return luaL_error(L, ec.message().c_str());
     return 0;

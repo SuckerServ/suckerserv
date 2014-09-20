@@ -1,7 +1,7 @@
 #ifndef HOPMOD_EXTAPI_HPP
 #define HOPMOD_EXTAPI_HPP
 
-#include "utils.hpp"
+#include "utils/time.hpp"
 
 extern "C"{
 #include <lua.h>

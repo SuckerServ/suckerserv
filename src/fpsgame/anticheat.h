@@ -55,7 +55,7 @@ void cheat(int cn, int cheat, int info1, const char *info2)
         }
     }
     
-    event_cheat(event_listeners(), boost::make_tuple(cn, cheat, info1, info2));
+    event_cheat(event_listeners(), std::make_tuple(cn, cheat, info1, info2));
 
 }
     

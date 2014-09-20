@@ -56,7 +56,7 @@ namespace aiman
                 
                 convert2utf8 oldteamutf8(oldteam);
                 convert2utf8 newteamutf8(bot->team);
-                event_reteam(event_listeners(), boost::make_tuple(bot->clientnum, oldteamutf8.str(), newteamutf8.str()));
+                event_reteam(event_listeners(), std::make_tuple(bot->clientnum, oldteamutf8.str(), newteamutf8.str()));
             }
             else teams.remove(0, 1);
         }
@@ -133,7 +133,7 @@ namespace aiman
         ci->ac.reset(ci->clientnum);
         dorefresh = true;
         
-        event_connect(event_listeners(), boost::make_tuple(ci->clientnum, false));
+        event_connect(event_listeners(), std::make_tuple(ci->clientnum, false));
         
 		return ci;
 	}
@@ -144,8 +144,8 @@ namespace aiman
         if(!bots.inrange(cn)) return;
         if(smode) smode->leavegame(ci, true);
         sendf(-1, 1, "ri2", N_CDIS, ci->clientnum);
-        event_botleft(event_listeners(), boost::make_tuple(ci->clientnum));
-        event_disconnect(event_listeners(), boost::make_tuple(ci->clientnum, ""));
+        event_botleft(event_listeners(), std::make_tuple(ci->clientnum));
+        event_disconnect(event_listeners(), std::make_tuple(ci->clientnum, ""));
         clientinfo *owner = (clientinfo *)getclientinfo(ci->ownernum);
         if(owner) owner->bots.removeobj(ci);
         clients.removeobj(ci);
@@ -247,7 +247,7 @@ namespace aiman
         if(!boti) sendf(ci->clientnum, 1, "ris", N_SERVMSG, "failed to create or assign bot");
         else
         {
-            event_addbot(event_listeners(), boost::make_tuple(ci->clientnum, skill, boti->clientnum));
+            event_addbot(event_listeners(), std::make_tuple(ci->clientnum, skill, boti->clientnum));
         }
 	}
     
@@ -257,7 +257,7 @@ namespace aiman
         if(!deleteai()) sendf(ci->clientnum, 1, "ris", N_SERVMSG, "failed to remove any bots");
         else
         {
-            event_delbot(event_listeners(), boost::make_tuple(ci->clientnum));
+            event_delbot(event_listeners(), std::make_tuple(ci->clientnum));
         }
 	}
 

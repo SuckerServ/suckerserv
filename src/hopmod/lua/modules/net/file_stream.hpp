@@ -2,14 +2,14 @@
 #define HOPMOD_LUA_NET_FILE_STREAM_HPP
 
 #include <lua.hpp>
-#include <boost/asio.hpp>
+#include <asio.hpp>
 
 namespace lua{
 
 class file_stream
 {
 public:
-    typedef boost::shared_ptr<boost::asio::posix::stream_descriptor> target_type;
+    typedef std::shared_ptr<asio::posix::stream_descriptor> target_type;
     static const char * CLASS_NAME;
     static int register_class(lua_State * L);
     static int create_object(lua_State * L);

@@ -11,7 +11,7 @@
 #include "ssl_tcp_stream.hpp"
 #endif
 
-boost::asio::io_service & get_main_io_service();
+asio::io_service & get_main_io_service();
 lua::event_environment & event_listeners();
 
 void log_error(lua_State * L, const char * event_name)
@@ -20,7 +20,7 @@ void log_error(lua_State * L, const char * event_name)
     lua_pop(L, 1);
 }
 
-boost::asio::io_service & get_main_io_service(lua_State *)
+asio::io_service & get_main_io_service(lua_State *)
 {
     return get_main_io_service();
 }

@@ -11,11 +11,15 @@ set(SOURCES
     response.cpp
     status.cpp)
 
-include_directories(${FUNGU_INCLUDE_DIRS} ${BOOST_INCLUDE_DIR})
+include_directories(${FUNGU_INCLUDE_DIRS} ${ASIO_INCLUDE_DIRS})
+
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 IF(NOT CMAKE_BUILD_TYPE STREQUAL "DEBUG")
     add_definitions( -O3)
 ENDIF(NOT CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+
+add_definitions( -DASIO_STANDALONE)
 
 add_library(${FUNGU_HTTP_LIBRARY} STATIC ${SOURCES})
 
@@ -23,7 +27,7 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     target_link_libraries(${FUNGU_HTTP_LIBRARY} -pthread)
 endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-target_link_libraries(${FUNGU_HTTP_LIBRARY} ${FUNGU_STRING_LIBRARY} ${BOOST_SYSTEM_LIBRARY})
+target_link_libraries(${FUNGU_HTTP_LIBRARY} ${FUNGU_STRING_LIBRARY})
 
 install(TARGETS 
             ${FUNGU_HTTP_LIBRARY}

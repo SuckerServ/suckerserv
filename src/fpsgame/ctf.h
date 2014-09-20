@@ -247,7 +247,7 @@ struct ctfclientmode : clientmode
             flag &f = flags[i];
             spawnflag(i);
             sendf(-1, 1, "ri6", N_RESETFLAG, i, ++f.version, f.spawnindex, 0, 0);
-            event_resetflag(event_listeners(), boost::make_tuple(ctfflagteam(f.team)));
+            event_resetflag(event_listeners(), std::make_tuple(ctfflagteam(f.team)));
         }
     }
 
@@ -289,13 +289,13 @@ struct ctfclientmode : clientmode
             {
                 returnflag(i);
                 sendf(-1, 1, "ri4", N_RETURNFLAG, ci->clientnum, i, ++f.version);
-                event_returnflag(event_listeners(), boost::make_tuple(ci->clientnum, ctfflagteam(f.team)));
+                event_returnflag(event_listeners(), std::make_tuple(ci->clientnum, ctfflagteam(f.team)));
             }
             else
             {
                 ivec o(vec(ci->state.o).mul(DMF));
                 sendf(-1, 1, "ri7", N_DROPFLAG, ci->clientnum, i, ++f.version, o.x, o.y, o.z);
-                event_dropflag(event_listeners(), boost::make_tuple(ci->clientnum, ctfflagteam(f.team)));
+                event_dropflag(event_listeners(), std::make_tuple(ci->clientnum, ctfflagteam(f.team)));
                 dropflag(i, o.tovec().div(DMF), lastmillis, dropper ? dropper->clientnum : ci->clientnum, dropper && dropper!=ci);
             }
         }
@@ -347,7 +347,7 @@ struct ctfclientmode : clientmode
         int team = ctfteamflag(ci->team), score = addscore(team, 1);
         if(m_hold) spawnflag(goal);
         sendf(-1, 1, "rii9", N_SCOREFLAG, ci->clientnum, relay, relay >= 0 ? ++flags[relay].version : -1, goal, ++flags[goal].version, flags[goal].spawnindex, team, score, ci->state.flags);
-        event_scoreflag(event_listeners(), boost::make_tuple(ci->clientnum, ci->team, score));
+        event_scoreflag(event_listeners(), std::make_tuple(ci->clientnum, ci->team, score));
         if(score >= FLAGLIMIT) startintermission();
     }
 
@@ -362,7 +362,7 @@ struct ctfclientmode : clientmode
             loopvj(flags) if(flags[j].owner==ci->clientnum) return;
             ownflag(i, ci->clientnum, lastmillis);
             sendf(-1, 1, "ri4", N_TAKEFLAG, ci->clientnum, i, ++f.version);
-            event_takeflag(event_listeners(), boost::make_tuple(ci->clientnum, ctfflagteam(f.team)));
+            event_takeflag(event_listeners(), std::make_tuple(ci->clientnum, ctfflagteam(f.team)));
         }
         else if(m_protect)
         {
@@ -372,7 +372,7 @@ struct ctfclientmode : clientmode
         {
             returnflag(i);
             sendf(-1, 1, "ri4", N_RETURNFLAG, ci->clientnum, i, ++f.version);
-            event_returnflag(event_listeners(), boost::make_tuple(ci->clientnum, ctfflagteam(f.team)));
+            event_returnflag(event_listeners(), std::make_tuple(ci->clientnum, ctfflagteam(f.team)));
         }
         else
         {
@@ -391,7 +391,7 @@ struct ctfclientmode : clientmode
                 returnflag(i, m_protect ? lastmillis : 0);
                 if(m_hold) spawnflag(i);
                 sendf(-1, 1, "ri6", N_RESETFLAG, i, ++f.version, f.spawnindex, m_hold ? 0 : f.team, m_hold ? 0 : addscore(f.team, m_protect ? -1 : 0));
-                event_resetflag(event_listeners(), boost::make_tuple(ctfflagteam(f.team)));
+                event_resetflag(event_listeners(), std::make_tuple(ctfflagteam(f.team)));
             }
             if(f.invistime && lastmillis - f.invistime >= INVISFLAGTIME)
             {
@@ -406,7 +406,7 @@ struct ctfclientmode : clientmode
                 {
                     spawnflag(i);
                     sendf(-1, 1, "ri6", N_RESETFLAG, i, ++f.version, f.spawnindex, 0, 0);
-                    event_resetflag(event_listeners(), boost::make_tuple(ctfflagteam(f.team)));
+                    event_resetflag(event_listeners(), std::make_tuple(ctfflagteam(f.team)));
                 }
             }
         }

@@ -10,7 +10,7 @@
 namespace fungu{
 namespace http{
     
-static boost::unordered_map<std::string, standard_headers> header_fields;
+static std::unordered_map<std::string, standard_headers> header_fields;
     
 unsigned short default_port()
 {
@@ -19,7 +19,7 @@ unsigned short default_port()
 
 standard_headers resolve_header_field(const char * name)
 {
-    boost::unordered_map<std::string, standard_headers>::const_iterator it = header_fields.find(name);
+    std::unordered_map<std::string, standard_headers>::const_iterator it = header_fields.find(name);
     if(it == header_fields.end()) return UNKNOWN_HEADER;
     return it->second;
 }

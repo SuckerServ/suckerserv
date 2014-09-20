@@ -9,10 +9,7 @@
 #define FUNGU_NET_HTTP_CONNECTION_HPP
 
 #include "../../streams.hpp"
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
-#include <boost/bind/protect.hpp>
-#include <boost/bind/make_adaptable.hpp>
+#include <asio.hpp>
 #include <queue>
 #include <cstdio>
 
@@ -45,43 +42,43 @@ public:
         std::string m_message;
     };
     
-    connection(boost::asio::ip::tcp::socket &);
+    connection(asio::ip::tcp::socket &);
 
     template<typename ReadHandler>
     void async_read_header(ReadHandler handler)
     {
-        boost::asio::socket_base::receive_buffer_size option;
+        asio::socket_base::receive_buffer_size option;
         m_socket.get_option(option);
         m_receive_buffer_size = option.value();
         
-        boost::asio::async_read_until(m_socket, m_read_buffer, "\r\n\r\n", bind_io_handler(&connection::read_header_complete<ReadHandler>, handler));
+        asio::async_read_until(m_socket, m_read_buffer, "\r\n\r\n", bind_io_handler(&connection::read_header_complete<ReadHandler>, handler));
     }
     
     template<typename CompletionHandler>
     void async_read_body(std::size_t content_length, stream::sink & output, CompletionHandler handler)
     {
         consume_header();
-        boost::system::error_code noerror;
-        read_body_complete(0, content_length, output, boost::make_adaptable<void, const error &>(handler), noerror, 0);
+        std::error_code noerror;
+        read_body_complete(0, content_length, output, std::function<void(const error &)>(handler), noerror, 0);
     }
     
     template<typename CompletionHandler>
     void async_read_chunked_body(stream::sink & output, CompletionHandler handler)
     {
         consume_header();
-        _async_read_chunked_body(output, boost::make_adaptable<void, const error &>(handler));
+       _async_read_chunked_body(output, std::function<void(const error &)>(handler));
     }
     
     template<typename CompletionHandler>
     void async_send(const std::string & data, CompletionHandler handler)
     {
-        boost::asio::async_write(m_socket, boost::asio::buffer(data), boost::asio::transfer_at_least(data.length()), bind_io_handler(&connection::send_complete<CompletionHandler>, handler));
+        asio::async_write(m_socket, asio::buffer(data), asio::transfer_at_least(data.length()), bind_io_handler(&connection::send_complete<CompletionHandler>, handler));
     }
     
     template<typename CompletionHandler>
     void async_send(const void * data, std::size_t datalen, CompletionHandler handler)
     {
-        boost::asio::async_write(m_socket, boost::asio::buffer(data, datalen), boost::asio::transfer_at_least(datalen), bind_io_handler(&connection::send_complete<CompletionHandler>, handler));
+        asio::async_write(m_socket, asio::buffer(data, datalen), asio::transfer_at_least(datalen), bind_io_handler(&connection::send_complete<CompletionHandler>, handler));
     }
     
     template<typename CompletionHandler>
@@ -92,10 +89,10 @@ public:
         
         m_sent_chunk_headers.push(buffer);
         
-        std::vector<boost::asio::const_buffer> chunk;
-        chunk.push_back(boost::asio::buffer(m_sent_chunk_headers.back()));
-        if(datalen) chunk.push_back(boost::asio::buffer(data, datalen));        
-        chunk.push_back(boost::asio::buffer("\r\n", 2));
+        std::vector<asio::const_buffer> chunk;
+        chunk.push_back(asio::buffer(m_sent_chunk_headers.back()));
+        if(datalen) chunk.push_back(asio::buffer(data, datalen));        
+        chunk.push_back(asio::buffer("\r\n", 2));
         
         m_socket.async_send(chunk, bind_io_handler(&connection::send_chunk_complete<CompletionHandler>, handler));
     }
@@ -106,7 +103,7 @@ public:
     std::string remote_ip_string()const;
     unsigned long remote_ip_v4_ulong()const;
     
-    boost::asio::io_service & io_service()
+    asio::io_service & io_service()
     {
         return m_socket.get_io_service();
     }
@@ -127,7 +124,7 @@ private:
     public:
         io_handler_binder(MemberFunction ih, connection * c, CompletionHandler eh)
          :m_this(c), m_internal_handler(ih), m_external_handler(eh){}
-        void operator()(const boost::system::error_code & error_code, const std::size_t bytes_transferred)
+        void operator()(const std::error_code & error_code, const std::size_t bytes_transferred)
         {
             (m_this->*m_internal_handler)(m_external_handler, error_code, bytes_transferred);
         }
@@ -144,7 +141,7 @@ private:
     }
     
     template<typename ReadHandler>
-    void read_header_complete(ReadHandler handler, const boost::system::error_code error_code, const std::size_t readSize)
+    void read_header_complete(ReadHandler handler, const std::error_code error_code, const std::size_t readSize)
     {
         m_read_error = error_code;
         
@@ -156,25 +153,25 @@ private:
         }
         else
         {            
-            handler(boost::asio::buffer_cast<const char *>(*m_read_buffer.data().begin()), readSize, error());
+            handler(asio::buffer_cast<const char *>(*m_read_buffer.data().begin()), readSize, error());
         }
         
         consume_header();
     }
     
     template<typename CompletionHandler>
-    void read_body_complete(std::size_t completed, std::size_t contentLength, stream::sink & output, CompletionHandler finishedHandler, const boost::system::error_code error_code, const std::size_t readSize)
+    void read_body_complete(std::size_t completed, std::size_t contentLength, stream::sink & output, CompletionHandler finishedHandler, const std::error_code error_code, const std::size_t readSize)
     {
         if(error_code)
         {
             m_read_error = error_code;
-            m_socket.get_io_service().post(boost::bind(finishedHandler, error(error::NETWORK, error_code.message())));
+            m_socket.get_io_service().post(std::bind(finishedHandler, error(error::NETWORK, error_code.message())));
             return;
         }
         
         if(readSize)
         {
-            output.write(boost::asio::buffer_cast<const char *>(*m_read_buffer.data().begin()), readSize);
+            output.write(asio::buffer_cast<const char *>(*m_read_buffer.data().begin()), readSize);
             m_read_buffer.consume(readSize);
         }
         else if(m_read_buffer.size()) //read what was left over from when the header was read
@@ -188,13 +185,13 @@ private:
         std::size_t remaining = contentLength - completed;
         if(!remaining)
         {
-            m_socket.get_io_service().post(boost::bind(finishedHandler, error()));
+            m_socket.get_io_service().post(std::bind(finishedHandler, error()));
             return;
         }
 
-        boost::asio::async_read(m_socket, m_read_buffer, 
-            boost::asio::transfer_at_least(std::min(remaining, m_receive_buffer_size)), 
-            boost::bind(&connection::read_body_complete<CompletionHandler>, this, completed, contentLength, boost::ref(output), finishedHandler, _1, _2));
+        asio::async_read(m_socket, m_read_buffer, 
+            asio::transfer_at_least(std::min(remaining, m_receive_buffer_size)), 
+            std::bind(&connection::read_body_complete<CompletionHandler>, this, completed, contentLength, std::ref(output), finishedHandler, std::placeholders::_1, std::placeholders::_2));
     }
     
     static bool parse_chunk_size(const char *, const char *, std::size_t *);
@@ -202,11 +199,11 @@ private:
     template<typename CompletionHandler>
     void _async_read_chunked_body(stream::sink & output, CompletionHandler handler)
     {
-        boost::asio::async_read_until(m_socket, m_read_buffer, "\r\n", boost::bind(&connection::read_chunk_header<CompletionHandler>, this, &output, handler, _1, _2));
+        asio::async_read_until(m_socket, m_read_buffer, "\r\n", std::bind(&connection::read_chunk_header<CompletionHandler>, this, &output, handler, std::placeholders::_1, std::placeholders::_2));
     }
     
     template<typename CompletionHandler>
-    void read_chunk_header(stream::sink * output, CompletionHandler handler, const boost::system::error_code & error_code, const std::size_t readSize)
+    void read_chunk_header(stream::sink * output, CompletionHandler handler, const std::error_code & error_code, const std::size_t readSize)
     {
         if(error_code)
         {
@@ -215,7 +212,7 @@ private:
             return;
         }
         
-        const char * line = boost::asio::buffer_cast<const char *>(*m_read_buffer.data().begin());
+        const char * line = asio::buffer_cast<const char *>(*m_read_buffer.data().begin());
         std::size_t chunk_size;
         
         if(!parse_chunk_size(line, line + readSize, &chunk_size))
@@ -228,18 +225,18 @@ private:
         
         if(chunk_size)
         {
-            boost::system::error_code noerror;
+            std::error_code noerror;
             read_chunk(output, handler, chunk_size, noerror, 0); 
         }
         else
         {
-            boost::asio::async_read_until(m_socket, m_read_buffer, "\r\n\r\n", 
-                boost::bind(&connection::read_trailer<CompletionHandler>, this, handler, _1, _2));
+            asio::async_read_until(m_socket, m_read_buffer, "\r\n\r\n", 
+                std::bind(&connection::read_trailer<CompletionHandler>, this, handler, std::placeholders::_1, std::placeholders::_2));
         }
     }
     
     template<typename CompletionHandler>
-    void read_chunk(stream::sink * output, CompletionHandler handler, std::size_t remaining, const boost::system::error_code & error_code, const std::size_t readSize)
+    void read_chunk(stream::sink * output, CompletionHandler handler, std::size_t remaining, const std::error_code & error_code, const std::size_t readSize)
     {
         if(error_code)
         {
@@ -250,7 +247,7 @@ private:
         
         if(readSize)
         {
-            const char * data = boost::asio::buffer_cast<const char *>(*m_read_buffer.data().begin());
+            const char * data = asio::buffer_cast<const char *>(*m_read_buffer.data().begin());
             output->write(data, readSize);
             m_read_buffer.consume(readSize);
         }
@@ -259,19 +256,19 @@ private:
         
         if(remaining)
         {
-            boost::asio::async_read(m_socket, m_read_buffer,
-                boost::asio::transfer_at_least(std::min(remaining, m_receive_buffer_size)),
-                boost::bind(&connection::read_chunk<CompletionHandler>, this, output, handler, remaining, _1, _2));
+            asio::async_read(m_socket, m_read_buffer,
+                asio::transfer_at_least(std::min(remaining, m_receive_buffer_size)),
+                std::bind(&connection::read_chunk<CompletionHandler>, this, output, handler, remaining, std::placeholders::_1, std::placeholders::_2));
         }
         else
         {
-            boost::asio::async_read_until(m_socket, m_read_buffer, "\r\n", 
-                boost::bind(&connection::read_end_chunk_data<CompletionHandler>, this, output, handler, _1, _2));
+            asio::async_read_until(m_socket, m_read_buffer, "\r\n", 
+                std::bind(&connection::read_end_chunk_data<CompletionHandler>, this, output, handler, std::placeholders::_1, std::placeholders::_2));
         }
     }
     
     template<typename CompletionHandler>
-    void read_end_chunk_data(stream::sink * output, CompletionHandler handler, const boost::system::error_code & error_code, const std::size_t readSize)
+    void read_end_chunk_data(stream::sink * output, CompletionHandler handler, const std::error_code & error_code, const std::size_t readSize)
     {
         if(error_code)
         {
@@ -284,7 +281,7 @@ private:
     }
     
     template<typename CompletionHandler>
-    void read_trailer(CompletionHandler handler, const boost::system::error_code & error_code, const std::size_t readSize)
+    void read_trailer(CompletionHandler handler, const std::error_code & error_code, const std::size_t readSize)
     {
         if(error_code)
         {
@@ -299,7 +296,7 @@ private:
     }
     
     template<typename CompletionHandler>
-    void send_complete(CompletionHandler handler, const boost::system::error_code & error_code, std::size_t bytes_sent)
+    void send_complete(CompletionHandler handler, const std::error_code & error_code, std::size_t bytes_sent)
     {
         if(error_code)
         {
@@ -312,7 +309,7 @@ private:
     }
     
     template<typename CompletionHandler>
-    void send_chunk_complete(CompletionHandler handler, const boost::system::error_code & error_code, std::size_t bytes_sent)
+    void send_chunk_complete(CompletionHandler handler, const std::error_code & error_code, std::size_t bytes_sent)
     {
         m_sent_chunk_headers.pop();
         
@@ -332,11 +329,11 @@ private:
         m_unconsumed_header_size = 0;
     }
     
-    boost::asio::streambuf m_read_buffer;
+    asio::streambuf m_read_buffer;
     std::size_t m_unconsumed_header_size;
-    boost::system::error_code m_read_error;
-    boost::system::error_code m_send_error;
-    boost::asio::ip::tcp::socket & m_socket;
+    std::error_code m_read_error;
+    std::error_code m_send_error;
+    asio::ip::tcp::socket & m_socket;
     std::size_t m_receive_buffer_size;
     std::size_t m_send_buffer_size;
     
@@ -344,11 +341,11 @@ private:
 };
 
 namespace server{
-class client_connection:public boost::asio::ip::tcp::socket, public connection
+class client_connection:public asio::ip::tcp::socket, public connection
 {
 public:
-    client_connection(boost::asio::io_service & service)
-     :boost::asio::ip::tcp::socket(service), connection(*static_cast<boost::asio::ip::tcp::socket *>(this)){}
+    client_connection(asio::io_service & service)
+     :asio::ip::tcp::socket(service), connection(*static_cast<asio::ip::tcp::socket *>(this)){}
 };
 } //namespace server
 

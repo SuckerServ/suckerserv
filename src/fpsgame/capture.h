@@ -873,7 +873,7 @@ ICOMMAND(insidebases, "", (),
         cs.total += n;
         sendf(-1, 1, "riisi", N_BASESCORE, base, team, cs.total);
         convert2utf8 utf8team(team);
-        event_scoreupdate(event_listeners(), boost::make_tuple(utf8team.str(), cs.total));
+        event_scoreupdate(event_listeners(), std::make_tuple(utf8team.str(), cs.total));
     }
 
     void regenowners(baseinfo &b, int ticks)
@@ -1017,7 +1017,7 @@ ICOMMAND(insidebases, "", (),
         findscore(lastteam).total = 10000;
         sendf(-1, 1, "riisi", N_BASESCORE, -1, lastteam, 10000);
         convert2utf8 utf8lastteam(lastteam);
-        event_scoreupdate(event_listeners(), boost::make_tuple(utf8lastteam.str(), 10000));
+        event_scoreupdate(event_listeners(), std::make_tuple(utf8lastteam.str(), 10000));
         startintermission();
     }
 

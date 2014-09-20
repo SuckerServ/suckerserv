@@ -2,14 +2,14 @@
 #define HOPMOD_LUA_NET_TCP_ACCEPTOR_HPP
 
 #include <lua.hpp>
-#include <boost/asio.hpp>
+#include <asio.hpp>
 
 namespace lua{
 
 class tcp_acceptor
 {
 public:
-    typedef boost::shared_ptr<boost::asio::ip::tcp::acceptor> target_type;
+    typedef std::shared_ptr<asio::ip::tcp::acceptor> target_type;
     static const char * CLASS_NAME;
     static int register_class(lua_State * L);
     static int create_object(lua_State * L);

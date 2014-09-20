@@ -1,12 +1,12 @@
 #ifndef HOPMOD_PUSH_FUNCTION_HPP
 #define HOPMOD_PUSH_FUNCTION_HPP
 
-#include <boost/type_traits.hpp>
-#include <boost/type_traits/remove_pointer.hpp>
-#include <boost/tuple/tuple.hpp>
+#include <tuple>
 #include <lua.hpp>
 #include <string>
 #include <vector>
+#include "utils/function_traits.hpp"
+#include "utils/tuple.hpp"
 
 namespace lua{
 
@@ -38,14 +38,13 @@ void push(lua_State * L, const std::vector<T> & value)
     }
 }
 
-inline void push(lua_State *, boost::tuples::null_type){}
-inline void push(lua_State *, boost::tuple<>){}
+inline void push(lua_State *, std::tuple<>){}
 
 template<typename Tuple>
 void push(lua_State * L, const Tuple & value)
 {
-    push(L, value.get_head());
-    push(L, value.get_tail());
+    push(L, std::get<0>(value));
+    push(L, utils::get_tail(value));
 }
 
 int           to(lua_State * L, int index, return_tag<int>);
@@ -83,7 +82,7 @@ int free_func_wrapper(lua_State * L, wrapper_return_tag<typename FunctionTraits:
     FunctionPointerType function = 
         reinterpret_cast<FunctionPointerType>(
             lua_touserdata(L, lua_upvalueindex(1)));
-    push(L, function(to(L, 1, return_tag<typename FunctionTraits::arg1_type>())));
+    push(L, function(to(L, 1, return_tag<typename FunctionTraits::template arg<0>::type>())));
     return 1;
 }
 
@@ -93,7 +92,7 @@ int free_func_wrapper(lua_State * L, wrapper_return_tag<void, FunctionTraits>, a
     FunctionPointerType function = 
         reinterpret_cast<FunctionPointerType>(
             lua_touserdata(L, lua_upvalueindex(1)));
-    function(to(L, 1, return_tag<typename FunctionTraits::arg1_type>()));
+    function(to(L, 1, return_tag<typename FunctionTraits::template arg<0>::type>()));
     return 1;
 }
 
@@ -104,8 +103,8 @@ int free_func_wrapper(lua_State * L, wrapper_return_tag<typename FunctionTraits:
         reinterpret_cast<FunctionPointerType>(
             lua_touserdata(L, lua_upvalueindex(1)));
     push(L, function(
-        to(L, 1, return_tag<typename FunctionTraits::arg1_type>()),
-        to(L, 2, return_tag<typename FunctionTraits::arg2_type>())));
+        to(L, 1, return_tag<typename FunctionTraits::template arg<0>::type>()),
+        to(L, 2, return_tag<typename FunctionTraits::template arg<1>::type>())));
     return 1;
 }
 
@@ -116,8 +115,8 @@ int free_func_wrapper(lua_State * L, wrapper_return_tag<void, FunctionTraits>, a
         reinterpret_cast<FunctionPointerType>(
             lua_touserdata(L, lua_upvalueindex(1)));
     function(
-        to(L, 1, return_tag<typename FunctionTraits::arg1_type>()),
-        to(L, 2, return_tag<typename FunctionTraits::arg2_type>()));
+        to(L, 1, return_tag<typename FunctionTraits::template arg<0>::type>()),
+        to(L, 2, return_tag<typename FunctionTraits::template arg<1>::type>()));
     return 1;
 }
 
@@ -128,9 +127,9 @@ int free_func_wrapper(lua_State * L, wrapper_return_tag<typename FunctionTraits:
         reinterpret_cast<FunctionPointerType>(
             lua_touserdata(L, lua_upvalueindex(1)));
     push(L, function(
-        to(L, 1, return_tag<typename FunctionTraits::arg1_type>()),
-        to(L, 2, return_tag<typename FunctionTraits::arg2_type>()),
-        to(L, 3, return_tag<typename FunctionTraits::arg3_type>())));
+        to(L, 1, return_tag<typename FunctionTraits::template arg<0>::type>()),
+        to(L, 2, return_tag<typename FunctionTraits::template arg<1>::type>()),
+        to(L, 3, return_tag<typename FunctionTraits::template arg<2>::type>())));
     return 1;
 }
 
@@ -141,9 +140,9 @@ int free_func_wrapper(lua_State * L, wrapper_return_tag<void, FunctionTraits>, a
         reinterpret_cast<FunctionPointerType>(
             lua_touserdata(L, lua_upvalueindex(1)));
     function(
-        to(L, 1, return_tag<typename FunctionTraits::arg1_type>()),
-        to(L, 2, return_tag<typename FunctionTraits::arg2_type>()),
-        to(L, 3, return_tag<typename FunctionTraits::arg3_type>()));
+        to(L, 1, return_tag<typename FunctionTraits::template arg<0>::type>()),
+        to(L, 2, return_tag<typename FunctionTraits::template arg<1>::type>()),
+        to(L, 3, return_tag<typename FunctionTraits::template arg<2>::type>()));
     return 1;
 }
 
@@ -154,10 +153,10 @@ int free_func_wrapper(lua_State * L, wrapper_return_tag<typename FunctionTraits:
         reinterpret_cast<FunctionPointerType>(
             lua_touserdata(L, lua_upvalueindex(1)));
     push(L, function(
-        to(L, 1, return_tag<typename FunctionTraits::arg1_type>()),
-        to(L, 2, return_tag<typename FunctionTraits::arg2_type>()),
-        to(L, 3, return_tag<typename FunctionTraits::arg3_type>()),
-        to(L, 4, return_tag<typename FunctionTraits::arg4_type>())));
+        to(L, 1, return_tag<typename FunctionTraits::template arg<0>::type>()),
+        to(L, 2, return_tag<typename FunctionTraits::template arg<1>::type>()),
+        to(L, 3, return_tag<typename FunctionTraits::template arg<2>::type>()),
+        to(L, 4, return_tag<typename FunctionTraits::template arg<3>::type>())));
     return 1;
 }
 
@@ -168,10 +167,10 @@ int free_func_wrapper(lua_State * L, wrapper_return_tag<void, FunctionTraits>, a
         reinterpret_cast<FunctionPointerType>(
             lua_touserdata(L, lua_upvalueindex(1)));
     function(
-        to(L, 1, return_tag<typename FunctionTraits::arg1_type>()),
-        to(L, 2, return_tag<typename FunctionTraits::arg2_type>()),
-        to(L, 3, return_tag<typename FunctionTraits::arg3_type>()),
-        to(L, 4, return_tag<typename FunctionTraits::arg4_type>()));
+        to(L, 1, return_tag<typename FunctionTraits::template arg<0>::type>()),
+        to(L, 2, return_tag<typename FunctionTraits::template arg<1>::type>()),
+        to(L, 3, return_tag<typename FunctionTraits::template arg<2>::type>()),
+        to(L, 4, return_tag<typename FunctionTraits::template arg<3>::type>()));
     return 1;
 }
 
@@ -182,11 +181,11 @@ int free_func_wrapper(lua_State * L, wrapper_return_tag<typename FunctionTraits:
         reinterpret_cast<FunctionPointerType>(
             lua_touserdata(L, lua_upvalueindex(1)));
     push(L, function(
-        to(L, 1, return_tag<typename FunctionTraits::arg1_type>()),
-        to(L, 2, return_tag<typename FunctionTraits::arg2_type>()),
-        to(L, 3, return_tag<typename FunctionTraits::arg3_type>()),
-        to(L, 4, return_tag<typename FunctionTraits::arg4_type>()),
-        to(L, 5, return_tag<typename FunctionTraits::arg5_type>())));
+        to(L, 1, return_tag<typename FunctionTraits::template arg<0>::type>()),
+        to(L, 2, return_tag<typename FunctionTraits::template arg<1>::type>()),
+        to(L, 3, return_tag<typename FunctionTraits::template arg<2>::type>()),
+        to(L, 4, return_tag<typename FunctionTraits::template arg<3>::type>()),
+        to(L, 5, return_tag<typename FunctionTraits::template arg<4>::type>())));
     return 1;
 }
 
@@ -197,11 +196,11 @@ int free_func_wrapper(lua_State * L, wrapper_return_tag<void, FunctionTraits>, a
         reinterpret_cast<FunctionPointerType>(
             lua_touserdata(L, lua_upvalueindex(1)));
     function(
-        to(L, 1, return_tag<typename FunctionTraits::arg1_type>()),
-        to(L, 2, return_tag<typename FunctionTraits::arg2_type>()),
-        to(L, 3, return_tag<typename FunctionTraits::arg3_type>()),
-        to(L, 4, return_tag<typename FunctionTraits::arg4_type>()),
-        to(L, 5, return_tag<typename FunctionTraits::arg5_type>()));
+        to(L, 1, return_tag<typename FunctionTraits::template arg<0>::type>()),
+        to(L, 2, return_tag<typename FunctionTraits::template arg<1>::type>()),
+        to(L, 3, return_tag<typename FunctionTraits::template arg<2>::type>()),
+        to(L, 4, return_tag<typename FunctionTraits::template arg<3>::type>()),
+        to(L, 5, return_tag<typename FunctionTraits::template arg<4>::type>()));
     return 1;
 }
 
@@ -212,12 +211,12 @@ int free_func_wrapper(lua_State * L, wrapper_return_tag<typename FunctionTraits:
         reinterpret_cast<FunctionPointerType>(
             lua_touserdata(L, lua_upvalueindex(1)));
     push(L, function(
-        to(L, 1, return_tag<typename FunctionTraits::arg1_type>()),
-        to(L, 2, return_tag<typename FunctionTraits::arg2_type>()),
-        to(L, 3, return_tag<typename FunctionTraits::arg3_type>()),
-        to(L, 4, return_tag<typename FunctionTraits::arg4_type>()),
-        to(L, 5, return_tag<typename FunctionTraits::arg5_type>()),
-        to(L, 6, return_tag<typename FunctionTraits::arg6_type>())));
+        to(L, 1, return_tag<typename FunctionTraits::template arg<0>::type>()),
+        to(L, 2, return_tag<typename FunctionTraits::template arg<1>::type>()),
+        to(L, 3, return_tag<typename FunctionTraits::template arg<2>::type>()),
+        to(L, 4, return_tag<typename FunctionTraits::template arg<3>::type>()),
+        to(L, 5, return_tag<typename FunctionTraits::template arg<4>::type>()),
+        to(L, 5, return_tag<typename FunctionTraits::template arg<5>::type>())));
     return 1;
 }
 
@@ -228,20 +227,20 @@ int free_func_wrapper(lua_State * L, wrapper_return_tag<void, FunctionTraits>, a
         reinterpret_cast<FunctionPointerType>(
             lua_touserdata(L, lua_upvalueindex(1)));
     function(
-        to(L, 1, return_tag<typename FunctionTraits::arg1_type>()),
-        to(L, 2, return_tag<typename FunctionTraits::arg2_type>()),
-        to(L, 3, return_tag<typename FunctionTraits::arg3_type>()),
-        to(L, 4, return_tag<typename FunctionTraits::arg4_type>()),
-        to(L, 5, return_tag<typename FunctionTraits::arg5_type>()),
-        to(L, 6, return_tag<typename FunctionTraits::arg6_type>()));
+        to(L, 1, return_tag<typename FunctionTraits::template arg<0>::type>()),
+        to(L, 2, return_tag<typename FunctionTraits::template arg<1>::type>()),
+        to(L, 3, return_tag<typename FunctionTraits::template arg<2>::type>()),
+        to(L, 4, return_tag<typename FunctionTraits::template arg<3>::type>()),
+        to(L, 5, return_tag<typename FunctionTraits::template arg<4>::type>()),
+        to(L, 5, return_tag<typename FunctionTraits::template arg<5>::type>()));
     return 1;
 }
 
 template<typename FunctionPointerType>
 int free_func_wrapper(lua_State * L)
 {
-    typedef typename boost::remove_pointer<FunctionPointerType>::type FunctionType;
-    typedef boost::function_traits<FunctionType> FunctionTraits;
+    typedef typename std::remove_pointer<FunctionPointerType>::type FunctionType;
+    typedef utils::function_traits<FunctionType> FunctionTraits;
     return free_func_wrapper<FunctionPointerType, FunctionTraits>(
         L, 
         wrapper_return_tag<typename FunctionTraits::result_type, FunctionTraits>(),

@@ -9,7 +9,7 @@
 #define FUNGU_NET_HTTP_INFO_HPP
 
 #include <string>
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 
 namespace fungu{
 namespace http{

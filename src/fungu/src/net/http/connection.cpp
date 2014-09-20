@@ -8,7 +8,7 @@
 #include "fungu/net/http/connection.hpp"
 #include <cmath>
 #include <cstring>
-using namespace boost::asio;
+using namespace asio;
 
 static int strpos(const char * body, char c)
 {
@@ -37,7 +37,7 @@ static bool from_hex(const char * start, const char * end, std::size_t * output)
 namespace fungu{
 namespace http{
 
-connection::connection(boost::asio::ip::tcp::socket & socket)
+connection::connection(ip::tcp::socket & socket)
  :m_socket(socket)
 {
 

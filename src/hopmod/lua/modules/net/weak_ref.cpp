@@ -1,10 +1,9 @@
-#include <boost/shared_ptr.hpp>
 #include <cassert>
 #include "weak_ref.hpp"
 
 namespace lua{
 
-weak_ref::weak_ref(boost::weak_ptr<int> ref)
+weak_ref::weak_ref(std::weak_ptr<int> ref)
  :m_ref(ref)
 {
     
@@ -12,13 +11,13 @@ weak_ref::weak_ref(boost::weak_ptr<int> ref)
 
 static int __gc(lua_State * L)
 {
-    reinterpret_cast<boost::shared_ptr<int> *>(lua_touserdata(L, 1))->~shared_ptr<int>();
+    reinterpret_cast<std::shared_ptr<int> *>(lua_touserdata(L, 1))->~shared_ptr<int>();
     return 0;
 }
 
 weak_ref weak_ref::create(lua_State * L)
 {
-    boost::shared_ptr<int> ref(new int(LUA_NOREF));
+    std::shared_ptr<int> ref(new int(LUA_NOREF));
     
     lua_newtable(L);
     
@@ -27,7 +26,7 @@ weak_ref weak_ref::create(lua_State * L)
     lua_settable(L, -3);
     
     lua_pushinteger(L, 2);
-    new (lua_newuserdata(L, sizeof(boost::shared_ptr<int>))) boost::shared_ptr<int>(ref);
+    new (lua_newuserdata(L, sizeof(std::shared_ptr<int>))) std::shared_ptr<int>(ref);
     
     lua_newtable(L);
     lua_pushliteral(L, "__gc");
@@ -41,7 +40,7 @@ weak_ref weak_ref::create(lua_State * L)
     
     lua_pop(L, 1);
     
-    return weak_ref(boost::weak_ptr<int>(ref));
+    return weak_ref(std::weak_ptr<int>(ref));
 }
 
 bool weak_ref::is_expired()const

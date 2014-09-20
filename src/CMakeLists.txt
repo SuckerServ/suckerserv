@@ -18,17 +18,15 @@ else(LUA5.2_FOUND)
     add_subdirectory(lua)
 endif(LUA5.2_FOUND)
 
+find_package(Asio)
 
-find_package(Boost 1.35.0 COMPONENTS system thread)
-
-if(Boost_FOUND)
-    set(BOOST_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
-    set(BOOST_SYSTEM_LIBRARY ${Boost_SYSTEM_LIBRARY})
-    set(BOOST_THREAD_LIBRARY ${Boost_THREAD_LIBRARY})
-else(Boost_FOUND)
-    add_subdirectory(boost)
-endif(Boost_FOUND)
-
+if(NOT ASIO_FOUND)
+    execute_process(
+        COMMAND git submodule update --init src/asio
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    )
+    set(ASIO_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/asio/asio/include)
+endif()
 
 find_package(OpenSSL)
 
@@ -45,7 +43,7 @@ add_subdirectory(fungu)
 add_subdirectory(lsqlite3)
 add_subdirectory(hopmod/standalone/luapp)
 add_subdirectory(luasql)
-add_subdirectory(authserver)
+#add_subdirectory(authserver)
 
 
 include(CheckLibraryExists)
@@ -75,12 +73,12 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${ENET_INCLUDE_DIRS}
     ${LUA_INCLUDE_DIRS}
-    ${BOOST_INCLUDE_DIRS}
+    ${ASIO_INCLUDE_DIRS}
     ${FUNGU_INCLUDE_DIRS}
     ${OPENSSL_INCLUDE_DIR}
     ${MMDB_INCLUDE_DIRS})
 
-add_definitions(-Wall -fsigned-char -DSTANDALONE -DREVISION=$ENV{REVISION})
+add_definitions(-fsigned-char -DSTANDALONE -DREVISION=$ENV{REVISION} -DASIO_STANDALONE)
 
 
 if(CMAKE_BUILD_TYPE STREQUAL "DEBUG")
@@ -106,10 +104,13 @@ endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 target_link_libraries(sauertools -lz ${ENET_LIBRARY})
 
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(LUA_MODULES_SOURCES
     hopmod/lib/md5.c
-    hopmod/utils.cpp
+    hopmod/utils/time.cpp
+    hopmod/utils/files.cpp
+    hopmod/utils/hopmod.cpp
     hopmod/net/address.cpp
     hopmod/net/address_mask.cpp
     hopmod/net/address_prefix.cpp
@@ -122,7 +123,7 @@ set(LUA_MODULES_SOURCES
     hopmod/lua/register_class.cpp
     hopmod/lua/modules/module.cpp
     hopmod/lua/modules/crypto.cpp
-    hopmod/lua/modules/timer.cpp
+#    hopmod/lua/modules/timer.cpp
     hopmod/lua/modules/mmdb.cpp
     hopmod/lua/modules/filesystem.cpp
     hopmod/lua/modules/packlib.c
@@ -164,8 +165,7 @@ set(GAME_SERVER_SOURCES
     hopmod/scheduler.cpp
     hopmod/lua.cpp
     hopmod/core_bindings.cpp
-    hopmod/events.cpp
-    hopmod/signals.cpp)
+    hopmod/events.cpp)
 
 add_executable(sauer_server ${GAME_SERVER_SOURCES})
 
@@ -177,8 +177,6 @@ target_link_libraries(sauer_server
     -lz
     sauertools
     lua_modules
-    ${BOOST_THREAD_LIBRARY}
-    ${BOOST_SYSTEM_LIBRARY}
     ${ENET_LIBRARY})
 
 add_executable(keygen hopmod/standalone/keygen.cpp)

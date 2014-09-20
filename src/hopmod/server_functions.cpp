@@ -84,7 +84,7 @@ void changetime(int remaining)
     next_timeupdate = gamemillis + (remaining % (60*1000));
     if(gamemillis < next_timeupdate)
     {
-        event_timeupdate(event_listeners(), boost::make_tuple(get_minutes_left(), get_seconds_left()));
+        event_timeupdate(event_listeners(), std::make_tuple(get_minutes_left(), get_seconds_left()));
     }
 }
 
@@ -193,10 +193,10 @@ void player_rename(int cn, const char * newname, bool public_rename)
     
     if(public_rename)
     {
-        event_renaming(event_listeners(), boost::make_tuple(ci->clientnum, 0));
+        event_renaming(event_listeners(), std::make_tuple(ci->clientnum, 0));
         convert2utf8 oldnameutf8(oldname);
         convert2utf8 nameutf8(ci->name);
-        event_rename(event_listeners(), boost::make_tuple(ci->clientnum, oldnameutf8.str(), nameutf8.str()));
+        event_rename(event_listeners(), std::make_tuple(ci->clientnum, oldnameutf8.str(), nameutf8.str()));
     }
 }
 
@@ -233,7 +233,7 @@ std::string player_displayname(int cn)
         
         output += "\fs" MAGENTA " ";
         output += open;
-        output += boost::lexical_cast<std::string>(cn);
+        output += std::to_string(cn);
         output += close;
         output += "\fr";
     }
@@ -480,13 +480,13 @@ bool player_changeteam(int cn,const char * newteam, bool dosuicide)
     convert2utf8 oldteamutf8(ci->team);
     
     if(!m_teammode || (smode && !smode->canchangeteam(ci, ci->team, newteamcubeenc.str())) ||
-        event_chteamrequest(event_listeners(), boost::make_tuple(cn, oldteamutf8.str(), newteam, -1)) || !addteaminfo(newteamcubeenc.str()))
+        event_chteamrequest(event_listeners(), std::make_tuple(cn, oldteamutf8.str(), newteam, -1)) || !addteaminfo(newteamcubeenc.str()))
     {
         return false;
     }
     
     if(dosuicide && (smode || ci->state.state==CS_ALIVE)) suicide(ci);
-    event_reteam(event_listeners(), boost::make_tuple(ci->clientnum, oldteamutf8.str(), newteam));
+    event_reteam(event_listeners(), std::make_tuple(ci->clientnum, oldteamutf8.str(), newteam));
     
     copystring(ci->team, newteamcubeenc.str(), MAXTEAMLEN+1);
     sendf(-1, 1, "riis", N_SETTEAM, cn, newteamcubeenc.str());
@@ -670,7 +670,7 @@ void unsetmaster()
         
         master->privilege = PRIV_NONE;
         
-        event_privilege(event_listeners(), boost::make_tuple(master->clientnum, static_cast<int>(PRIV_MASTER), static_cast<int>(PRIV_NONE)));
+        event_privilege(event_listeners(), std::make_tuple(master->clientnum, static_cast<int>(PRIV_MASTER), static_cast<int>(PRIV_NONE)));
     }
     
     cleanup_masterstate();
@@ -688,7 +688,7 @@ void unset_player_privilege(int cn)
     cleanup_masterstate(ci);
     send_currentmaster();
     
-    event_privilege(event_listeners(), boost::make_tuple(cn, old_priv, static_cast<int>(PRIV_NONE)));
+    event_privilege(event_listeners(), std::make_tuple(cn, old_priv, static_cast<int>(PRIV_NONE)));
 }
 
 void set_player_privilege(int cn, int priv_code, bool public_priv = false)
@@ -717,7 +717,7 @@ void set_player_privilege(int cn, int priv_code, bool public_priv = false)
     
     send_currentmaster();
     
-    event_privilege(event_listeners(), boost::make_tuple(cn, old_priv, player->privilege));
+    event_privilege(event_listeners(), std::make_tuple(cn, old_priv, player->privilege));
 }
 
 bool set_player_master(int cn)
@@ -762,13 +762,13 @@ static void execute_addbot(int skill)
 {
     clientinfo * owner = aiman::addai(skill, -1);
     if(!owner) return;
-    event_addbot(event_listeners(), boost::make_tuple(-1, skill, owner->clientnum));
+    event_addbot(event_listeners(), std::make_tuple(-1, skill, owner->clientnum));
     return;
 }
 
 void addbot(int skill)
 {
-    get_main_io_service().post(boost::bind(&execute_addbot, skill));
+    get_main_io_service().post(std::bind(&execute_addbot, skill));
 }
 
 static void execute_deletebot(int cn)
@@ -783,7 +783,7 @@ void deletebot(int cn)
 {
     if(get_ci(cn)->state.aitype == AI_NONE) 
         luaL_error(get_lua_state(), "not a bot player");
-    get_main_io_service().post(boost::bind(&execute_deletebot, cn));
+    get_main_io_service().post(std::bind(&execute_deletebot, cn));
 }
 
 void update_mastermask()
@@ -1075,7 +1075,7 @@ void set_mastermode_cn(int value, int cn)
         loopv(clients) allowedips.add(getclientip(clients[i]->clientnum));
     }
     
-    event_setmastermode(event_listeners(), boost::make_tuple(cn, mastermodename(prev_mastermode), mastermodename(mastermode)));
+    event_setmastermode(event_listeners(), std::make_tuple(cn, mastermodename(prev_mastermode), mastermodename(mastermode)));
     
     sendf(-1, 1, "rii", N_MASTERMODE, mastermode);
 }
@@ -1161,7 +1161,7 @@ void try_respawn(clientinfo * ci, clientinfo * cq)
     }
     if(cq->state.deadflush)
     {
-        if(event_respawnrequest(event_listeners(), boost::make_tuple(cq->clientnum, cq->state.lastdeath)))
+        if(event_respawnrequest(event_listeners(), std::make_tuple(cq->clientnum, cq->state.lastdeath)))
         {
             return;
         }

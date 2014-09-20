@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <lua.hpp>
 #include "module.hpp"
-#include "utils.hpp"
+#include "utils/time.hpp"
 
 static FILE * urandom = NULL;
 

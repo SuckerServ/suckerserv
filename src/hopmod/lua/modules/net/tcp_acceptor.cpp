@@ -7,11 +7,9 @@
 #include "../../create_object.hpp"
 #include "../../pcall.hpp"
 #include "../../error_handler.hpp"
-#include <boost/asio.hpp>
-using namespace boost::asio;
-#include <boost/system/error_code.hpp>
-#include <boost/bind.hpp>
-#include <boost/bind/protect.hpp>
+#include <asio.hpp>
+using namespace asio;
+#include "utils/protect_wrapper.hpp"
 
 namespace lua{
 
@@ -38,13 +36,13 @@ int tcp_acceptor::create_object(lua_State * L)
     
     ip::tcp::endpoint endpoint(ip::address_v4::from_string(ip), port);
     
-    boost::shared_ptr<ip::tcp::acceptor> acceptor(new ip::tcp::acceptor(get_main_io_service(L)));
+    std::shared_ptr<ip::tcp::acceptor> acceptor(new ip::tcp::acceptor(get_main_io_service(L)));
     lua::create_object<tcp_acceptor>(L, acceptor);
     
     acceptor->open(endpoint.protocol());
     acceptor->set_option(ip::tcp::acceptor::reuse_address(true));
     
-    boost::system::error_code error;
+    std::error_code error;
     acceptor->bind(endpoint, error);
     if(error)
     {
@@ -59,7 +57,7 @@ int tcp_acceptor::create_object(lua_State * L)
 int tcp_acceptor::__gc(lua_State * L)
 {
     tcp_acceptor::target_type self = *lua::to<tcp_acceptor>(L, 1);
-    boost::system::error_code ec;
+    std::error_code ec;
     self->close(ec);
     self.~target_type();
     return 0;
@@ -68,7 +66,7 @@ int tcp_acceptor::__gc(lua_State * L)
 int tcp_acceptor::listen(lua_State * L)
 {
     target_type self = *lua::to<tcp_acceptor>(L, 1);
-    boost::system::error_code ec;
+    std::error_code ec;
     self->listen(socket_base::max_connections, ec);
     if(ec) return luaL_error(L, ec.message().c_str());
     return 0;
@@ -77,14 +75,14 @@ int tcp_acceptor::listen(lua_State * L)
 int tcp_acceptor::close(lua_State * L)
 {
     target_type self = *lua::to<tcp_acceptor>(L, 1);
-    boost::system::error_code ec;
+    std::error_code ec;
     self->close(ec);
     if(ec) return luaL_error(L, ec.message().c_str());
     return 0;
 }
 
 static void async_accept_handler(lua_State * L, lua::weak_ref socket, lua::weak_ref callback, 
-    const boost::system::error_code & ec)
+    const std::error_code & ec)
 {
     if(callback.is_expired()) return;
     
@@ -125,8 +123,8 @@ int tcp_acceptor::async_accept(lua_State * L)
     lua_pushvalue(L, 2);
     lua::weak_ref callback_ref = lua::weak_ref::create(L);
     
-    self->async_accept(managed_socket->socket, boost::bind(async_accept_handler, 
-        L, socket_ref, callback_ref, _1));
+    self->async_accept(managed_socket->socket, std::bind(async_accept_handler, 
+        L, socket_ref, callback_ref, std::placeholders::_1));
     
     return 0;
 }
@@ -137,16 +135,16 @@ int tcp_acceptor::set_option(lua_State * L)
     
     const char * name = luaL_checkstring(L, 2);
     
-    boost::system::error_code ec;
+    std::error_code ec;
     
     if(!strcmp(name, "enable_connection_aborted"))
     {
-        boost::asio::socket_base::enable_connection_aborted option(luaL_checkint(L, 3));
+        asio::socket_base::enable_connection_aborted option(luaL_checkint(L, 3));
         self->set_option(option, ec);
     }
     else if(!strcmp(name, "reuse_address"))
     {
-        boost::asio::socket_base::reuse_address option(luaL_checkint(L, 3));
+        asio::socket_base::reuse_address option(luaL_checkint(L, 3));
         self->set_option(option, ec);
     }
     
@@ -161,11 +159,11 @@ int tcp_acceptor::get_option(lua_State * L)
     
     const char * name = luaL_checkstring(L, 2);
     
-    boost::system::error_code ec;
+    std::error_code ec;
     
     if(!strcmp(name, "enable_connection_aborted"))
     {
-        boost::asio::socket_base::enable_connection_aborted option;
+        asio::socket_base::enable_connection_aborted option;
         self->get_option(option, ec);
         if(ec) return luaL_error(L, ec.message().c_str());
         lua_pushboolean(L, option.value());
@@ -173,7 +171,7 @@ int tcp_acceptor::get_option(lua_State * L)
     }
     else if(!strcmp(name, "reuse_address"))
     {
-        boost::asio::socket_base::reuse_address option;
+        asio::socket_base::reuse_address option;
         self->get_option(option, ec);
         if(ec) return luaL_error(L, ec.message().c_str());
         lua_pushboolean(L, option.value());

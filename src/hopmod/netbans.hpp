@@ -13,6 +13,7 @@ void clear_bans();
 void ban_list();
 
 void init();
+void shutdown();
 
 } //namespace netbans
 } //namespace hopmod

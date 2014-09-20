@@ -71,7 +71,7 @@ public:
             if(lua_type(L, -1) == LUA_TFUNCTION)
             {
                 lua::push(L, args);
-                if(lua::pcall(L, boost::tuples::length<Tuple>::value, 1, error_function) == 0)
+                if(lua::pcall(L, std::tuple_size<Tuple>::value, 1, error_function) == 0)
                     prevent_default = prevent_default || lua_toboolean(L, -1);
                 else 
                     environment.log_error(text_id(), lua_tostring(L, -1));

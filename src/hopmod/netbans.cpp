@@ -1,5 +1,4 @@
 #include "hopmod.hpp"
-#include <boost/thread.hpp>
 #include <iostream>
 #include <fstream>
 #include <iostream>
@@ -210,12 +209,8 @@ void ban_list()
     }
 }
 
-static void shutdown();
-
 void init()
 {
-    signal_shutdown.connect(boost::bind(&shutdown));
-
     std::ifstream bans(BANFILE, std::ios::binary);
     if(!bans.is_open()) return;
 
@@ -257,7 +252,7 @@ void init()
     bans.close();
 }
 
-static void shutdown()
+void shutdown()
 {
     std::ofstream bans(BANFILE, std::ios::binary);
 

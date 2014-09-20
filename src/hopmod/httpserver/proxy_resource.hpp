@@ -1,8 +1,6 @@
 #ifndef HOPMOD_HTTPSERVER_PROXY_RESOURCE_HPP
 #define HOPMOD_HTTPSERVER_PROXY_RESOURCE_HPP
 
-#include <boost/function.hpp>
-
 class proxy_resource:public fungu::http::server::resource
 {
 public:
@@ -72,7 +70,7 @@ private:
     }
     
     fungu::http::server::resource * m_resource;
-    boost::function0<void> m_unset_callback;
+    std::function<void()> m_unset_callback;
 };
 
 #endif

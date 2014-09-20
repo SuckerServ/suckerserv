@@ -3,19 +3,17 @@
 #endif
 
 #include "hopmod/hopmod.hpp"
+#include "hopmod/utils/hopmod.hpp"
 #include "game.h"
 
 #include "hopmod/server_functions.hpp"
 lua::event_environment & event_listeners();
 
-#include <boost/lexical_cast.hpp>
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
-boost::asio::io_service & get_main_io_service();
+#include <asio.hpp>
+asio::io_service & get_main_io_service();
 
 #include <iostream>
 #include <set>
-#include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -682,7 +680,7 @@ namespace server
             sendservinfo(ci);
             sendinitclient(ci);
             if(restorescore(ci)) sendresume(ci);
-            event_connect(event_listeners(), boost::make_tuple(ci->clientnum, ci->spy));
+            event_connect(event_listeners(), std::make_tuple(ci->clientnum, ci->spy));
             ci->connectmillis = totalmillis;
             ci->sendprivtext(RED "You've left the spy-mode.");
             if(mastermode <= 1) setspectator(ci, 0);
@@ -872,8 +870,6 @@ namespace server
         resetitems();
         
         init_hopmod();
-    
-        signal_shutdown.connect(cleanup_fpsgame);
     }
     
     int numclients(int exclude = -1, bool nospec = true, bool noai = true, bool priv = false)
@@ -1100,7 +1096,7 @@ namespace server
         demotmp->read(d.data, len);
         DELETEP(demotmp);
         
-        event_endrecord(event_listeners(), boost::make_tuple(demo_id, len));
+        event_endrecord(event_listeners(), std::make_tuple(demo_id, len));
     }
 
     int welcomepacket(packetbuf &p, clientinfo *ci);
@@ -1144,7 +1140,7 @@ namespace server
         welcomepacket(p, NULL);
         writedemo(1, p.buf, p.len);
 
-        event_beginrecord(event_listeners(), boost::make_tuple(0, filename));
+        event_beginrecord(event_listeners(), std::make_tuple(0, filename));
     }
 
     void listdemos(int cn)
@@ -1304,11 +1300,11 @@ namespace server
         sendf(-1, 1, "riii", N_PAUSEGAME, gamepaused ? 1 : 0, ci ? ci->clientnum : -1);
         if(gamepaused)
         {
-            event_gamepaused(event_listeners(), boost::make_tuple());
+            event_gamepaused(event_listeners(), std::make_tuple());
         }
         else
         {
-            event_gameresumed(event_listeners(), boost::make_tuple());
+            event_gameresumed(event_listeners(), std::make_tuple());
         }
     }
     
@@ -1367,7 +1363,7 @@ namespace server
     {
         assert(!authname);
         update_mastermask();
-        event_setmaster(event_listeners(), boost::make_tuple(ci->clientnum, hashed_password, request_claim_master));
+        event_setmaster(event_listeners(), std::make_tuple(ci->clientnum, hashed_password, request_claim_master));
         if(reset_mm) checkpausegame();
         return true;
     }
@@ -1396,7 +1392,7 @@ namespace server
             else sendservmsgf("%s kicked %s", kicker, colorname(vinfo));
             convert2utf8 utf8name(ci->name);
             convert2utf8 utf8text(reason);
-            event_kick_request(event_listeners(), boost::make_tuple(ci->clientnum, utf8name.str(), 14400, victim, utf8text.str()));
+            event_kick_request(event_listeners(), std::make_tuple(ci->clientnum, utf8name.str(), 14400, victim, utf8text.str()));
         }
         return false;
      }
@@ -1922,7 +1918,7 @@ namespace server
     void changemap(const char *s, int mode,int mins = -1)
     {
         calc_player_ranks();
-        event_finishedgame(event_listeners(), boost::make_tuple());
+        event_finishedgame(event_listeners(), std::make_tuple());
         
         stopdemo();
         pausegame(false);
@@ -1990,14 +1986,14 @@ namespace server
         loopv(clients) clients[i]->ac.reset();
         
         convert2utf8 utf8mapname(smapname);
-        event_mapchange(event_listeners(), boost::make_tuple(utf8mapname.str(), modename(gamemode,"unknown")));
+        event_mapchange(event_listeners(), std::make_tuple(utf8mapname.str(), modename(gamemode,"unknown")));
         
         next_timeupdate = 0; //as soon as possible
     }
     
     bool rotatemap()
     {
-        event_setnextgame(event_listeners(), boost::make_tuple());
+        event_setnextgame(event_listeners(), std::make_tuple());
         if(next_gamemode[0] && next_mapname[0])
         {
             int next_gamemode_code = modecode(next_gamemode);
@@ -2055,7 +2051,7 @@ namespace server
             {
                 sendservmsg(force ? "vote passed by default" : "vote passed by majority");
                 convert2utf8 utf8mapname(best->map);
-                event_votepassed(event_listeners(), boost::make_tuple(utf8mapname.str(), modename(best->mode)));
+                event_votepassed(event_listeners(), std::make_tuple(utf8mapname.str(), modename(best->mode)));
                 changemap(best->map, best->mode);
             }
             else rotatemap();
@@ -2101,13 +2097,13 @@ namespace server
     {
         if(gamemillis >= gamelimit && !interm)
         {
-            event_timeupdate(event_listeners(), boost::make_tuple(0, 0));
+            event_timeupdate(event_listeners(), std::make_tuple(0, 0));
             if(gamemillis < gamelimit) return;
             
             sendf(-1, 1, "ri2", N_TIMEUP, 0);
             interm = gamemillis+intermtime;
             calc_player_ranks();
-            event_intermission(event_listeners(), boost::make_tuple());
+            event_intermission(event_listeners(), std::make_tuple());
         }
     }
 
@@ -2115,7 +2111,7 @@ namespace server
 
     void dodamage(clientinfo *target, clientinfo *actor, int damage, int gun, const vec &hitpush = vec(0, 0, 0))
     {
-        if(event_damage(event_listeners(), boost::make_tuple(target->clientnum, actor->clientnum, damage, gun, hitpush[0], hitpush[1], hitpush[2])))
+        if(event_damage(event_listeners(), std::make_tuple(target->clientnum, actor->clientnum, damage, gun, hitpush[0], hitpush[1], hitpush[2])))
         {
             return;
         }
@@ -2154,7 +2150,7 @@ namespace server
             if(actor!=target && isteam(actor->team, target->team))
             {
                 actor->state.teamkills++;
-                event_teamkill(event_listeners(), boost::make_tuple(actor->clientnum, target->clientnum));
+                event_teamkill(event_listeners(), std::make_tuple(actor->clientnum, target->clientnum));
             }
             int fragvalue = smode ? smode->fragvalue(target, actor) : (target==actor || isteam(target->team, actor->team) ? -1 : 1);
             actor->state.frags += fragvalue;
@@ -2167,7 +2163,7 @@ namespace server
             }
             teaminfo *t = m_teammode ? teaminfos.access(actor->team) : NULL;
             if(t) t->frags += fragvalue;
-            event_frag(event_listeners(), boost::make_tuple(target->clientnum, actor->clientnum));
+            event_frag(event_listeners(), std::make_tuple(target->clientnum, actor->clientnum));
             sendf(-1, 1, "ri5", N_DIED, target->clientnum, actor->clientnum, actor->state.frags, t ? t->frags : 0);
             target->position.setsize(0);
             if(smode) smode->died(target, actor);
@@ -2181,7 +2177,7 @@ namespace server
     
     void suicide(clientinfo *ci)
     {
-        if(event_suicide(event_listeners(), boost::make_tuple(ci->clientnum))) return;
+        if(event_suicide(event_listeners(), std::make_tuple(ci->clientnum))) return;
 
         gamestate &gs = ci->state;
         if(gs.state!=CS_ALIVE) return;
@@ -2291,7 +2287,7 @@ namespace server
         
         gs.misses += (gs.hits - old_hits == 0);
         
-        event_shot(event_listeners(), boost::make_tuple(ci->clientnum, gun, gs.hits - old_hits));
+        event_shot(event_listeners(), std::make_tuple(ci->clientnum, gun, gs.hits - old_hits));
     }
 
     void pickupevent::process(clientinfo *ci)
@@ -2427,7 +2423,7 @@ namespace server
         
         if(gamemillis > next_timeupdate)
         {
-            event_timeupdate(event_listeners(), boost::make_tuple(get_minutes_left(), get_seconds_left()));
+            event_timeupdate(event_listeners(), std::make_tuple(get_minutes_left(), get_seconds_left()));
             next_timeupdate = gamemillis + 60000;
         }
         
@@ -2497,7 +2493,7 @@ namespace server
 
     void noclients()
     {
-        event_clearbans_request(event_listeners(), boost::make_tuple(-1));
+        event_clearbans_request(event_listeners(), std::make_tuple(-1));
         aiman::clearai();
     }
     
@@ -2583,7 +2579,7 @@ namespace server
             reservedslots_use -= reservedslots_use > 0;
             reservedslots += ci->using_reservedslot;
             
-            event_disconnect(event_listeners(), boost::make_tuple(n, disc_reason_msg));
+            event_disconnect(event_listeners(), std::make_tuple(n, disc_reason_msg));
             
             if(clients.empty()) noclients();
             else aiman::dorefresh = true;
@@ -2592,7 +2588,7 @@ namespace server
         }
         else
         {
-            event_failedconnect(event_listeners(), boost::make_tuple(ci->hostname(), disc_reason_msg));
+            event_failedconnect(event_listeners(), std::make_tuple(ci->hostname(), disc_reason_msg));
             connects.removeobj(ci);
         }
     }
@@ -2610,7 +2606,7 @@ namespace server
         ci->spy = false;
         
         convert2utf8 utf8name(ci->name);
-        if(event_connecting(event_listeners(), boost::make_tuple(ci->clientnum, ci->hostname(), utf8name.str(), pwd, is_reserved)))
+        if(event_connecting(event_listeners(), std::make_tuple(ci->clientnum, ci->hostname(), utf8name.str(), pwd, is_reserved)))
         {
             return DISC_IPBAN;
         }
@@ -2657,7 +2653,7 @@ namespace server
     bool tryauth(clientinfo *ci, const char * user, const char * domain, int kickcn = -1)
     {
         convert2utf8 utf8user(user);
-        event_authreq(event_listeners(), boost::make_tuple(ci->clientnum, utf8user.str(), domain, kickcn));
+        event_authreq(event_listeners(), std::make_tuple(ci->clientnum, utf8user.str(), domain, kickcn));
         return true;
     }
     
@@ -2667,7 +2663,7 @@ namespace server
         {
             if(!isxdigit(*s)) { *s = '\0'; break; }
         }
-        event_authrep(event_listeners(), boost::make_tuple(ci->clientnum, id, val));
+        event_authrep(event_listeners(), std::make_tuple(ci->clientnum, id, val));
         if(ci->privilege >= PRIV_AUTH && ci->authkickvictim >= 0)
         {
             trykick(ci, ci->authkickvictim, ci->authkickreason, ci->authname, ci->authdesc, ci->privilege);
@@ -2679,7 +2675,7 @@ namespace server
         if(!m_edit || len > 4*1024*1024) return;
         clientinfo *ci = getinfo(sender);
         if(ci->state.state==CS_SPECTATOR && !ci->privilege && !ci->local) return;
-        if(event_editpacket(event_listeners(), boost::make_tuple(ci->clientnum))) return;
+        if(event_editpacket(event_listeners(), std::make_tuple(ci->clientnum))) return;
         if(mapdata) DELETEP(mapdata);
         if(!len) return;
         mapdata = opentempfile("mapdata", "w+b");
@@ -2691,7 +2687,7 @@ namespace server
     void sendclipboard(clientinfo *ci)
     {
         if(!ci->lastclipboard || !ci->clipboard) return;
-        if(event_editpacket(event_listeners(), boost::make_tuple(ci->clientnum))) return;
+        if(event_editpacket(event_listeners(), std::make_tuple(ci->clientnum))) return;
         bool flushed = false;
         loopv(clients)
         {
@@ -2731,7 +2727,7 @@ namespace server
             sendf(spinfo->clientnum, 1, "ri2", N_TIMEUP, (gamelimit - gamemillis + spectator_delay)/1000);
         }
         
-        event_spectator(event_listeners(), boost::make_tuple(spinfo->clientnum, val));
+        event_spectator(event_listeners(), std::make_tuple(spinfo->clientnum, val));
     }
     
     void connected(clientinfo *ci)
@@ -2761,7 +2757,7 @@ namespace server
         
         if(clients.length() == 1 && mapreload) rotatemap();
         
-        event_connect(event_listeners(), boost::make_tuple(ci->clientnum, ci->spy));
+        event_connect(event_listeners(), std::make_tuple(ci->clientnum, ci->spy));
     }
 
     void parsepacket(int sender, int chan, packetbuf &p)     // has to parse exactly each byte of the packet
@@ -2902,7 +2898,7 @@ namespace server
                     {
                         cp->lastposupdate = totalmillis - 30;
                         cp->maploaded = gamemillis;
-                        event_maploaded(event_listeners(), boost::make_tuple(cp->clientnum));
+                        event_maploaded(event_listeners(), std::make_tuple(cp->clientnum));
                     }
                     
                     if(ci->maploaded)
@@ -2975,7 +2971,7 @@ namespace server
                     ci->state.grenades.reset();
                 }
                 else ci->state.state = ci->state.editstate;
-                event_editmode(event_listeners(), boost::make_tuple(ci->clientnum, val));
+                event_editmode(event_listeners(), std::make_tuple(ci->clientnum, val));
                 QUEUE_MSG;
                 break;
             }
@@ -3001,7 +2997,7 @@ namespace server
                 if(!m_edit && mcrc && (uint)mcrc != (uint)ci->mapcrc)
                 {
                     convert2utf8 utf8map(ci->clientmap);
-                    event_modmap(event_listeners(), boost::make_tuple(ci->clientnum, utf8map.str(), ci->mapcrc));
+                    event_modmap(event_listeners(), std::make_tuple(ci->clientnum, utf8map.str(), ci->mapcrc));
                 }
                 break;
             }
@@ -3014,7 +3010,7 @@ namespace server
                     if(ci->mapcrc && (uint)mcrc != (uint)ci->mapcrc)
                     {
                         convert2utf8 utf8map(ci->clientmap);
-                        event_modmap(event_listeners(), boost::make_tuple(ci->clientnum, utf8map.str(), ci->mapcrc));
+                        event_modmap(event_listeners(), std::make_tuple(ci->clientnum, utf8map.str(), ci->mapcrc));
                     }
                 }
                 break;
@@ -3042,7 +3038,7 @@ namespace server
                 if(!cq->mapcrc && cq->state.aitype == AI_NONE)
                 {
                     convert2utf8 utf8map(ci->clientmap);
-                    event_modmap(event_listeners(), boost::make_tuple(cq->clientnum, utf8map.str(), cq->mapcrc));
+                    event_modmap(event_listeners(), std::make_tuple(cq->clientnum, utf8map.str(), cq->mapcrc));
                     cq->mapcrc = 1;
                 }
                 if (ci->spy)
@@ -3065,7 +3061,7 @@ namespace server
                     putint(cm->messages, N_SPAWN);
                     sendstate(cq->state, cm->messages);
                 });
-                event_spawn(event_listeners(), boost::make_tuple(cq->clientnum));
+                event_spawn(event_listeners(), std::make_tuple(cq->clientnum));
                 cq->state.lastdeath = 0;
                 break;
             }
@@ -3159,7 +3155,7 @@ namespace server
                     }
                     
                     convert2utf8 utf8text(text);
-                    if( event_text(event_listeners(), boost::make_tuple(ci->clientnum, utf8text.str())) == false &&
+                    if( event_text(event_listeners(), std::make_tuple(ci->clientnum, utf8text.str())) == false &&
                         !ci->is_delayed_spectator())
                     {
                         QUEUE_AI;
@@ -3176,7 +3172,7 @@ namespace server
                 filtertext(text, text);
                 if(!ci || !cq || (ci->state.state==CS_SPECTATOR && !ci->privilege) || !m_teammode || !cq->team[0] || message::limit(ci, &ci->n_sayteam_millis, message::resend_time::sayteam, "team chat") || ci->spy) break;
                 convert2utf8 utf8text(text);
-                if(event_sayteam(event_listeners(), boost::make_tuple(ci->clientnum, utf8text.str())) == false)
+                if(event_sayteam(event_listeners(), std::make_tuple(ci->clientnum, utf8text.str())) == false)
                 {
                     loopv(clients)
                     {
@@ -3200,16 +3196,16 @@ namespace server
                 
                 bool allow_rename = !ci->spy && strcmp(ci->name, text) &&
                     !message::limit(ci, &ci->n_switchname_millis, message::resend_time::switchname, "name change") &&
-                    event_allow_rename(event_listeners(), boost::make_tuple(ci->clientnum, newnameutf8.str())) == false;
+                    event_allow_rename(event_listeners(), std::make_tuple(ci->clientnum, newnameutf8.str())) == false;
                 
                 if(allow_rename)
                 {
                     copystring(ci->name, text);
                     
-                    event_renaming(event_listeners(), boost::make_tuple(ci->clientnum, 0));
+                    event_renaming(event_listeners(), std::make_tuple(ci->clientnum, 0));
                     
                     convert2utf8 oldnameutf8(oldname);
-                    event_rename(event_listeners(), boost::make_tuple(ci->clientnum, oldnameutf8.str(), newnameutf8.str()));
+                    event_rename(event_listeners(), std::make_tuple(ci->clientnum, oldnameutf8.str(), newnameutf8.str()));
                     
                     QUEUE_INT(N_SWITCHNAME);
                     QUEUE_STR(ci->name);
@@ -3241,7 +3237,7 @@ namespace server
                 if(!ci->local && !m_mp(reqmode)) reqmode = 0;
                 convert2utf8 utf8text(text);
                 if(!message::limit(ci, &ci->n_mapvote_millis, message::resend_time::mapvote, "mapvote") &&
-                   event_mapvote(event_listeners(), boost::make_tuple(ci->clientnum, utf8text.str(), modename(reqmode, "unknown"))) == false)
+                   event_mapvote(event_listeners(), std::make_tuple(ci->clientnum, utf8text.str(), modename(reqmode, "unknown"))) == false)
                 {
                     vote(text, reqmode, sender);
                 }
@@ -3258,14 +3254,14 @@ namespace server
                 bool allow = m_teammode && text[0] && strcmp(ci->team, text) && 
                     (!smode || smode->canchangeteam(ci, ci->team, text)) &&
                     !message::limit(ci, &ci->n_switchteam_millis, message::resend_time::switchteam, "team change") &&
-                    event_chteamrequest(event_listeners(), boost::make_tuple(ci->clientnum, oldteamutf8.str(), newteamutf8.str(), sender)) == false;
+                    event_chteamrequest(event_listeners(), std::make_tuple(ci->clientnum, oldteamutf8.str(), newteamutf8.str(), sender)) == false;
                 
                 if(allow && addteaminfo(text))
                 {
                     if(ci->state.state==CS_ALIVE) suicide(ci);
                     copystring(ci->team, text);
                     aiman::changeteam(ci);
-                    event_reteam(event_listeners(), boost::make_tuple(ci->clientnum, oldteamutf8.str(), newteamutf8.str()));
+                    event_reteam(event_listeners(), std::make_tuple(ci->clientnum, oldteamutf8.str(), newteamutf8.str()));
                     if(!ci->spy) sendf(-1, 1, "riisi", N_SETTEAM, sender, ci->team, ci->state.state==CS_SPECTATOR ? -1 : 0);
                 }
                 break;
@@ -3310,7 +3306,7 @@ namespace server
                 int type = getint(p);
                 loopk(5) getint(p);
                 if(!ci || ci->state.state==CS_SPECTATOR) break;
-                if(event_editpacket(event_listeners(), boost::make_tuple(ci->clientnum))) return;
+                if(event_editpacket(event_listeners(), std::make_tuple(ci->clientnum))) return;
                 QUEUE_MSG;
                 bool canspawn = canspawnitem(type);
                 if(i<MAXENTS && (sents.inrange(i) || canspawnitem(type)))
@@ -3337,7 +3333,7 @@ namespace server
                     case ID_FVAR: getfloat(p); break;
                     case ID_SVAR: getstring(text, p);
                 }
-                if(event_editpacket(event_listeners(), boost::make_tuple(ci->clientnum))) return;
+                if(event_editpacket(event_listeners(), std::make_tuple(ci->clientnum))) return;
                 if(ci && ci->state.state!=CS_SPECTATOR) QUEUE_MSG;
                 break;
             }
@@ -3349,7 +3345,7 @@ namespace server
                 if(!ci->maploaded && totalmillis - ci->connectmillis > 2000)
                 {
                     ci->maploaded = gamemillis;
-                    event_maploaded(event_listeners(), boost::make_tuple(ci->clientnum));
+                    event_maploaded(event_listeners(), std::make_tuple(ci->clientnum));
                 }
 
 				ci->lastpingupdate = totalmillis;
@@ -3383,7 +3379,7 @@ namespace server
                 {
                     if((ci->privilege>=PRIV_ADMIN || ci->local) || (mastermask&(1<<mm)))
                     {
-                        if(event_setmastermode_request(event_listeners(), boost::make_tuple(ci->clientnum, mastermodename(mastermode), mastermodename(mm))))
+                        if(event_setmastermode_request(event_listeners(), std::make_tuple(ci->clientnum, mastermodename(mastermode), mastermodename(mm))))
                         {
                             break;
                         }
@@ -3402,7 +3398,7 @@ namespace server
             {
                 if(ci->privilege)
                 {
-                    event_clearbans_request(event_listeners(), boost::make_tuple(ci->clientnum));
+                    event_clearbans_request(event_listeners(), std::make_tuple(ci->clientnum));
                 }
                 break;
             }
@@ -3446,11 +3442,11 @@ namespace server
                 convert2utf8 oldteamutf8(wi->team);
                 if((!smode || smode->canchangeteam(wi, wi->team, text)) && 
                     !message::limit(ci, &ci->n_switchname_millis, message::resend_time::switchteam, "N_SWITCHTEAM") &&
-                    event_chteamrequest(event_listeners(), boost::make_tuple(wi->clientnum, oldteamutf8.str(), newteamutf8.str(), sender)) == false &&
+                    event_chteamrequest(event_listeners(), std::make_tuple(wi->clientnum, oldteamutf8.str(), newteamutf8.str(), sender)) == false &&
                     addteaminfo(text))
                 {
                     if(smode && wi->state.state==CS_ALIVE) suicide(wi);
-                    event_reteam(event_listeners(), boost::make_tuple(wi->clientnum, oldteamutf8.str(), newteamutf8.str()));
+                    event_reteam(event_listeners(), std::make_tuple(wi->clientnum, oldteamutf8.str(), newteamutf8.str()));
                     copystring(wi->team, text, MAXTEAMLEN+1);
                 }
                 aiman::changeteam(wi);
@@ -3516,7 +3512,7 @@ namespace server
                 int size = getint(p);
                 if(!ci->privilege && !ci->local && ci->state.state==CS_SPECTATOR) break;
                 if(message::limit(ci, &ci->n_newmap_millis, message::resend_time::newmap, "map change")) break;
-                if(event_editpacket(event_listeners(), boost::make_tuple(ci->clientnum))) return;
+                if(event_editpacket(event_listeners(), std::make_tuple(ci->clientnum))) return;
                 if(size>=0)
                 {
                     smapname[0] = '\0';
@@ -3665,7 +3661,7 @@ namespace server
             {
                 getstring(text, p);
                 convert2utf8 utf8command(text);
-                event_servcmd(event_listeners(), boost::make_tuple(ci->clientnum, utf8command.str()));
+                event_servcmd(event_listeners(), std::make_tuple(ci->clientnum, utf8command.str()));
                 break;
             }
             
@@ -3692,7 +3688,7 @@ namespace server
                     return;
                 }
                 loopi(size-1) getint(p);
-                if(event_editpacket(event_listeners(), boost::make_tuple(ci->clientnum))) return;
+                if(event_editpacket(event_listeners(), std::make_tuple(ci->clientnum))) return;
                 if(ci) switch(msgfilter[type])
                 {
                     case 2: case 3: if(ci->state.state != CS_SPECTATOR) QUEUE_MSG; break;

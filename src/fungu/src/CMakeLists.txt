@@ -1,4 +1,4 @@
-include_directories(${FUNGU_INCLUDE_DIRS} ${BOOST_INCLUDE_DIRS})
+include_directories(${FUNGU_INCLUDE_DIRS})
 
 set(FUNGU_STRING_LIBRARY fungu_string 
     CACHE INTERNAL "fungu_string library")

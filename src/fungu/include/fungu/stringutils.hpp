@@ -11,7 +11,6 @@
 #include "string.hpp"
 #include <string>
 #include <string.h>
-#include <boost/functional/hash.hpp>
 #include <ostream>
 #include <istream>
 
@@ -142,11 +141,6 @@ inline bool scan_newline(const char ** readptr)
         else
             return false;
     return true;
-}
-
-inline size_t hash_value(const_string str)
-{
-    return boost::hash_range(str.begin(),str.end());
 }
 
 inline std::string & operator+=(std::string & dst, const const_string & src)

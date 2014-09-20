@@ -2,24 +2,23 @@
 #define HOPMOD_LUA_NET_TCP_SOCKET_HPP
 
 #include <lua.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/asio.hpp>
+#include <asio.hpp>
 #include "read_stream_buffer.hpp"
 
 namespace lua{
 
 struct tcp_socket
 {
-    tcp_socket(boost::asio::io_service &);
-    boost::asio::ip::tcp::socket socket;
-    boost::asio::streambuf read_buffer_buffer;
-    read_stream_buffer<boost::asio::streambuf, char> read_buffer;
+    tcp_socket(asio::io_service &);
+    asio::ip::tcp::socket socket;
+    asio::streambuf read_buffer_buffer;
+    read_stream_buffer<asio::streambuf, char> read_buffer;
 };
 
 class managed_tcp_socket
 {
 public:
-    typedef boost::shared_ptr<tcp_socket> target_type;
+    typedef std::shared_ptr<tcp_socket> target_type;
     static const char * CLASS_NAME;
     static int register_class(lua_State * L);
     static int create_object(lua_State * L);

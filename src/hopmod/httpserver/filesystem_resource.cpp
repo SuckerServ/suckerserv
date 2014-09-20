@@ -104,8 +104,8 @@ void send_file(FILE * source_file, char * buffer, std::size_t buffer_size,
         return;
     }
     
-    response->async_send_body(buffer, read_size, boost::bind(send_file, source_file, buffer, 
-        buffer_size, response, resource, _1));
+    response->async_send_body(buffer, read_size, std::bind(send_file, source_file, buffer, 
+        buffer_size, response, resource, std::placeholders::_1));
 }
 
 

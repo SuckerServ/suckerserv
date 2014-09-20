@@ -3,8 +3,6 @@
 #include <fungu/net/http/header.hpp>
 #include <fungu/net/http/info.hpp>
 #include <fungu/net/http/response.hpp>
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
 #include <cstdio>
 #include <iostream>
 
@@ -19,10 +17,9 @@ lua::event_environment & event_listeners();
 #include "filesystem_resource.hpp"
 using namespace fungu;
 
-using namespace boost::asio;
-using namespace boost::system;
+using namespace asio;
 
-boost::asio::io_service & get_main_io_service();
+asio::io_service & get_main_io_service();
 void setup_ext_to_ct_map();
 
 proxy_resource & get_root_resource();
@@ -174,7 +171,7 @@ private:
         
         stream::char_vector_sink * sink = new stream::char_vector_sink(req->m_request->get_content_length());
         
-        req->m_request->async_read_content(*sink, boost::bind(&request_wrapper::read_content_complete, library_instance, L, functionRef, sink, _1));
+        req->m_request->async_read_content(*sink, std::bind(&request_wrapper::read_content_complete, library_instance, L, functionRef, sink, std::placeholders::_1));
         
         return 0;
     }
@@ -305,7 +302,7 @@ private:
         lua_pushvalue(L, 2);
         int functionRef = luaL_ref(L, LUA_REGISTRYINDEX);
         
-        res->m_response->async_send_header(boost::bind(&response_wrapper::sent_header, res, L, functionRef, _1));
+        res->m_response->async_send_header(std::bind(&response_wrapper::sent_header, res, L, functionRef, std::placeholders::_1));
         
         return 0;
     }
@@ -351,7 +348,7 @@ private:
         lua_pushvalue(L, 2);
         int functionRef = luaL_ref(L, LUA_REGISTRYINDEX);
         
-        res->m_response->async_send_body(body, bodylen, boost::bind(&response_wrapper::sent_body, res, library_instance, L, functionRef, _1));
+        res->m_response->async_send_body(body, bodylen, std::bind(&response_wrapper::sent_body, res, library_instance, L, functionRef, std::placeholders::_1));
         
         return 0;
     }
@@ -666,7 +663,7 @@ static int url_encode(lua_State * L)
 class listener_client_connection:public http::server::client_connection
 {
 public:
-    listener_client_connection(boost::asio::io_service & service, listener_client_connection * prev_connection)
+    listener_client_connection(asio::io_service & service, listener_client_connection * prev_connection)
     :http::server::client_connection(service)
     {
         m_prev = prev_connection;
@@ -876,7 +873,7 @@ private:
             return;
         }
         
-        http::server::request::create(*client, *m_root_resource, boost::bind(&listener::cleanup_client_connection, this, library_instance, client));
+        http::server::request::create(*client, *m_root_resource, std::bind(&listener::cleanup_client_connection, this, library_instance, client));
         
         async_accept();
     }
@@ -888,14 +885,14 @@ private:
         if(!m_client_head) m_client_head = client;
         m_client_tail = client;
         
-        m_acceptor->async_accept(*client, boost::bind(&listener::accept_handler, this, library_instance, client, _1));
+        m_acceptor->async_accept(*client, std::bind(&listener::accept_handler, this, library_instance, client, std::placeholders::_1));
     }
     
     void shutdown()
     {
         if(!m_acceptor) return;
         
-        boost::system::error_code ec;
+        std::error_code ec;
         m_acceptor->close(ec);
         if(ec)
         {

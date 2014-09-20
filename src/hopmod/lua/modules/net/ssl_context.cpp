@@ -4,7 +4,7 @@
 #include "../../to.hpp"
 #include "../../create_object.hpp"
 #include <cstring>
-using namespace boost::asio;
+using namespace asio;
 
 namespace lua{
 
@@ -36,10 +36,10 @@ int ssl_context::create_object(lua_State * L)
     try
     {
         lua::create_object<ssl_context>(L, 
-            boost::shared_ptr<ssl::context>(new ssl::context(get_main_io_service(L), 
+            std::shared_ptr<ssl::context>(new ssl::context(get_main_io_service(L), 
                 static_cast<ssl::context_base::method>(method))));
     }
-    catch(const boost::system::system_error & se)
+    catch(const std::system_error & se)
     {
         luaL_error(L, "%s", se.code().message().c_str());
         return 0;
@@ -116,7 +116,7 @@ int ssl_context::add_verify_path(lua_State * L)
 {
     target_type self = *lua::to<ssl_context>(L, 1);
     const char * path = luaL_checkstring(L, 2);
-    boost::system::error_code ec;
+    std::error_code ec;
     self->add_verify_path(path, ec);
     if(ec)
     {
@@ -130,7 +130,7 @@ int ssl_context::load_verify_file(lua_State * L)
 {
     target_type self = *lua::to<ssl_context>(L, 1);
     const char * filename = luaL_checkstring(L, 2);
-    boost::system::error_code ec;
+    std::error_code ec;
     self->load_verify_file(filename, ec);
     if(ec)
     {
@@ -144,7 +144,7 @@ int ssl_context::set_options(lua_State * L)
 {
     target_type self = *lua::to<ssl_context>(L, 1);
     int options = luaL_checkint(L, 2);
-    boost::system::error_code ec;
+    std::error_code ec;
     self->set_options(options, ec);
     if(ec)
     {
@@ -158,7 +158,7 @@ int ssl_context::set_verify_mode(lua_State * L)
 {
     target_type self = *lua::to<ssl_context>(L, 1);
     int verify_mode = luaL_checkint(L, 2);
-    boost::system::error_code ec;
+    std::error_code ec;
     self->set_verify_mode(verify_mode, ec);
     if(ec)
     {
@@ -172,7 +172,7 @@ int ssl_context::use_certificate_chain_file(lua_State * L)
 {
     target_type self = *lua::to<ssl_context>(L, 1);
     const char * filename = luaL_checkstring(L, 2);
-    boost::system::error_code ec;
+    std::error_code ec;
     self->use_certificate_chain_file(filename, ec);
     if(ec)
     {
@@ -187,7 +187,7 @@ int ssl_context::use_certificate_file(lua_State * L)
     target_type self = *lua::to<ssl_context>(L, 1);
     const char * filename = luaL_checkstring(L, 2);
     int file_format = luaL_checkint(L, 3);
-    boost::system::error_code ec;
+    std::error_code ec;
     self->use_certificate_file(filename, 
         static_cast<ssl::context_base::file_format>(file_format), ec);
     if(ec)
@@ -203,7 +203,7 @@ int ssl_context::use_private_key_file(lua_State * L)
     target_type self = *lua::to<ssl_context>(L, 1);
     const char * filename = luaL_checkstring(L, 2);
     int file_format = luaL_checkint(L, 3);
-    boost::system::error_code ec;
+    std::error_code ec;
     self->use_private_key_file(filename, 
         static_cast<ssl::context_base::file_format>(file_format), ec);
     if(ec)
@@ -219,7 +219,7 @@ int ssl_context::use_rsa_private_key_file(lua_State * L)
     target_type self = *lua::to<ssl_context>(L, 1);
     const char * filename = luaL_checkstring(L, 2);
     int file_format = luaL_checkint(L, 3);
-    boost::system::error_code ec;
+    std::error_code ec;
     self->use_rsa_private_key_file(filename, 
         static_cast<ssl::context_base::file_format>(file_format), ec);
     if(ec)
@@ -234,7 +234,7 @@ int ssl_context::use_tmp_dh_file(lua_State * L)
 {
     target_type self = *lua::to<ssl_context>(L, 1);
     const char * filename = luaL_checkstring(L, 2);
-    boost::system::error_code ec;
+    std::error_code ec;
     self->use_tmp_dh_file(filename, ec);
     if(ec)
     {

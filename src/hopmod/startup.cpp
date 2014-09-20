@@ -1,24 +1,21 @@
 #include "hopmod.hpp"
+#include "hopmod/utils/files.hpp"
 #include "cube.h"
 #include "server_functions.hpp"
 #include "main_io_service.hpp"
-#include <signal.h>
 #include <iostream>
-#include <boost/thread.hpp>
+#include <thread>
 
 bool reloaded = false;
 
-static boost::thread::id main_thread;
+static std::thread::id main_thread;
 
 /**
     Initializes everything in hopmod. This function is called at server startup and server reload.
 */
 void init_hopmod()
 {
-    main_thread = boost::this_thread::get_id();
-
-    signal_shutdown.connect(boost::bind(&shutdown_lua));
-    signal_shutdown.connect(&delete_temp_files_on_shutdown);
+    main_thread = std::this_thread::get_id();
 
     temp_file_printf("log/sauer_server.pid", "%i\n", getpid());
 
@@ -38,20 +35,26 @@ void init_hopmod()
         lua_pop(L, 1);
     }
 
-    event_init(event_listeners(), boost::make_tuple());
+    event_init(event_listeners(), std::make_tuple());
+}
+
+void signal_shutdown(int val)
+{
+    shutdown_lua();
+    hopmod::netbans::shutdown();
+    delete_temp_files_on_shutdown(val);
+    server::cleanup_fpsgame(val);
 }
 
 static void reload_hopmod_now()
 {
-    event_reloadhopmod(event_listeners(), boost::make_tuple());
+    event_reloadhopmod(event_listeners(), std::make_tuple());
 
     reloaded = true;
 
-    event_shutdown(event_listeners(), boost::make_tuple(static_cast<int>(SHUTDOWN_RELOAD)));
+    event_shutdown(event_listeners(), std::make_tuple(static_cast<int>(SHUTDOWN_RELOAD)));
 
     signal_shutdown(SHUTDOWN_RELOAD);
-
-    signal_shutdown.disconnect_all_slots();
 
     init_hopmod();
     server::started();
@@ -69,7 +72,7 @@ namespace server{
 
 void started()
 {
-    event_started(event_listeners(), boost::make_tuple());
+    event_started(event_listeners(), std::make_tuple());
     if(!server::smapname[0]) rotatemap();
     hopmod::netbans::init();
 }
@@ -78,7 +81,7 @@ static void initiate_shutdown()
 {
     stopgameserver(SHUTDOWN_NORMAL);
 
-    event_shutdown(event_listeners(), boost::make_tuple(static_cast<int>(SHUTDOWN_NORMAL)));
+    event_shutdown(event_listeners(), std::make_tuple(static_cast<int>(SHUTDOWN_NORMAL)));
     signal_shutdown(SHUTDOWN_NORMAL);
 
     // Now wait for the main event loop to process work that is remaining and then exit
@@ -86,7 +89,7 @@ static void initiate_shutdown()
 
 void shutdown()
 {
-    if(boost::this_thread::get_id() != main_thread) return;
+    if(std::this_thread::get_id() != main_thread) return;
     get_main_io_service().post(initiate_shutdown);
 }
 
