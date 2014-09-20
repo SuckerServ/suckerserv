@@ -161,7 +161,7 @@ function irc.processCommand(nick, channel, command)
     irc.command_channel = channel
     irc.command_command = command
     
-    local status = catch_error(commandFunction, table.unpack(arguments))
+    local status = catch_error(commandFunction, unpack(arguments))
     
     if not status then
         irc:toChannel("\0036IRC\003         \0034ERROR\003  \0034An error occured while executing the command\003")

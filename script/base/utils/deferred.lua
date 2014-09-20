@@ -97,7 +97,7 @@ function deferred_flush_queue(self)
 end
 
 function forward_handler(...)
-    return table.unpack({...})
+    return unpack({...})
 end
 
 function bind(method, object)

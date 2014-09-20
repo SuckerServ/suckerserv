@@ -72,6 +72,6 @@ return function(cn, ...)
   end
   
   assert(sub_command_handler)
-  return sub_command_handler(cn, table.unpack(arg))
+  return sub_command_handler(cn, unpack(arg))
 end, "[total]", "Get your current or permanent player stats"
 

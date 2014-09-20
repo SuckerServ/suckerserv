@@ -28,7 +28,7 @@ asio::io_service & get_main_io_service(lua_State *)
 namespace lua{
 namespace module{
 
-int open_net2(lua_State * L)
+void open_net2(lua_State * L)
 {
     lua::managed_tcp_socket::register_class(L);
     lua::tcp_acceptor::register_class(L);
@@ -46,30 +46,29 @@ int open_net2(lua_State * L)
         {NULL, NULL}
     };
     
-    luaL_newlib(L, net_funcs);
+    luaL_register(L, "net", net_funcs);
     
-    lua_setglobal(L, "net");
-    lua_getglobal(L, "net");
-
 #ifndef DISABLE_SSL
     
     lua::ssl_context::register_class(L);
     lua::managed_ssl_tcp_stream::register_class(L);
+    
+    lua_newtable(L);
     
     static luaL_Reg ssl_funcs[] = {
         {"context", lua::ssl_context::create_object},
         {"tcp_stream", lua::managed_ssl_tcp_stream::create_object},
         {NULL, NULL}
     };
-    luaL_newlib(L, ssl_funcs);
+    luaL_register(L, NULL, ssl_funcs);
     
     lua::ssl_context::push_constants(L);
     lua::managed_ssl_tcp_stream::push_constants(L);
     
     lua_setfield(L, -2, "ssl");
 #endif
-
-    return 1;
+    
+    lua_pop(L, 1);
 }
 
 } //namespace module

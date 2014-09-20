@@ -80,7 +80,7 @@ local function parse_array(input_string, environment, silent_error)
             if function_call then
                 table.remove(node, 1)
                 local p = parent[#parent]
-                p[#p] = function_call(table.unpack(node))
+                p[#p] = function_call(unpack(node))
             end
             
             node = parent[#parent]
@@ -328,7 +328,7 @@ env["to_lua"] = function(parameters, body)
 end
 
 env["call"] = function(func, ...)
-   return func(table.unpack({...})) 
+   return func(unpack({...})) 
 end
 
 env["if"] = function(condition, true_body, false_body)
@@ -790,7 +790,7 @@ env["exec"] = function(filename, function_level)
     end
     
     table.remove(pcall_results, 1)
-    return table.unpack(pcall_results)
+    return unpack(pcall_results)
 end
 
 local exec = env.exec

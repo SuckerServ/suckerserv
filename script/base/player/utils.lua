@@ -122,6 +122,6 @@ function print_displaynamelist(clientnums)
     for _, cn in ipairs(clientnums) do
         table.insert(names, server.player_displayname(cn))
     end
-    return print_list(table.unpack(names))
+    return print_list(unpack(names))
 end
 

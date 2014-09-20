@@ -61,7 +61,7 @@ public:
             {NULL, NULL}
         };
         
-        luaL_setfuncs(L, funcs, 0);
+        luaL_register(L, NULL, funcs);
         lua_pop(L, 1);
     }
 private:
@@ -125,7 +125,7 @@ public:
             {NULL, NULL}
         };
         
-        luaL_setfuncs(L, funcs, 0);
+        luaL_register(L, NULL, funcs);
         lua_pop(L, 1);
     }
 private:
@@ -353,7 +353,7 @@ static int shutdown_crypto(lua_State * L)
 namespace lua{
 namespace module{
 
-int open_crypto(lua_State * L)
+void open_crypto(lua_State * L)
 {
     urandom = fopen("/dev/urandom","r");
     if(!urandom)
@@ -374,7 +374,7 @@ int open_crypto(lua_State * L)
         {NULL, NULL}
     };
     
-    luaL_newlib(L, functions);
+    luaL_register(L, "crypto", functions);
     
     static luaL_Reg ecc_functions[] = {
         {"generate_key_pair", ecc::generate_key_pair},
@@ -383,9 +383,10 @@ int open_crypto(lua_State * L)
         {NULL, NULL}
     };
     
-    luaL_newlib(L, ecc_functions);
-
+    lua_newtable(L);
+    luaL_register(L, NULL, ecc_functions);
     lua_setfield(L, -2, "sauerecc");
+    lua_pop(L, 1);
     
     ecc::key::register_class(L);
     ecc::challenge::register_class(L);
@@ -395,8 +396,6 @@ int open_crypto(lua_State * L)
     #endif
     
     lua::on_shutdown(L, shutdown_crypto);
-
-    return 1;
 }
 
 } //namespace module

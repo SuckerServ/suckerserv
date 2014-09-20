@@ -128,7 +128,7 @@ void event_environment::add_listener(const char * event_id)
     
     if(lua_type(L, -1) != LUA_TTABLE) return;
 
-    std::size_t listener_table_length = lua_rawlen(L, -1);
+    std::size_t listener_table_length = lua_objlen(L, -1);
     
     lua_pushinteger(L, listener_table_length + 1);
     lua_pushvalue(L, -4);

@@ -23,7 +23,7 @@ typename WrapperClass::target_type * to(lua_State * L, int index)
     do
     {
         lua_remove(L, lua_gettop(L) - 1);
-        if(lua_compare(L, -1, class_mt_index, LUA_OPEQ))
+        if(lua_equal(L, -1, class_mt_index))
         {
             lua_pop(L, 2);
             return reinterpret_cast<typename WrapperClass::target_type *>(ptr);

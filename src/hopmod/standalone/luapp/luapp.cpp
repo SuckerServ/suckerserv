@@ -1,5 +1,4 @@
 #include <lua.hpp>
-#include "lua/modules.hpp"
 #include "lua/event.hpp"
 #include "hopmod.hpp"
 #include <iostream>

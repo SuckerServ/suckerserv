@@ -89,7 +89,8 @@ int open_mmdb(lua_State * L)
         {NULL, NULL}
     };
     
-    luaL_newlib(L, functions);
+    luaL_register(L, "mmdb", functions);
+    lua_pop(L, 1);
     
     lua::on_shutdown(L, shutdown_mmdb);
 

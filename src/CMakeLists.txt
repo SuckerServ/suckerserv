@@ -1,4 +1,7 @@
-find_package(ENet 1.3.9)
+#### Dependencies ####
+
+## Enet ##
+find_package(ENet 1.3.12)
 
 if(ENET_FOUND)
     set(ENET_INCLUDE_DIRS ${ENET_INCLUDE_DIR})    
@@ -6,18 +9,17 @@ else(ENET_FOUND)
     add_subdirectory(enet)
 endif(ENET_FOUND)
 
+## LuaJIT##
+option(LUA_USE_LUAJIT "Use LuaJIT instead of default Lua" ON)
+unset(Lua_FOUND CACHE)
+unset(LUA_INCLUDE_DIR CACHE)
+unset(LUA_LIBRARY CACHE)
+find_package(LuaJIT REQUIRED)
 
-if(NOT (CMAKE_MAJOR_VERSION LESS 2) AND NOT (CMAKE_MINOR_VERSION LESS 8))
-    find_package(Lua5.2)
-endif(NOT (CMAKE_MAJOR_VERSION LESS 2) AND NOT (CMAKE_MINOR_VERSION LESS 8))
+set(LUA_INCLUDE_DIRS ${LUA_INCLUDE_DIR})
+set(LUA_LIBRARY ${LUA_LIBRARY})
 
-if(LUA5.2_FOUND)
-    set(LUA_INCLUDE_DIRS ${LUA5.2_INCLUDE_DIR})
-    set(LUA_LIBRARY ${LUA5.2_LIBRARY})
-else(LUA5.2_FOUND)
-    add_subdirectory(lua)
-endif(LUA5.2_FOUND)
-
+## Asio ##
 find_package(Asio)
 
 if(NOT ASIO_FOUND)
@@ -28,8 +30,10 @@ if(NOT ASIO_FOUND)
     set(ASIO_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/asio/asio/include)
 endif()
 
+## OpenSSL ##
 find_package(OpenSSL)
 
+## MaxmindDB ##
 find_package(MMDB)
 
 option(WITH_MMDB "Enable MMDB support" ON)
@@ -37,6 +41,7 @@ option(WITH_MMDB "Enable MMDB support" ON)
 if(WITH_MMDB)
     add_definitions(-DWITH_MMDB)
 endif(WITH_MMDB)
+
 
 
 add_subdirectory(fungu)
@@ -123,10 +128,8 @@ set(LUA_MODULES_SOURCES
     hopmod/lua/register_class.cpp
     hopmod/lua/modules/module.cpp
     hopmod/lua/modules/crypto.cpp
-#    hopmod/lua/modules/timer.cpp
     hopmod/lua/modules/mmdb.cpp
     hopmod/lua/modules/filesystem.cpp
-    hopmod/lua/modules/packlib.c
     hopmod/lua/modules/cubescript.cpp
     hopmod/lua/modules/net/module.cpp
     hopmod/lua/modules/net/tcp_socket.cpp

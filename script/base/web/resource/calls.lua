@@ -18,7 +18,7 @@ http_server_root["calls"] = http_server.resource({
                 
                     local return_info = {}
                     
-                    local return_values = pack(pcall(func, table.unpack(call.args)))
+                    local return_values = pack(pcall(func, unpack(call.args)))
                     
                     local failed = return_values[1] == false
                     table.remove(return_values, 1)
