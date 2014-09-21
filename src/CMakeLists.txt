@@ -36,6 +36,25 @@ find_package(OpenSSL)
 ## MaxmindDB ##
 find_package(MMDB)
 
+if(NOT MMDB_FOUND)
+    set(MMDB_LIBRARY
+        libmaxminddb
+        CACHE INTERNAL "mmdb library")
+
+    set(MMDB_INCLUDE_DIRS
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        CACHE INTERNAL "mmdb include directory")
+
+    set(MMDB_SOURCES
+        libmaxminddb/src/maxminddb.c
+    )
+
+    SET_SOURCE_FILES_PROPERTIES(libmaxminddb/src/maxminddb.c PROPERTIES COMPILE_FLAGS -std=c99)
+    SET_SOURCE_FILES_PROPERTIES(libmaxminddb/src/maxminddb.c PROPERTIES COMPILE_DEFINITIONS PACKAGE_VERSION="1.0.1")
+
+    add_library(${MMDB_LIBRARY} SHARED ${MMDB_SOURCES})
+endif()
+
 option(WITH_MMDB "Enable MMDB support" ON)
 
 if(WITH_MMDB)
