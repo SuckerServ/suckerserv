@@ -37,6 +37,11 @@ find_package(OpenSSL)
 find_package(MMDB)
 
 if(NOT MMDB_FOUND)
+    execute_process(
+        COMMAND git submodule update --init src/libmaxminddb
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    )
+
     set(MMDB_LIBRARY
         libmaxminddb
         CACHE INTERNAL "mmdb library")
