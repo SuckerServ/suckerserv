@@ -4,7 +4,7 @@
 #include "utils.hpp"
 
 extern "C"{
-#include <lua.h>
+#include <luajit-2.0/lua.h>
 }
 
 #include <string>

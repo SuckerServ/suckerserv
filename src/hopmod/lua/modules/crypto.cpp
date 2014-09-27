@@ -11,7 +11,7 @@
 
 #include <string>
 #include <stdio.h>
-#include <lua.hpp>
+#include <luajit-2.0/lua.hpp>
 #include "module.hpp"
 #include "utils/time.hpp"
 

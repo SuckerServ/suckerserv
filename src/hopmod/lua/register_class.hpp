@@ -1,7 +1,7 @@
 #ifndef HOPMOD_LUA_REGISTER_CLASS_HPP
 #define HOPMOD_LUA_REGISTER_CLASS_HPP
 
-#include <lua.hpp>
+#include <luajit-2.0/lua.hpp>
 
 namespace lua{
 

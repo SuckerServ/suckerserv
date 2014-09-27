@@ -22,7 +22,7 @@
 #ifndef CUBESCRIPT_LUA_COMMAND_STACK_HPP
 #define CUBESCRIPT_LUA_COMMAND_STACK_HPP
 
-#include <lua.hpp>
+#include <luajit-2.0/lua.hpp>
 #include "cubescript.hpp"
 
 namespace cubescript{

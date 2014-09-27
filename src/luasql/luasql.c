@@ -5,7 +5,7 @@
 
 #include <string.h>
 
-#include "lua.h"
+#include "luajit-2.0/lua.h"
 #include "lauxlib.h"
 
 

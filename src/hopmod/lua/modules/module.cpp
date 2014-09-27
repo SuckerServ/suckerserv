@@ -1,4 +1,4 @@
-#include <lua.hpp>
+#include <luajit-2.0/lua.hpp>
 #include "module.hpp"
 
 namespace lua{

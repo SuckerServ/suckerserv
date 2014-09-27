@@ -1,5 +1,5 @@
 extern "C"{
-#include <lua.h>
+#include <luajit-2.0/lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
 #include <sys/types.h>

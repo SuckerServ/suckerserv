@@ -3,7 +3,7 @@
 
 #include "tcp_socket.hpp"
 #include "ssl_context.hpp"
-#include <lua.hpp>
+#include <luajit-2.0/lua.hpp>
 #include <asio/ssl.hpp>
 
 namespace lua{

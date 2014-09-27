@@ -1,7 +1,7 @@
 #ifndef HOPMOD_LUA_NET_SSL_CONTEXT_HPP
 #define HOPMOD_LUA_NET_SSL_CONTEXT_HPP
 
-#include <lua.hpp>
+#include <luajit-2.0/lua.hpp>
 #include <asio/ssl.hpp>
 
 namespace lua{

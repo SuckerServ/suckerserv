@@ -1,4 +1,4 @@
-#include <lua.hpp>
+#include <luajit-2.0/lua.hpp>
 #include "pcall.hpp"
 
 #define ERROR_HANDLER_KEY "pcall_error_handler"

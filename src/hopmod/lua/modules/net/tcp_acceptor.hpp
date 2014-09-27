@@ -1,7 +1,7 @@
 #ifndef HOPMOD_LUA_NET_TCP_ACCEPTOR_HPP
 #define HOPMOD_LUA_NET_TCP_ACCEPTOR_HPP
 
-#include <lua.hpp>
+#include <luajit-2.0/lua.hpp>
 #include <asio.hpp>
 
 namespace lua{

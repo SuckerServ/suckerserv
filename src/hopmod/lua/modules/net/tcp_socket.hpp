@@ -1,7 +1,7 @@
 #ifndef HOPMOD_LUA_NET_TCP_SOCKET_HPP
 #define HOPMOD_LUA_NET_TCP_SOCKET_HPP
 
-#include <lua.hpp>
+#include <luajit-2.0/lua.hpp>
 #include <asio.hpp>
 #include "read_stream_buffer.hpp"
 

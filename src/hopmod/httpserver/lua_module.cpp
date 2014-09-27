@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <iostream>
 
-#include <lua.hpp>
+#include <luajit-2.0/lua.hpp>
 #include "lua/event.hpp"
 #include "lua/modules/module.hpp"
 

@@ -1,4 +1,4 @@
-#include <lua.hpp>
+#include <luajit-2.0/lua.hpp>
 #include "../../event.hpp"
 #include "tcp_socket.hpp"
 #include "tcp_acceptor.hpp"
