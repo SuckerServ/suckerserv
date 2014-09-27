@@ -1,6 +1,6 @@
 
 local methods = {
-    msg             = function(obj, text) return server.player_msg(obj.cn, text) end,
+    msg             = function(obj, text, vars) return server.player_msg(obj.cn, text, vars) end,
     kick            = function(obj, ...) return server.kick(obj.cn, unpack({...})) end,
     disconnect      = function(obj, ...) return server.disconnect(obj.cn, unpack({...})) end,
     name            = function(obj) return server.player_name(obj.cn) end,

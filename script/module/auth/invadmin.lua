@@ -3,7 +3,7 @@
 ]]
 
 
-local domains = table_unique(server.parse_list(server["auto_invadmin_domains"])) or table_unique(server.parse_list(server["invadmin_domains"]))
+local domains = table_unique(server["auto_invadmin_domains"]) or table_unique(server["invadmin_domains"])
 
 if not domains then
     server.log_error("invadmin: no domains set")

@@ -42,7 +42,6 @@ local function clear_listeners()
 end
 
 local function trigger_event(event_id, ...)
-
     local listeners = event[event_id]
     if not listeners then return end
     
@@ -81,6 +80,3 @@ event_listener = {
     destroy_event = destroy_event,
     trigger_event = trigger_event
 }
-
-on = add_listener
-

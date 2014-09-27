@@ -53,8 +53,7 @@ end
 local function update()
 
     if server.publicserver == 1 then
-        for _, entry in ipairs(server.parse_list(server.masterservers)) do
-            local fields = server.parse_list(entry)
+        for _, fields in ipairs(server.masterservers) do
             if #fields == 2 then
                 register_server(fields[1], fields[2], server.serverport, function(error_message)
                     if error_message then

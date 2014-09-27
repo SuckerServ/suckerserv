@@ -2,7 +2,7 @@ local DEFAULT_MUTE_TIME = server.default_mute_time or (1000 * 60 * 60)
 local KEY_FUNCTION = server.player_iplong
 
 local muted = {}
-local mute_triggers = list_to_set(server.parse_list(server.mute_triggers or "")) 
+local mute_triggers = list_to_set(server.mute_triggers)
 
 function server.mute(cn, mute_time, reason)
   mute_time = mute_time or DEFAULT_MUTE_TIME

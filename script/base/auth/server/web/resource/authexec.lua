@@ -1,11 +1,10 @@
 require "http_server"
-require "cubescript"
 
 local content_handler = {}
 
-content_handler["text/x-cubescript"] = function(request, code)
+content_handler["text/x-lua"] = function(request, code)
     
-    local error_message, result = cubescript.eval_string(code)
+    local error_message, result = eval_lua(code)
     
     result = tostring(result)
     

@@ -1,11 +1,11 @@
 local _ = require "underscore"
 local crypto = require "crypto"
 
-function mins(value)
+function server.mins(value)
     return value * 1000 * 60
 end
 
-function secs(value)
+function server.secs(value)
     return value * 1000
 end
 

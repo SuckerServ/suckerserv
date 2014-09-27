@@ -140,21 +140,6 @@ local function exec_command(cn, text, force)
         text = string.sub(text, 2)
     end
 
-    --[[
-    local function unsupported(char)
-        return function()
-            error(char .. " syntax is not supported in player commands")
-        end
-    end
-    
-    local command_env = {
-        ["$"] = unsupported("$"),
-        ["@"] = unsupported("@")
-    }
-    
-    local arguments, error_message = cubescript.library.parse_array(text, command_env, true)
-    ]]
-
     local arguments = {}
     local quotecount = 0
     for token in string.gmatch(text, '[^"]+') do
@@ -227,11 +212,6 @@ end
 
 
 local function merge_command_list(command_list, options)
-
-    if type(command_list) == "string" then
-        command_list = cubescript.library.parse_array(command_list)
-    end
-    
     for _, command_name in pairs(command_list) do
         merge_player_command(command_name, options)
     end

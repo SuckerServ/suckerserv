@@ -1,5 +1,3 @@
-require "mmdb"
-
 local BANNER_DELAY = 2000
 
 local function send_connect_message(cn)
@@ -33,34 +31,28 @@ local function send_connect_message(cn)
         priv = server.player_priv(cn)
     end
 
-    local normal_message = server.client_connect_message % {country = country, name = server.player_name(cn), cn = cn, priv = priv}
-    local admin_message = server.client_connect_admin_message % {ip = server.player_ip(cn)}
-
-    if priv == "" then
-        normal_message = normal_message:sub(1, -4)
-        admin_message = normal_message .. " (" .. admin_message .. ")"
-    else
-        admin_message = normal_message:sub(1, -2) .. " ; " .. admin_message .. ")"
-    end
-
     for _, cn in ipairs(server.clients()) do
+        local normal_message = server.parse_message(cn, "client_connect", {country = country, name = server.player_name(cn), cn = cn, priv = priv})
 
-        local message = normal_message
-
-        if server.player_priv_code(cn) == server.PRIV_ADMIN then
-            message = admin_message
+        if priv == "" then
+            normal_message = normal_message:sub(1, -4)
         end
 
-        server.player_msg(cn, message)
+        if server.player_priv_code(cn) == server.PRIV_ADMIN then
+            local admin_message = server.parse_message(cn, "client_connect_admin", { ip = server.player_ip(cn) })
+            if priv == "" then
+                admin_message = normal_message .. " (" .. admin_message .. ")"
+            else
+                admin_message = normal_message:sub(1, -2) .. " ; " .. admin_message .. ")"
+            end
+            server.player_msg(cn, admin_message)
+        else
+            server.player_msg(cn, normal_message)
+        end
     end
 end
 
 local function sendServerBanner(cn)
-
-    if server.enable_timezone == 1 then
-        server.player_vars(cn).timezone = mmdb.lookup_ip(server.player_ip(cn), "location", "time_zone")
-    end
-
     server.player_vars(cn).maploaded = true
     
     if server.player_vars(cn).shown_banner then return end
@@ -73,7 +65,7 @@ local function sendServerBanner(cn)
         if sid ~= server.player_sessionid(cn) then return end
         
         server.player_msg(cn, server.motd)
-        server.player_msg(cn, server.connect_info_message)
+        server.player_msg(cn, "connect_info")
 
         server.player_vars(cn).shown_banner = true
 

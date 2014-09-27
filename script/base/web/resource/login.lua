@@ -5,7 +5,7 @@ local sessions = {}
 
 local function createUsersTable()
     local parse = server.parse_list
-    for _, entry in ipairs(parse(server.web_admins)) do
+    for _, entry in ipairs(server.web_admins) do
         local fields = parse(entry)
         if #fields >= 3 then
             local name = fields[1]

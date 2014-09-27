@@ -177,7 +177,7 @@ Server.prototype.executeCommand = function(commandLine, responseHandler){
     $.ajax({
         type:"POST",
         url:"/serverexec",
-        contentType: "text/x-cubescript",
+        contentType: "text/x-lua",
         data: commandLine,
         success: success,
         error: error

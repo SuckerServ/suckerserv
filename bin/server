@@ -109,7 +109,7 @@ p_start_server() {
 
 p_restart_server() {
 
-    if ! p_exec restart
+    if ! p_exec "server.restart()"
     then
 	$d_main/bin/$f_starter start
     fi
@@ -117,7 +117,7 @@ p_restart_server() {
 
 p_stop_server() {
 
-    if ! p_exec shutdown
+    if ! p_exec "server.shutdown()"
     then
 	return 1
     fi
@@ -136,7 +136,7 @@ p_status() {
 	out="$1"
     fi
     
-    if ! p_exec "write_server_status [$out]"
+    if ! p_exec "server.write_server_status(\"$out\")"
     then
 	return 1
     fi
@@ -147,7 +147,7 @@ p_status() {
 
 p_update_conf() {
 
-    if ! p_exec reload_lua
+    if ! p_exec "server.reload_lua()"
     then
 	return 1
     fi
@@ -157,7 +157,7 @@ p_update_conf() {
 
 p_password() {
 
-    if ! p_exec "admin_password $1"
+    if ! p_exec "server.admin_password = $1"
     then
 	return 1
     fi

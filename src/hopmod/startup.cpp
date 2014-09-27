@@ -79,10 +79,10 @@ void started()
 
 static void initiate_shutdown()
 {
-    stopgameserver(SHUTDOWN_NORMAL);
-
     event_shutdown(event_listeners(), std::make_tuple(static_cast<int>(SHUTDOWN_NORMAL)));
     signal_shutdown(SHUTDOWN_NORMAL);
+
+    stopgameserver(SHUTDOWN_NORMAL);
 
     // Now wait for the main event loop to process work that is remaining and then exit
 }

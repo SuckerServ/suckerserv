@@ -221,11 +221,10 @@ local function load_module_vars(path)
         
         if (filetype == filesystem.DIRECTORY) and (filename ~= "." and filename ~= "..") then
             load_module_vars(fullfilename)
-        elseif (filetype == filesystem.FILE or filetype == filesystem.UNKNOWN) and filename:match(".vars$") then
+        elseif (filetype == filesystem.FILE or filetype == filesystem.UNKNOWN) and filename:match("_vars.lua$") then
             exec(fullfilename)
         end
     end
 end
 
 load_module_vars(MODULE_VARFILES_DIR)
-

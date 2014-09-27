@@ -31,19 +31,21 @@ local function read_expression(existing_code, discard_time_limit)
         
         code = (existing_code or "") .. new_code
         
-        if not cubescript.is_complete_expression(code) then
+--[[        if not cubescript.is_complete_expression(code) then
             read_expression(code, os.time() + MAX_TIME)
             return
         end
+]]--
         
-        local error_message = cubescript.eval_string(code)
+        local chunk, error_message = load(code)
         
         if error_message then
-            
             local code = "\n<!-- START CODE -->\n" .. code .. "<!-- END CODE -->"
             server.log_error("error in " .. filename .. ": " .. error_message .. code)
+        else
+            chunk()
         end
-        
+
         read_expression()
     end)
 end

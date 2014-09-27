@@ -10,11 +10,7 @@ local Json = require "Json"
 local ADMIN_NAME = "global"
 local UPDATE_INTERVAL = 1000*60*60*0.5
 
-local GBAN_MIRRORS =
-{
-    "http://sauer.nomorecheating.org/hopmod/gbans.php",
-    "http://83.169.44.106/hopmod/gbans.php"
-}
+local GBAN_MIRRORS = server.ban_lists
 
 local MIRROR = 1
 

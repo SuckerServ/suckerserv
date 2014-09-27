@@ -6,7 +6,7 @@ require 'readline'
 def execute_command(http, command)
     
     req = Net::HTTP::Post.new("/serverexec")
-    req.content_type=("text/x-cubescript")
+    req.content_type=("text/x-lua")
     req.content_length = command.length()
     req.body = command
     

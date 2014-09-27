@@ -3,8 +3,6 @@
 	A player command to execute a script on the server
 
 ]]
-require "cubescript"
-
 return function(cn, ...)
 
 	local code = ""
@@ -25,6 +23,5 @@ return function(cn, ...)
 
 	--server.player_msg(cn, server["do"](code) or "")
     
-	server.player_msg(cn, cubescript.eval_string(code) or "")
+	server.player_msg(cn, eval_lua(code) or "")
 end
-

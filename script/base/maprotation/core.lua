@@ -118,8 +118,6 @@ end)
 -- Helper function
 local function load_from_lists(var_prefix)
     
-    local parse = server.parse_list
-    
     local maps = {}
     
     -- Load the set of maps from the map list variables into the local maps table
@@ -132,10 +130,9 @@ local function load_from_lists(var_prefix)
             error("Expected a list of maps to exist at " .. varname)
         end
         
-        local provisional = parse(list)
         local rotation = {}
         
-        for _, mapname in pairs(provisional) do
+        for _, mapname in pairs(list) do
             
             if supported_map(mapname) then
                 rotation[#rotation + 1] = mapname

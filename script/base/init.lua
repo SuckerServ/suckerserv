@@ -1,19 +1,26 @@
 package.path = package.path .. ";script/package/?.lua;"
 package.cpath = package.cpath .. ";lib/lib?.so"
 
-dofile("script/base/pcall.lua")
-dofile("script/base/core_function_overloads.lua")
-dofile("script/base/event.lua")
-dofile("script/base/server.lua")
-dofile("script/base/cubescript.lua")
-dofile("script/base/serverexec.lua")
--- The exec function becomes available after cubescript.lua has been executed
+local fsutils = require "filesystem_utils"
+
+add_exec_search_path = fsutils.add_exec_search_path
+find_script = fsutils.find_script
+exec = fsutils.exec
+pexec = fsutils.pexec
+exec_if_found = fsutils.exec_if_found
+eval_lua = fsutils.eval_lua
 
 add_exec_search_path("conf")
 add_exec_search_path("script")
 add_exec_search_path("script/module")
 
-exec("base/config.cs")
+exec("script/base/pcall.lua")
+exec("script/base/core_function_overloads.lua")
+exec("script/base/event.lua")
+exec("script/base/server.lua")
+exec("script/base/serverexec.lua")
+
+
 exec("base/config.lua")
 exec("base/utils.lua")
 exec("base/module.lua")
@@ -41,21 +48,22 @@ server.module("base/mapvote")
 server.module("base/register_server")
 server.module("base/web/init")
 server.module("base/global_bans")
+server.module("base/messages.lua")
+
+exec_if_found("conf/server_conf.lua")
+exec("base/saveconf.lua")
 
 server.event_handler("started", function()
-    
+
     server.reload_maprotation()
-    
+
     mmdb = require("mmdb")
     mmdb.load_mmdb_database(server.mmdb_file)
-    
-    server.log_status(server.server_start_message)
+
+    server.log_status(messages[messages.languages.default].server_start_message)
 end)
 
-server.event_handler("shutdown", function() 
+server.event_handler("shutdown", function()
     server.log_status("Server shutting down.")
 end)
 
-exec_if_found("conf/server.conf")
-exec("base/saveconf.lua")
-exec("base/messages.lua")

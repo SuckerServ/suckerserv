@@ -13,7 +13,7 @@ auth.directory.domain{
 server.current_master_global_authed = nil
 server.current_master_global_auth_user = nil
 
-local banned = list_to_set(table_unique(server.parse_list(server.masterauth_banned)))
+local banned = list_to_set(table_unique(server.masterauth_banned))
 
 auth.listener("", function(cn, user_id, domain, status, kick_cn)
 
