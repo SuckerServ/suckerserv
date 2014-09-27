@@ -4,13 +4,7 @@ local function send_connect_message(cn)
 
     if server.player_is_spy(cn) or server.is_bot(cn) then return end
 
-    local country = ""
-
-    if server.display_country_on_connect == 1 then
-        country = mmdb.lookup_ip(server.player_ip(cn), "country", "names", "en")
-        if not country or #country < 1 then country = "Unknown" end
-    end
-
+--[[
     if server.display_city_on_connect == 1 then
         local city = mmdb.lookup_ip(server.player_ip(cn), "city", "names", "en")
         if not city or #city < 1 then city = "Unknown" end
@@ -24,6 +18,7 @@ local function send_connect_message(cn)
             player_ranking = "Unknown"
         end
     end
+]]--
 
     local priv = ""
 
@@ -31,23 +26,37 @@ local function send_connect_message(cn)
         priv = server.player_priv(cn)
     end
 
-    for _, cn in ipairs(server.clients()) do
+    for _, dest_cn in ipairs(server.clients()) do
+        local country = ""
+
+        if server.display_country_on_connect == 1 then
+            country = mmdb.lookup_ip(server.player_ip(cn), "country", "names", server.player_lang(dest_cn))
+
+            if not country or #country < 1 then
+                country = mmdb.lookup_ip(server.player_ip(cn), "country", "names", messages.languages["default"])
+            end
+
+            if not country or #country < 1 then
+                country = "Unknown"
+            end
+        end
+
         local normal_message = server.parse_message(cn, "client_connect", {country = country, name = server.player_name(cn), cn = cn, priv = priv})
 
         if priv == "" then
             normal_message = normal_message:sub(1, -4)
         end
 
-        if server.player_priv_code(cn) == server.PRIV_ADMIN then
+        if server.player_priv_code(dest_cn) == server.PRIV_ADMIN then
             local admin_message = server.parse_message(cn, "client_connect_admin", { ip = server.player_ip(cn) })
             if priv == "" then
                 admin_message = normal_message .. " (" .. admin_message .. ")"
             else
                 admin_message = normal_message:sub(1, -2) .. " ; " .. admin_message .. ")"
             end
-            server.player_msg(cn, admin_message)
+            server.player_msg(dest_cn, admin_message)
         else
-            server.player_msg(cn, normal_message)
+            server.player_msg(dest_cn, normal_message)
         end
     end
 end

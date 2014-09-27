@@ -86,11 +86,11 @@ server.event_handler("connect", function(cn)
 end)
 
 server.event_handler("disconnect", function(cn)
-	for _, cn in ipairs(server.clients()) do
-		if server.player_priv_code(cn) == server.PRIV_ADMIN then
-			server.player_msg(cn, server.parse_message("client_disconnect", {name = server.player_name(cn), cn = cn}) .. server.parse_message("client_disconnect_admin", {ip = server.player_ip(cn)}))
+	for _, dest_cn in ipairs(server.clients()) do
+		if server.player_priv_code(dest_cn) == server.PRIV_ADMIN then
+			server.player_msg(dest_cn, server.parse_message("client_disconnect", {name = server.player_name(cn), cn = cn}) .. server.parse_message("client_disconnect_admin", {ip = server.player_ip(cn)}))
 		else
-			server.player_msg(cn, "client_disconnect")
+			server.player_msg(dest_cn, "client_disconnect", {name = server.player_name(cn), cn = cn})
 		end
 	end
 end)

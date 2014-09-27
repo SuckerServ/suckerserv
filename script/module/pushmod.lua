@@ -1,3 +1,7 @@
+--[[
+	Push gamemode module, inspired from netman87's rocketmod
+]]--
+
 local hitpush_multiplier = 16
 local ammos = {
 	200,
