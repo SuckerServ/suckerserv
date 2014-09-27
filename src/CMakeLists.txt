@@ -154,7 +154,6 @@ set(LUA_MODULES_SOURCES
     hopmod/lua/modules/crypto.cpp
     hopmod/lua/modules/mmdb.cpp
     hopmod/lua/modules/filesystem.cpp
-    hopmod/lua/modules/cubescript.cpp
     hopmod/lua/modules/net/module.cpp
     hopmod/lua/modules/net/tcp_socket.cpp
     hopmod/lua/modules/net/weak_ref.cpp
@@ -163,9 +162,6 @@ set(LUA_MODULES_SOURCES
     hopmod/lua/modules/net/tcp_acceptor.cpp
     hopmod/lua/modules/net/resolver.cpp
     ${LUA_NET_SSL_SOURCES}
-    hopmod/cubescript/cubescript.cpp
-    hopmod/cubescript/lua_command_stack.cpp
-    hopmod/cubescript/lua/pcall.cpp
     hopmod/httpserver/filesystem_resource.cpp
     hopmod/httpserver/lua_module.cpp )
 
@@ -225,6 +221,5 @@ install(TARGETS
     RUNTIME DESTINATION ${INSTALL_RUNTIME_DIR}/utils)
 
 install(FILES 
-    hopmod/cubescript/cubescript_library.lua 
     DESTINATION ${PROJECT_SOURCE_DIR}/script/package)
 

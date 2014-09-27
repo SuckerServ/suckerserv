@@ -210,10 +210,6 @@ namespace server
     void add_allowed_ip(const char *);
     bool compare_admin_password(const char *);
     
-    std::vector<int> cs_player_list();
-    std::vector<int> cs_spec_list();
-    std::vector<int> cs_bot_list();
-    std::vector<int> cs_client_list();
     int lua_player_list(lua_State *);
     int lua_spec_list(lua_State *);
     int lua_bot_list(lua_State *);

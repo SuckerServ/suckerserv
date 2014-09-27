@@ -131,10 +131,10 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "send_auth_request", server::send_auth_request);
     bind_function(L, T, "send_auth_challenge_to_client", server::send_auth_challenge);
 
-    bind_function(L, T, "players", server::cs_player_list);
-    bind_function(L, T, "spectators", server::cs_spec_list);
-    bind_function(L, T, "bots", server::cs_bot_list);
-    bind_function(L, T, "clients", server::cs_client_list);
+    bind_function(L, T, "players", server::lua_player_list);
+    bind_function(L, T, "spectators", server::lua_spec_list);
+    bind_function(L, T, "bots", server::lua_bot_list);
+    bind_function(L, T, "clients", server::lua_client_list);
 
     bind_function(L, T, "teams", server::get_teams);
     bind_function(L, T, "team_msg", server::team_msg);

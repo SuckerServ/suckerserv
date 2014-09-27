@@ -801,17 +801,6 @@ const char * gamemodename()
     return modename(gamemode,"unknown");
 }
 
-namespace cubescript{
-std::vector<int> make_client_list(bool (* clienttype)(clientinfo *))
-{
-    std::vector<int> result;
-    result.reserve(clients.length());
-    loopv(clients) if(clienttype(clients[i])) result.push_back(clients[i]->clientnum);
-    return result;
-}
-} //namespace cubescript
-
-namespace lua{
 int make_client_list(lua_State * L,bool (* clienttype)(clientinfo *))
 {
     lua_newtable(L);
@@ -826,24 +815,19 @@ int make_client_list(lua_State * L,bool (* clienttype)(clientinfo *))
     
     return 1;
 }
-}//namespace lua
 
 bool is_player(clientinfo * ci){return ci->state.state != CS_SPECTATOR && ci->state.aitype == AI_NONE;}
 bool is_spectator(clientinfo * ci){return ci->state.state == CS_SPECTATOR; /* bots can't be spectators*/}
 bool is_bot(clientinfo * ci){return ci->state.aitype != AI_NONE;}
 bool is_any(clientinfo *){return true;}
 
-std::vector<int> cs_player_list(){return cubescript::make_client_list(&is_player);}
-int lua_player_list(lua_State * L){return lua::make_client_list(L, &is_player);}
+int lua_player_list(lua_State * L){return make_client_list(L, &is_player);}
 
-std::vector<int> cs_spec_list(){return cubescript::make_client_list(&is_spectator);}
-int lua_spec_list(lua_State * L){return lua::make_client_list(L, &is_spectator);}
+int lua_spec_list(lua_State * L){return make_client_list(L, &is_spectator);}
 
-std::vector<int> cs_bot_list(){return cubescript::make_client_list(&is_bot);}
-int lua_bot_list(lua_State *L){return lua::make_client_list(L, &is_bot);}
+int lua_bot_list(lua_State *L){return make_client_list(L, &is_bot);}
 
-std::vector<int> cs_client_list(){return cubescript::make_client_list(&is_any);}
-int lua_client_list(lua_State * L){return lua::make_client_list(L, &is_any);}
+int lua_client_list(lua_State * L){return make_client_list(L, &is_any);}
 
 std::vector<std::string> get_teams()
 {
