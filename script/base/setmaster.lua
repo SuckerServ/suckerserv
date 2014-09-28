@@ -21,7 +21,7 @@ local function setmaster(cn, hash, set)
         if not server.hasmaster() then
             server.setmaster(cn)
         else
-            server.player_msg(cn, server.master_already_message)
+            server.player_msg(cn, "master_already")
         end
         return -1
     end

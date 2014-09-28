@@ -46,7 +46,7 @@ return function(cn, command_name)
     end
   end
 
-  server.player_msg(cn, server.help_message)
+  server.player_msg(cn, "help")
 
   for i,v in ipairs(list_of_command_names) do
     server.player_msg(cn, v)

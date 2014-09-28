@@ -300,7 +300,7 @@ function internal.loadAuthHandlers(domain)
         t.auth_name = user_id
 
         if server.stats_tell_auth_name == 1 then
-            server.player_msg(cn, string.format(server.stats_logged_in_message, user_id))
+            server.player_msg(cn, "stats_logged_in", {user_id = user_id})
         end
     end)
 

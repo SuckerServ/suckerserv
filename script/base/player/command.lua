@@ -171,14 +171,14 @@ local function exec_command(cn, text, force)
     arguments[1] = cn
     
     if not (command.enabled == true) or not command.run then
-        server.player_msg(cn, server.command_disabled_message)
+        server.player_msg(cn, "command_disabled")
         return -1
     end
     
     local privilege = server.player_priv_code(cn)
     
     if privilege < command.permission then
-        server.player_msg(cn, server.command_permission_denied_message)
+        server.player_msg(cn, "command_permission_denied")
         return -1
     end
     

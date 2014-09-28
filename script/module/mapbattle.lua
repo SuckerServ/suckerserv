@@ -56,12 +56,12 @@ end
 function mapbattle.start(map1, map2, mode)
     mapbattle.clean()
     mapbattle.maps = { map1, map2 }
-	server.msg(string.format(server.mapbattle_vote_message, mapbattle.maps[1], mapbattle.maps[2]))
+	server.msg("mapbattle_vote", {map1 = mapbattle.maps[1], map2 = mapbattle.maps[2]})
 	mapbattle.running = true
 	server.sleep(mapbattle.timeout, function()
         mapbattle.running = false
 		if not mapbattle.map_changed then
-            server.msg(string.format(server.mapbattle_winner_message, mapbattle.winner()))
+            server.msg("mapbattle_winner", { mapbattle_winner = mapbattle.winner()})
 			mapbattle.map_changed = true
 		end
 	end)

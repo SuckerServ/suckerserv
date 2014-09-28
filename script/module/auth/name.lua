@@ -51,7 +51,7 @@ local function request_key(cn)
 
         -- Using stats configuration variables here, may change in the future
         if server.stats_tell_auth_name == 1 then
-            server.player_msg(cn, string.format(server.stats_logged_in_message.." (Name Protection) ", user_id))
+            server.player_msg(cn, "stats_logged_in", { user_id = user_id .. " (Name Protection)" })
         end
 
 		server.log(string.format("%s(%i) authenticated as '%s' to use reserved name.", server.player_name(cn), cn, user_id))

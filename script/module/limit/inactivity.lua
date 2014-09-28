@@ -75,7 +75,7 @@ server.interval(interval_time, function()
         	
         	    if ((con_time - last_time) >= inactive_time) and (not death_only or (p:status_code() == server.DEAD))
         	    then
-	    		p:msg(server.inactivitylimit_message)
+	    		p:msg("inactivitylimit")
 			p:spec()
 			server.log("Server moved " .. p:name() .. " to spectator, because of inactivity.")
 		    end
