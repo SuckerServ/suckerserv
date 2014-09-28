@@ -205,25 +205,19 @@ server.web_admins = {}
 -- Player Commands configuration
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-server.enable_commands = {
+server.enable_commands({
     "cheater",
     "votekick",
     "specall",
     "unspecall",
-    "maxclients",
     "uptime",
     "reload",
     "changetime",
     "players",
     "names",
-    "pause",
-    "resume",
-    "motd",
-    "cookie",
     "givemaster",
     "mute",
     "unmute",
-    "me",
     "ban",
     "unban",
     "persist",
@@ -240,11 +234,7 @@ server.enable_commands = {
     "giveadmin",
     "forcespec",
     "unforcespec",
-    "setnextmap",
-    "traffic",
     "banlist",
-    "fairgame",
-    "whoisonline",
     "admin",
     "invadmin",
     "master",
@@ -264,13 +254,13 @@ server.enable_commands = {
     "sendmap",
     "noedit",
     "editmute",
-}
+})
 
-server.disable_commands = {
+server.disable_commands({
     "noties",
     "suddendeath",
     "nodamage",
-}
+})
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Modules
