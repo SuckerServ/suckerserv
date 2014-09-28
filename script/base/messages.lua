@@ -20,7 +20,9 @@ end
 
 
 --messages.FORMAT_STRING = "%{text}"
+
 messages.TIME_STRING = "%H:%M:%S"
+messages.DEFAULT_TIMEZONE = "GMT"
 messages.FORMAT_TABLE = {
 	time = os.date(messages.TIME_STRING),
 	green = "0",
@@ -51,7 +53,6 @@ end
 
 function server.parse_message(cn, text, vars)
 	text = messages[server.player_lang(cn)][text] or messages[messages.languages["default"]][text] or text
-
 	if server.enable_timezone == 1 then
 		local fd = io.popen("TZ='%{timezone}' date +%{timestring}" % {timezone = server.player_vars(cn).timezone, timestring = messages.TIME_STRING} )
 		messages.FORMAT_TABLE.time = fd:read('*l'):gsub('\n*$', '')
@@ -80,15 +81,20 @@ function server.msg(text, vars)
 end
 
 server.event_handler("connect", function(cn)
-    if server.enable_timezone == 1 then
-        server.player_vars(cn).timezone = mmdb.lookup_ip(server.player_ip(cn), "location", "time_zone")
-    end
+	if server.enable_timezone == 1 then
+		local ret, val = pcall(function(cn) return mmdb.lookup_ip(server.player_ip(cn), "location", "time_zone") end)
+		if ret then
+			server.player_vars(cn).timezone = val
+		else
+			server.player_vars(cn).timezone = messages.DEFAULT_TIMEZONE
+		end
+	end
 end)
 
 server.event_handler("disconnect", function(cn)
 	for _, dest_cn in ipairs(server.clients()) do
 		if server.player_priv_code(dest_cn) == server.PRIV_ADMIN then
-			server.player_msg(dest_cn, server.parse_message("client_disconnect", {name = server.player_name(cn), cn = cn}) .. server.parse_message("client_disconnect_admin", {ip = server.player_ip(cn)}))
+			server.player_msg(dest_cn, server.parse_message(dest_cn, "client_disconnect", {name = server.player_name(cn), cn = cn}) .. server.parse_message(dest_cn, "client_disconnect_admin", {ip = server.player_ip(cn)}))
 		else
 			server.player_msg(dest_cn, "client_disconnect", {name = server.player_name(cn), cn = cn})
 		end

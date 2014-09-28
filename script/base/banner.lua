@@ -41,14 +41,14 @@ local function send_connect_message(cn)
             end
         end
 
-        local normal_message = server.parse_message(cn, "client_connect", {country = country, name = server.player_name(cn), cn = cn, priv = priv})
+        local normal_message = server.parse_message(dest_cn, "client_connect", {country = country, name = server.player_name(cn), cn = cn, priv = priv})
 
         if priv == "" then
             normal_message = normal_message:sub(1, -4)
         end
 
         if server.player_priv_code(dest_cn) == server.PRIV_ADMIN then
-            local admin_message = server.parse_message(cn, "client_connect_admin", { ip = server.player_ip(cn) })
+            local admin_message = server.parse_message(dest_cn, "client_connect_admin", { ip = server.player_ip(cn) })
             if priv == "" then
                 admin_message = normal_message .. " (" .. admin_message .. ")"
             else
