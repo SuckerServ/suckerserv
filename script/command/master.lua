@@ -5,7 +5,7 @@
 ]]
 
 return function(cn)
-  local domains = table_unique(server.parse_list(server["master_domains"]))
+  local domains = table_unique(server.master_domains)
 
   if not domains then
     server.log_error("master command: no domains set")

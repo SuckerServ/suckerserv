@@ -7,7 +7,7 @@
 ]]
 
 return function(cn)
-  local domains = table_unique(server.parse_list(server["admin_domains"]))
+  local domains = table_unique(server.admin_domains)
 
   if not domains then
     server.log_error("admin command: no domains set")
