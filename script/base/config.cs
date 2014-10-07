@@ -46,14 +46,14 @@ global small_team_game 5
 global default_gamemode "ffa"
 global default_game_on_empty 0
 
-flood_protect_text 1
-flood_protect_sayteam 1
-flood_protect_mapvote 1
-flood_protect_switchteam 1
-flood_protect_switchname 1
-flood_protect_remip 10
-flood_protect_newmap 10
-flood_protect_spectator 10
+flood_protect_text 1000
+flood_protect_sayteam 1000
+flood_protect_mapvote 1000
+flood_protect_switchteam 1000
+flood_protect_switchname 1000
+flood_protect_remip 10000
+flood_protect_newmap 10000
+flood_protect_spectator 10000
 
 global shell_label "server"
 
