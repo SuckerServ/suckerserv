@@ -82,7 +82,7 @@ end
 
 server.event_handler("connect", function(cn)
 	if server.enable_timezone == 1 then
-		local ret, val = pcall(function(cn) return mmdb.lookup_ip(server.player_ip(cn), "location", "time_zone") end)
+		local ret, val = pcall(function() return mmdb.lookup_ip(server.player_ip(cn), "location", "time_zone") end)
 		if ret then
 			server.player_vars(cn).timezone = val
 		else
