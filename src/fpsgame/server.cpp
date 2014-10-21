@@ -544,6 +544,7 @@ namespace server
     int reservedslots_use = 0;
 
     int intermtime = 10000;
+    unsigned int packetdelay = 33;
 
     string serverdesc = "", serverpass = "", serverauth = "";
     string smapname = "";
@@ -1661,10 +1662,10 @@ namespace server
         }
         
         enet_uint32 curtime = enet_time_get()-lastsend;
-        if(curtime<33 && !force) return false;
+        if(curtime<packetdelay && !force) return false;
         bool flush = buildworldstate();
         
-        lastsend += curtime - (curtime%33);
+        lastsend += curtime - (curtime%packetdelay);
         return flush;
     }
 

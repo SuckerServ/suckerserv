@@ -35,6 +35,7 @@ namespace server
     extern bool gamepaused;
     extern int gamemode;
     extern int intermtime;
+    extern unsigned int packetdelay;
     extern stream *mapdata;
     
     extern int mastermode;
