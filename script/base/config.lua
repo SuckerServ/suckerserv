@@ -7,14 +7,14 @@ server.map_rotation_type = "standard"
 
 -- Flood protect config
 
-server.flood_protect_text = 1
-server.flood_protect_sayteam = 1
-server.flood_protect_mapvote = 1
-server.flood_protect_switchteam = 1
-server.flood_protect_switchname = 1
-server.flood_protect_remip = 10
-server.flood_protect_newmap = 10
-server.flood_protect_spectator = 10
+server.flood_protect_text = 1000
+server.flood_protect_sayteam = 1000
+server.flood_protect_mapvote = 1000
+server.flood_protect_switchteam = 1000
+server.flood_protect_switchname = 1000
+server.flood_protect_remip = 10000
+server.flood_protect_newmap = 10000
+server.flood_protect_spectator = 10000
 
 -- GeoIP module
 server.mmdb_file = "share/GeoLite2-City.mmdb"
