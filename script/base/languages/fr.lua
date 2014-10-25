@@ -1,10 +1,11 @@
 return {
-server_start_message = "-> Démarrage de Suckerserv réussi",
 
-client_connect = "(%{green}%{time}%{white}) Connecté de %{yellow}%{country}%{white} : %{blue}%{name} %{magenta}(%{cn}) (%{priv})",
-client_connect_admin = "IP: %{magenta}%{ip}",
-client_disconnect = "(%{green}%{time}%{white}) Déconnecté : %{blue}%{name}%{white} %{magenta}(%{cn})%{white}",
-client_disconnect_admin = " (IP: %{magenta}%{ip})",
+server_start_message = "--> Démarrage de Suckerserv réussi.",
+
+client_connect = "(%{green}%{time}%{white}) Connecté de %{yellow}%{country}%{white} : %{blue}%{name} %{magenta}(%{cn}) %{white}(%{priv}%{white})",
+client_connect_admin = "%{white}IP: %{blue}%{ip}%{white}",
+client_disconnect = "(%{green}%{time}%{white}) Déconnecté : %{blue}%{name}%{white} %{magenta}(%{cn})",
+client_disconnect_admin = " %{white}(IP: %{blue}%{ip}%{white})",
 
 connect_info = "%{red}>>> %{yellow}Écrivez %{magenta}#%{white}help pour obtenir la %{blue}liste %{white}des %{green}commandes",
 
