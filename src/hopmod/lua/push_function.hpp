@@ -216,7 +216,7 @@ int free_func_wrapper(lua_State * L, wrapper_return_tag<typename FunctionTraits:
         to(L, 3, return_tag<typename FunctionTraits::template arg<2>::type>()),
         to(L, 4, return_tag<typename FunctionTraits::template arg<3>::type>()),
         to(L, 5, return_tag<typename FunctionTraits::template arg<4>::type>()),
-        to(L, 5, return_tag<typename FunctionTraits::template arg<5>::type>())));
+        to(L, 6, return_tag<typename FunctionTraits::template arg<5>::type>())));
     return 1;
 }
 
@@ -232,7 +232,7 @@ int free_func_wrapper(lua_State * L, wrapper_return_tag<void, FunctionTraits>, a
         to(L, 3, return_tag<typename FunctionTraits::template arg<2>::type>()),
         to(L, 4, return_tag<typename FunctionTraits::template arg<3>::type>()),
         to(L, 5, return_tag<typename FunctionTraits::template arg<4>::type>()),
-        to(L, 5, return_tag<typename FunctionTraits::template arg<5>::type>()));
+        to(L, 6, return_tag<typename FunctionTraits::template arg<5>::type>()));
     return 1;
 }
 
