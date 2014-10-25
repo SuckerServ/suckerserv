@@ -1,10 +1,11 @@
 local MAX_TIME = 5
 local READ_SIZE = 256
 
+
+local filename = "serverexec"
+
 if server.is_authserver then
     filename = "authexec"
-else
-    filename = "serverexec"
 end
 
 local file, error_message = os.open_fifo(filename)

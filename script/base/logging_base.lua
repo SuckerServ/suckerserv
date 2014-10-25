@@ -1,11 +1,9 @@
 local _ = require "underscore"
 
-local is_authserver = server.is_authserver or 0
-
 local filename = "server"
 local admin_filename = "admin"
 
-if is_authserver then
+if server.is_authserver then
     filename = "authserver"
 end
 
@@ -13,7 +11,7 @@ local logfile = io.open("log/" .. filename .. ".log","a+")
 
 function server.log(msg)
     assert(msg ~= nil)
-    if not is_authserver then msg = server.filtertext(msg) end
+    if not server.is_authserver then msg = server.filtertext(msg) end
     logfile:write(os.date("[%a %d %b %X] ",os.time()))
     logfile:write(msg)
     logfile:write("\n")
@@ -24,7 +22,7 @@ local admin_logfile = io.open("log/" .. admin_filename .. ".log","a+")
 
 function server.admin_log(msg)
     assert(msg ~= nil)
-    if not is_authserver then msg = server.filtertext(msg) end
+    if not server.is_authserver then msg = server.filtertext(msg) end
     admin_logfile:write(os.date("[%a %d %b %X] ",os.time()))
     admin_logfile:write(msg)
     admin_logfile:write("\n")
