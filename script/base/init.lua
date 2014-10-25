@@ -38,6 +38,7 @@ exec("base/kickban.lua")
 exec("base/server_message.lua")
 exec("base/cheat_detection.lua")
 
+server.module("base/mmdb")
 server.module("base/maprotation/init.lua")
 server.module("base/normalize")
 server.module("base/modified_map")
@@ -48,17 +49,13 @@ server.module("base/mapvote")
 server.module("base/register_server")
 server.module("base/web/init")
 server.module("base/global_bans")
-server.module("base/messages.lua")
+server.module("base/messages")
 
 exec_if_found("conf/server_conf.lua")
 exec("base/saveconf.lua")
 
 server.event_handler("started", function()
-
     server.reload_maprotation()
-
-    mmdb = require("mmdb")
-    mmdb.load_mmdb_database(server.mmdb_file)
 
     server.log_status(messages[messages.languages.default].server_start_message)
 end)

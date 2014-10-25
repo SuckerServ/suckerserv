@@ -2,44 +2,47 @@
 
 #ifdef WITH_MMDB
 
+#include <vector>
 #include "module.hpp"
 
 extern "C"{
 #include <maxminddb.h>
 }
 
-static MMDB_s mmdb;
-static int mmdb_status = -1;
-
-static int load_mmdb_database(lua_State * L)
+struct MaxMind
 {
-    const char * filename = luaL_checkstring(L, 1);
-    if(mmdb_status == MMDB_SUCCESS) MMDB_close(&mmdb);
-    mmdb_status = MMDB_open(filename, MMDB_MODE_MMAP, &mmdb);
-
-    if (mmdb_status != MMDB_SUCCESS) {
-        return luaL_error(L, MMDB_strerror(mmdb_status));
-    }
-
-    return 1;
-}
+    MMDB_s db;
+    int status;
+};
+std::vector<MaxMind*> maxMinds;
 
 static int lookup_ip(lua_State * L)
 {
     int gai_error, mmdb_error;
-    if(mmdb_status != MMDB_SUCCESS) return luaL_error(L, "missing MMDB database");
 
-    const char * ipaddr = luaL_checkstring(L, 1);
-    const char * arg1 = luaL_checkstring(L, 2);
-    const char * arg2 = luaL_checkstring(L, 3);
+    luaL_checktype(L, 1, LUA_TTABLE);
+
+    lua_getfield(L, 1, "id");
+
+    int index = lua_tointeger(L, -1);
+    lua_pop(L, 1);
+
+    const char * ipaddr = luaL_checkstring(L, 2);
+    const char * arg1 = luaL_checkstring(L, 3);
+    const char * arg2 = luaL_checkstring(L, 4);
 
     const char * arg3;
-    if(lua_gettop(L) > 3)
-        arg3 = luaL_checkstring(L, 4);
+
+    if(lua_gettop(L) > 4)
+        arg3 = luaL_checkstring(L, 5);
     else
         arg3 = NULL;
 
-    MMDB_lookup_result_s result = MMDB_lookup_string(&mmdb, ipaddr, &gai_error, &mmdb_error);
+    MaxMind *maxMind = maxMinds[index-1];
+
+    if(maxMind->status != MMDB_SUCCESS) return luaL_error(L, "missing MMDB database");
+
+    MMDB_lookup_result_s result = MMDB_lookup_string(&maxMind->db, ipaddr, &gai_error, &mmdb_error);
 
     if (gai_error != 0) {
         return luaL_error(L, gai_strerror(gai_error));
@@ -71,10 +74,63 @@ static int lookup_ip(lua_State * L)
     return 1;
 }
 
+static int close_mmdb(lua_State * L)
+{
+    luaL_checktype(L, 1, LUA_TTABLE);
+
+    lua_getfield(L, 1, "id");
+
+    int index = lua_tointeger(L, -1);
+    lua_pop(L, 1);
+
+    MaxMind *maxMind = maxMinds[index-1];
+    if(maxMind)
+    {
+        if(maxMind->status == MMDB_SUCCESS)
+            MMDB_close(&maxMind->db);
+        delete maxMind;
+        maxMinds.erase(maxMinds.begin()+index-1);
+    }
+    return 1;
+}
+
+static int load_mmdb_database(lua_State * L)
+{
+    MaxMind *maxMind = new MaxMind();
+    maxMind->status = -1;
+
+    const char * filename = luaL_checkstring(L, 1);
+    maxMind->status = MMDB_open(filename, MMDB_MODE_MMAP, &maxMind->db);
+
+    if (maxMind->status != MMDB_SUCCESS) {
+        delete maxMind;
+        return luaL_error(L, MMDB_strerror(maxMind->status));
+    }
+
+    maxMinds.push_back(maxMind);
+
+    lua_createtable(L, 0, 1);
+
+    lua_pushnumber(L, maxMinds.size());
+    lua_setfield(L, -2, "id");
+
+    lua_pushcfunction(L, lookup_ip);
+    lua_setfield(L, -2, "lookup_ip");
+
+    lua_pushcfunction(L, close_mmdb);
+    lua_setfield(L, -2, "close");
+
+    return 1;
+}
+
 static int shutdown_mmdb(lua_State * L)
 {
-    if(mmdb_status == MMDB_SUCCESS) MMDB_close(&mmdb);
-    mmdb_status = -1;
+    for(auto maxMind : maxMinds)
+    {
+        if(maxMind->status == MMDB_SUCCESS) MMDB_close(&maxMind->db);
+        delete maxMind;
+    }
+    maxMinds.clear();
     return 0;
 }
 
@@ -86,6 +142,7 @@ int open_mmdb(lua_State * L)
     static luaL_Reg functions[] = {
         {"load_mmdb_database", load_mmdb_database},
         {"lookup_ip", lookup_ip},
+        {"close_mmdb", close_mmdb},
         {NULL, NULL}
     };
     
@@ -117,11 +174,17 @@ static int lookup_ip(lua_State * L)
     return 1;
 }
 
+static int close_mmdb(lua_State * L)
+{
+    return 1;
+}
+
 void open_mmdb(lua_State * L)
 {
     static luaL_Reg functions[] = {
         {"load_mmdb_database", load_mmdb_database},
         {"lookup_ip", lookup_ip},
+        {"close_mmdb", close_mmdb},
         {NULL, NULL}
     };
     

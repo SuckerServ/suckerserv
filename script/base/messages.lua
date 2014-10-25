@@ -10,7 +10,7 @@ messages = {}
 messages.languages = {
 	FR = "fr",
 	US = "en",
-	default = "fr",
+	default = "en",
 }
 
 for country, language in pairs(messages.languages) do
@@ -45,7 +45,7 @@ getmetatable("").__mod = interp
 
 function server.player_lang(cn)
 	if not server.player_vars(cn).language then
-		server.player_vars(cn).language = messages.languages[mmdb.lookup_ip(server.player_ip(cn), "country", "iso_code")] or messages.languages["default"]
+		server.player_vars(cn).language = messages.languages[server.mmdatabase:lookup_ip(server.player_ip(cn), "country", "iso_code")] or messages.languages["default"]
 	end
 
 	return server.player_vars(cn).language
@@ -82,7 +82,7 @@ end
 
 server.event_handler("connect", function(cn)
 	if server.enable_timezone == 1 then
-		local ret, val = pcall(function() return mmdb.lookup_ip(server.player_ip(cn), "location", "time_zone") end)
+		local ret, val = pcall(function() return server.mmdatabase:lookup_ip(server.player_ip(cn), "location", "time_zone") end)
 		if ret then
 			server.player_vars(cn).timezone = val
 		else

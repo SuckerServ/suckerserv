@@ -6,7 +6,7 @@ local function send_connect_message(cn)
 
 --[[
     if server.display_city_on_connect == 1 then
-        local city = mmdb.lookup_ip(server.player_ip(cn), "city", "names", "en")
+        local city = server.mmdatabase:lookup_ip(server.player_ip(cn), "city", "names", "en")
         if not city or #city < 1 then city = "Unknown" end
     end
 
@@ -30,10 +30,10 @@ local function send_connect_message(cn)
         local country = ""
 
         if server.display_country_on_connect == 1 then
-            country = mmdb.lookup_ip(server.player_ip(cn), "country", "names", server.player_lang(dest_cn))
+            country = server.mmdatabase:lookup_ip(server.player_ip(cn), "country", "names", server.player_lang(dest_cn))
 
             if not country or #country < 1 then
-                country = mmdb.lookup_ip(server.player_ip(cn), "country", "names", messages.languages["default"])
+                country = server.mmdatabase:lookup_ip(server.player_ip(cn), "country", "names", messages.languages["default"])
             end
 
             if not country or #country < 1 then
@@ -44,13 +44,13 @@ local function send_connect_message(cn)
         local normal_message = server.parse_message(dest_cn, "client_connect", {country = country, name = server.player_name(cn), cn = cn, priv = priv})
 
         if priv == "" then
-            normal_message = normal_message:sub(1, -4)
+            normal_message = normal_message:sub(1, -5)
         end
 
         if server.player_priv_code(dest_cn) == server.PRIV_ADMIN then
             local admin_message = server.parse_message(dest_cn, "client_connect_admin", { ip = server.player_ip(cn) })
             if priv == "" then
-                admin_message = normal_message .. " (" .. admin_message .. ")"
+                admin_message = normal_message .. "(" .. admin_message .. ")"
             else
                 admin_message = normal_message:sub(1, -2) .. " ; " .. admin_message .. ")"
             end

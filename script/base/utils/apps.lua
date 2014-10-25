@@ -37,7 +37,7 @@ function server.write_server_status(filename, filemode)
         
         for p in server.gall() do
             
-            local country = mmdb.lookup_ip(p:ip(), "country", "iso_code")
+            local country = server.mmdatabase:lookup_ip(p:ip(), "country", "iso_code")
             if #country == 0 then country = "?" end
             
             local priv = p:priv()
