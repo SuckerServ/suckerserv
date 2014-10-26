@@ -33,6 +33,8 @@ endif()
 ## OpenSSL ##
 find_package(OpenSSL)
 
+option(WITH_OPENSSL "Enable SSL support" ON)
+
 ## MaxmindDB ##
 find_package(MMDB)
 
@@ -66,6 +68,18 @@ if(WITH_MMDB)
     add_definitions(-DWITH_MMDB)
 endif(WITH_MMDB)
 
+## LuaTZ ##
+
+execute_process(
+    COMMAND git submodule update --init src/luatz
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)
+
+FILE(GLOB LuaTZ_FILES "${CMAKE_CURRENT_SOURCE_DIR}/luatz/luatz/*.lua")
+
+install(FILES
+    ${LuaTZ_FILES}
+    DESTINATION ${PROJECT_SOURCE_DIR}/script/package/luatz)
 
 
 add_subdirectory(fungu)
@@ -81,8 +95,6 @@ check_library_exists(pthread pthread_self "" PTHREAD_EXISTS)
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     check_library_exists(rt clock_gettime "" RTLIB_EXISTS)
 endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-
-option(WITH_OPENSSL "Enable SSL support" ON)
 
 if(WITH_OPENSSL AND OPENSSL_FOUND AND OPENSSL_INCLUDE_DIR)
     set(LUA_NET_SSL_SOURCES
@@ -219,7 +231,3 @@ install(TARGETS
 install(TARGETS 
     keygen
     RUNTIME DESTINATION ${INSTALL_RUNTIME_DIR}/utils)
-
-install(FILES 
-    DESTINATION ${PROJECT_SOURCE_DIR}/script/package)
-

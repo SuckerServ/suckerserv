@@ -5,6 +5,8 @@
 
 ]]
 
+local luatz = {}
+
 messages = {}
 
 messages.languages = {
@@ -18,9 +20,7 @@ for country, language in pairs(messages.languages) do
 --	require("languages/" .. language)
 end
 
-
---messages.FORMAT_STRING = "%{text}"
-
+messages.USE_LUATZ = 1
 messages.TIME_STRING = "%H:%M:%S"
 messages.DEFAULT_TIMEZONE = "GMT"
 messages.FORMAT_TABLE = {
@@ -34,6 +34,11 @@ messages.FORMAT_TABLE = {
 	orange = "6",
 	white = "7",
 }
+
+if messages.USE_LUATZ then
+	luatz.time = require("luatz.gettime").gettime
+	luatz.get_tz = require("luatz.tzcache").get_tz
+end
 
 local native_msg = server.msg
 local native_player_msg = server.player_msg
@@ -54,9 +59,13 @@ end
 function server.parse_message(cn, text, vars)
 	text = messages[server.player_lang(cn)][text] or messages[messages.languages["default"]][text] or text
 	if server.enable_timezone == 1 then
-		local fd = io.popen("TZ='%{timezone}' date +%{timestring}" % {timezone = server.player_vars(cn).timezone, timestring = messages.TIME_STRING} )
-		messages.FORMAT_TABLE.time = fd:read('*l'):gsub('\n*$', '')
-		fd:close()
+		if messages.USE_LUATZ then
+			messages.FORMAT_TABLE.time = os.date("!"..messages.TIME_STRING, server.player_vars(cn).timezone:localise(luatz.time()))
+		else
+			local fd = io.popen("TZ='%{timezone}' date +%{timestring}" % {timezone = server.player_vars(cn).timezone, timestring = messages.TIME_STRING} )
+			messages.FORMAT_TABLE.time = fd:read('*l'):gsub('\n*$', '')
+			fd:close()
+		end
 	end
 
 	local format_table = messages.FORMAT_TABLE
@@ -87,6 +96,9 @@ server.event_handler("connect", function(cn)
 			server.player_vars(cn).timezone = val
 		else
 			server.player_vars(cn).timezone = messages.DEFAULT_TIMEZONE
+		end
+		if messages.USE_LUATZ then
+			server.player_vars(cn).timezone = luatz.get_tz(server.player_vars(cn).timezone)
 		end
 	end
 end)
