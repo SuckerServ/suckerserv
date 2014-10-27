@@ -89,18 +89,24 @@ function server.msg(text, vars)
 	end
 end
 
-server.event_handler("connect", function(cn)
+local function player_timezone(cn)
+        local timezone
 	if server.enable_timezone == 1 then
 		local ret, val = pcall(function() return server.mmdatabase:lookup_ip(server.player_ip(cn), "location", "time_zone") end)
 		if ret then
-			server.player_vars(cn).timezone = val
+			timezone = val
 		else
-			server.player_vars(cn).timezone = messages.DEFAULT_TIMEZONE
+			timezone = messages.DEFAULT_TIMEZONE
 		end
 		if messages.USE_LUATZ then
-			server.player_vars(cn).timezone = luatz.get_tz(server.player_vars(cn).timezone)
+			timezone = luatz.get_tz(timezone)
 		end
 	end
+        return timezone
+end
+
+server.event_handler("connect", function(cn)
+	server.player_vars(cn).timezone = player_timezone(cn)
 end)
 
 server.event_handler("disconnect", function(cn)
@@ -112,6 +118,14 @@ server.event_handler("disconnect", function(cn)
 		end
 	end
 end)
+
+local function init()
+	for p in server.gclients() do
+		p:vars().timezone = player_timezone(cn)
+	end
+end
+
+init()
 
 return {unload = function()
 	messages = nil
