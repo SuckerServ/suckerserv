@@ -7,17 +7,12 @@ client_connect_admin = "%{white}IP: %{blue}%{ip}%{white}",
 client_disconnect = "(%{green}%{time}%{white}) Déconnecté : %{blue}%{name}%{white} %{magenta}(%{cn})",
 client_disconnect_admin = " %{white}(IP: %{blue}%{ip}%{white})",
 
-connect_info = "%{red}>>> %{yellow}Écrivez %{magenta}#%{white}help pour obtenir la %{blue}liste %{white}des %{green}commandes",
+connect_info = "%{red}>>> %{white}Écrivez %{magenta}#%{white}help pour %{yellow}recevoir %{white}la %{blue}liste %{white}des %{green}commandes%{white}.",
 
-client_crcfail_player = "%{red}>>> %{blue}Vous %{white}utilisez une carte modifiée !",
-client_crcfail = "%{red}>>> %{white}Le joueur %{blue}%{name} %{white}utilise une carte modifiée !",
+client_crcfail_player = "%{red}>>> %{blue}Vous %{yellow}utilisez %{white}une %{green}carte %{white}modifiée !",
+client_crcfail = "%{red}>>> %{white}Le joueur %{blue}%{name} %{yellow}utilise %{white}une %{green}carte %{white}modifiée !",
 
-clearbans = "%{red}>>> %{white}Suppression de tous les %{blue}bannissements.",
-
-stats_disabled = "%{red}>>> %{orange}L'enregistrement des statistiques est désactivé pour cette partie",
-stats_enabled = "%{red}>>> %{green}Statistiques activées.",
- 
-stats_reload_disabled = "%{red}>>> L'enregistrement des statistiques a été désactivé pour cette partie",
+clearbans = "%{red}>>> %{green}Suppression de tous les %{blue}bannissements.",
 
 awards_stats = "%{red}>>> %{white}Awards : %{stats_message}",
 awards_flags = "%{red}>>> %{white}Best Flags : %{flagstats_message}",
@@ -31,7 +26,8 @@ master_already = "%{red}>>> Un admin ou un master est déjà présent.",
 
 demo_recording = "%{red}>>> %{white}Enregistrement de la partie",
 
-uptime = "%{red}>>> %{white}Serveur démarré depuis : %{blue}%{uptime}",
+info_command = "%{red}>>> %{white}Serveur démarré depuis : %{blue}%{uptime}%{white}. SuckerServ %{verstr}",
+version = "%{white}rev%{blue}%{revision}%{white} compilé le %{green}%{version}%{white}",
 
 help = "Description d'une commande : #help <command>\n%{blue}Liste %{white}des %{green}commandes%{white}",
 

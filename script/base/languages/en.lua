@@ -1,22 +1,17 @@
 return {
-server_start_message = "-> Successfully loaded Suckerserv",
+server_start_message = "--> Successfully loaded Suckerserv.",
 
-client_connect = "(%{green}%{time}%{white}) Connection from %{yellow}%{country}%{white}: %{blue}%{name} %{magenta}(%{cn}) (%{priv})",
-client_connect_admin = "IP: %{magenta}%{ip}",
-client_disconnect = "(%{green}%{time}%{white}) Disconnected: %{blue}%{name}%{white} %{magenta}(%{cn})%{white}",
-client_disconnect_admin = " (IP: %{magenta}%{ip})",
+client_connect = "(%{green}%{time}%{white}) Connection from %{yellow}%{country}%{white}: %{blue}%{name} %{magenta}(%{cn}) %{white}(%{priv}%{white})",
+client_connect_admin = "%{white}IP: %{blue}%{ip}%{white}",
+client_disconnect = "(%{green}%{time}%{white}) Disconnected: %{blue}%{name}%{white} %{magenta}(%{cn})",
+client_disconnect_admin = " %{white}(IP: %{blue}%{ip}%{white})",
 
-connect_info = "%{red}>>> %{yellow}Type %{magenta}#%{white}help for a %{blue}list %{white}of %{green}commands",
+connect_info = "%{red}>>> %{white}Type %{magenta}#%{white}help to %{yellow}get %{white}the %{blue}list %{white}of %{green}commands%{white}.",
 
-client_crcfail_player = "%{red}>>> %{blue}You %{white}are using a modified map!",
-client_crcfail = "%{red}>>> %{white}Player %{blue}%{name} %{white}is using a modified map!",
+client_crcfail_player = "%{red}>>> %{blue}You %{yellow}are using %{white}a modified %{green}map!",
+client_crcfail = "%{red}>>> %{white}Player %{blue}%{name} %{yellow}is using %{white}a modified %{green}map!",
 
-clearbans = "%{red}>>> %{white}Cleared all %{blue}bans",
-
-stats_disabled = "%{red}>>> %{orange}Stats are disabled for this match",
-stats_enabled = "%{red}>>> %{green}Stats enabled",
-
-stats_reload_disabled = "%{red}>>> Sorry, stats have been disabled for this match",
+clearbans = "%{red}>>> %{green}Cleared all %{blue}bans.",
 
 awards_stats = "%{red}>>> %{white}Awards: %{stats_message}",
 awards_flags = "%{red}>>> %{white}Best Flags: %{flagstats_message}",
@@ -30,7 +25,8 @@ master_already = "%{red}>>> An admin or master is already here.",
 
 demo_recording = "%{red}>>> %{white}Recording demo",
 
-uptime = "%{red}>>> %{white}Server uptime: %{blue}%{uptime}",
+info_command = "%{red}>>> %{white}Serveur uptime : %{blue}%{uptime}%{white}. SuckerServ %{verstr}",
+version = "%{white}rev%{blue}%{revision}%{white} compiled at %{green}%{version}%{white}",
 
 help = "Command descriptions: #help <command>\n%{blue}List %{white}of %{green}commands%{white}",
 
