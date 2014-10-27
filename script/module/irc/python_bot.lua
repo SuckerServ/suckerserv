@@ -189,7 +189,7 @@ accept_next(irc_bot)
 server.event_handler("connect", function (cn)
 
     local ip = server.player_ip(cn)
-    local country = mmdb.lookup_ip(ip, "country", "names", "en")
+    local country = server.mmdatabase:lookup_ip(ip, "country", "names", messages.languages["default"])
 
     if country == "" then country = "unknown" end
 

@@ -34,7 +34,6 @@
         * server.stats_overwrite_name_with_authname feature by Zombie
 ]]
 
-require "mmdb"
 dofile("./script/module/stats/test_backend.lua")
 
 local game = nil
@@ -116,7 +115,7 @@ function internal.updatePlayer(cn)
     t.team = server.player_team(cn)
     t.ipaddr = server.player_ip(cn)
     t.ipaddrlong = server.player_iplong(cn)
-    t.country =  mmdb.lookup_ip(server.player_ip(cn), "country", "iso_code")
+    t.coutrny = server.mmdatabase:lookup_ip(server.player_ip(cn), "country", "iso_code")
 
     for field, field_update in pairs(fields) do
         t[field] = field_update(cn)
@@ -380,10 +379,6 @@ function internal.initialize(commit_backends, query_backend, settings)
         local mapchange_handler
         local connect_handler
         
-        connect_handler = server.event_handler("connect", function(cn)
-            server.player_msg(cn, "stats_disabled")
-        end)
-        
         mapchange_handler = server.event_handler("mapchange", function()
             
             server.cancel_handler(mapchange_handler)
@@ -395,11 +390,8 @@ function internal.initialize(commit_backends, query_backend, settings)
                 internal.loadAuthHandlers(settings.auth_domain)
             end
             
-            server.sleep(10000, function() server.msg("stats_enabled") end)
         end)
         
-        -- Give a message to current players after reloadscripts() called
-        server.msg("stats_reload_disabled")
     end
     
     internal.backends = commit_backends

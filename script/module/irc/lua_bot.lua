@@ -19,7 +19,6 @@
 		
 ]]
 
-require "mmdb"
 require "net"
 
 local WAIT_TO_RECONNECT = 30000
@@ -221,7 +220,7 @@ irc:connectServer(irc.client)
 -- Handle Game Message Events
 server.event_handler("connect", function (cn)
     local ip = server.player_ip(cn)
-    local country = mmdb.lookup_ip(ip, "country", "names", "en")
+    local country =  server.mmdatabase:lookup_ip(ip, "country", "names", messages.languages["default"])
     irc:toChannel(string.format("\0039CONNECT\003    \00312%s(%i)\003 \0037%s\003",server.player_name(cn),cn,country)) 
 end)
 

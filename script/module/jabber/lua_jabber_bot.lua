@@ -7,7 +7,6 @@
 
 ]]
 
-require "mmdb"
 require "net"
 
 local function noop() end -- Use this function instead of defining new empty callback functions
@@ -132,7 +131,7 @@ xmpp_commands = {
 -- Handle Game Message Events
 server.event_handler("connect", function (cn)
     local ip = server.player_ip(cn)
-    local country = mmdb.lookup_ip(ip, "country", "names", "en")
+    local country = server.mmdatabase:lookup_ip(ip, "country", "names", messages.languages["default"])
     send_reply(string.format("[CONNECT] %s(%i) %s",server.player_name(cn),cn,country)) 
 end)
 
