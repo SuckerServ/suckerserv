@@ -8,7 +8,7 @@ namespace e
     bool loadents(const char *mname, vector<entity> &ents, uint &mapcrc)
     {
         defformatstring(mf)("mapinfo/%s.ents", mname);
-        stream *f = opengzfile(path(mf), "r+b");
+        stream *f = opengzfile(path(mf), "rb");
         if (!f) return false;
 
         if (f->getchar() != 'M' || f->getchar() != 'A' || f->getchar() != 'P' ||
