@@ -45,20 +45,17 @@ local function request_key(cn)
 	
 	if status == auth.request_status.SUCCESS
 	then
-	    if v.nameprotect_wanted_authname == string.lower(user_id)
-	    then
-		v.reserved_name = user_id
+		if v.nameprotect_wanted_authname == string.lower(user_id)
+		then
+			v.reserved_name = user_id
 
-        -- Using stats configuration variables here, may change in the future
-        if server.stats_tell_auth_name == 1 then
-            server.player_msg(cn, "stats_logged_in", { user_id = user_id .. " (Name Protection)" })
-        end
+			server.player_msg(cn, "client_nameprotect", { user_id = user_id })
 
-		server.log(string.format("%s(%i) authenticated as '%s' to use reserved name.", server.player_name(cn), cn, user_id))
-		return
-	    else
-		status = "WRONG_KEY"
-	    end
+			server.log(string.format("%s(%i) authenticated as '%s' to use reserved name.", server.player_name(cn), cn, user_id))
+			return
+		else
+			status = "WRONG_KEY"
+		end
 	end
 	
 	if status == auth.request_status.CANCELLED

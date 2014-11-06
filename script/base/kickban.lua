@@ -76,7 +76,7 @@ function server.clearbans()
 
     temporary_bans = {}
 
-    server.msg(server.clearbans_message)
+    server.msg("clearbans")
 end
 
 local function is_banned(ipmask, reserved_slot)

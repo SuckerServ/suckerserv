@@ -16,9 +16,9 @@ server.event_handler("modmap", function(cn, map, crc)
 
     for c in server.gclients() do
         if c.cn == cn then
-            c:msg(server.client_crcfail_player_message)
+            c:msg("client_crcfail_player")
         else
-            c:msg(server.client_crcfail_message % { name = server.player_displayname(cn) } )
+            c:msg("client_crcfail", { name = server.player_displayname(cn) } )
         end
     end
 
@@ -46,6 +46,6 @@ end)
 
 server.event_handler("checkmaps", function(cn)
     for sessionid, cn in pairs(modified_clients) do
-        server.player_msg(cn, string.format(server.client_crcfail_player_message, server.player_displayname(cn)))
+        server.player_msg(cn, "client_crcfail_player")
     end
 end)

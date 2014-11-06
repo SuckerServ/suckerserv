@@ -4,7 +4,6 @@ server.stats_db_filename = "log/stats.sqlite"
 server.stats_query_backend = "sqlite3"
 server.stats_use_auth = 0
 server.stats_auth_domain = ""
-server.stats_tell_auth_name = 0
 server.stats_debug = 0
 server.stats_use_sqlite = 1
 server.stats_sqlite_exclusive_locking = 0

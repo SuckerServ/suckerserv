@@ -211,11 +211,6 @@ function internal.commit()
         playerData.rank = server.player_rank(cn)
         
         if auth_domain and playerData.auth_name then
-            
-            if server.stats_tell_auth_name == 1 then
-                server.player_msg(cn, string.format("Saving your stats as %s@%s", playerData.auth_name, auth_domain))
-            end
-            
             if server.stats_overwrite_name_with_authname == 1 then
                 playerData.player_name = playerData.name -- save the original name
                 playerData.name = playerData.auth_name
@@ -297,10 +292,6 @@ function internal.loadAuthHandlers(domain)
         
         local t = internal.getPlayerTable(server.player_id(cn))
         t.auth_name = user_id
-
-        if server.stats_tell_auth_name == 1 then
-            server.player_msg(cn, "stats_logged_in", {user_id = user_id})
-        end
     end)
 
     function internal.unloadAuthHandlers()
