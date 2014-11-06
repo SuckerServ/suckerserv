@@ -471,7 +471,7 @@ static int weekday(const char * weekday_string)
         "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
     };
     
-    for(int i = 0; i < sizeof(names)/sizeof(const char *); i++)
+    for(unsigned int i = 0; i < sizeof(names)/sizeof(const char *); i++)
         if(strncasecmp(weekday_string, names[i], 3) == 0) return i;
     
     return -1;
@@ -484,7 +484,7 @@ static int month(const char * month_string)
         "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     };
     
-    for(int i = 0; i < sizeof(names)/sizeof(const char *); i++)
+    for(unsigned int i = 0; i < sizeof(names)/sizeof(const char *); i++)
         if(strncasecmp(month_string, names[i], 3) == 0) return i;
     
     return -1;

@@ -88,8 +88,6 @@ std::size_t response::get_content_length()const
     return m_content_length;
 }
 
-static void empty_handler(const connection::error &){}
-
 void response::send_header()
 {
     if(m_request.is_last_request() && !m_keep_request) 
