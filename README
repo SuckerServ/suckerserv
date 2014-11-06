@@ -1,6 +1,6 @@
 * WARNING : This is NOT a stable release, so if you encounter problems,
   please report all of them and don't hesitate to send patches. 
-  Bugtracker: https://code.google.com/p/suckerserv/issues *
+  Bugtracker: https://github.com/SuckerServ/suckerserv/issues *
 
 * Since the v3 authserver has not been entirely ported to v4/5,
  if you want to use it, please install the SuckerServ-v3's one.
