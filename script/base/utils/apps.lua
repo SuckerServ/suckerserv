@@ -5,7 +5,7 @@ function server.write_server_status(filename, filemode)
         filemode = "w"
     end
     
-    local out = io.open(filename, filemode)
+    local out = assert(io.open(filename, filemode))
     
     local status_rows = "PLAYERS MAP MODE MASTER HOST PORT DESCRIPTION\n"
     
