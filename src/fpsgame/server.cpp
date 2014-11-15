@@ -39,7 +39,7 @@ namespace server
     {
         int type;
         int spawntime;
-        char spawned;
+        bool spawned;
         int lastpickup;
     };
 
