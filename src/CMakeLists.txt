@@ -62,7 +62,8 @@ if(NOT MMDB_FOUND)
     configure_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/libmaxminddb/include/maxminddb_config.h.in
         ${CMAKE_CURRENT_BINARY_DIR}/maxminddb/maxminddb_config.h
-
+    )
+    
     add_library(${MMDB_LIBRARY} SHARED ${MMDB_SOURCES})
     
     install(TARGETS
