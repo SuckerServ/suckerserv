@@ -39,7 +39,7 @@ namespace server
     {
         int type;
         int spawntime;
-        bool spawned;
+        char spawned;
         int lastpickup;
     };
 
@@ -887,15 +887,15 @@ namespace server
         
         return n;
     }
-
-    bool duplicatename(clientinfo *ci, const char *name)
+    
+    bool duplicatename(clientinfo *ci, char *name)
     {
         if(!name) name = ci->name;
         loopv(clients) if(clients[i]!=ci && (!strcmp(name, clients[i]->name) && !clients[i]->spy)) return true;
         return false;
     }
 
-    const char *colorname(clientinfo *ci, const char *name = NULL)
+    const char *colorname(clientinfo *ci, char *name = NULL)
     {
         if(!name) name = ci->name;
         if(name[0] && !duplicatename(ci, name) && ci->state.aitype == AI_NONE) return name;
@@ -2778,7 +2778,7 @@ namespace server
                 case N_CONNECT:
                 {
                     getstring(text, p);
-                    filtertext(text, text, false, MAXNAMELEN);
+                    filtertext(text, text, false, false, MAXNAMELEN);
                     if(!text[0]) copystring(text, "unnamed");
                     copystring(ci->name, text, MAXNAMELEN+1);
                     ci->playermodel = getint(p);
@@ -3137,7 +3137,7 @@ namespace server
             case N_TEXT:
             {
                 getstring(text, p);
-                filtertext(text, text);
+                filtertext(text, text, true, true);
                 
                 if(ci && (ci->privilege == PRIV_ADMIN || !message::limit(ci, &ci->n_text_millis, message::resend_time::text, "text")))
                 {
@@ -3170,7 +3170,7 @@ namespace server
             case N_SAYTEAM:
             {
                 getstring(text, p);
-                filtertext(text, text);
+                filtertext(text, text, true, true);
                 if(!ci || !cq || (ci->state.state==CS_SPECTATOR && !ci->privilege) || !m_teammode || !cq->team[0] || message::limit(ci, &ci->n_sayteam_millis, message::resend_time::sayteam, "team chat") || ci->spy) break;
                 convert2utf8 utf8text(text);
                 if(event_sayteam(event_listeners(), std::make_tuple(ci->clientnum, utf8text.str())) == false)
@@ -3188,7 +3188,7 @@ namespace server
             case N_SWITCHNAME:
             {
                 getstring(text, p);
-                filtertext(text, text, false, MAXNAMELEN);
+                filtertext(text, text, false, false, MAXNAMELEN);
                 if(!text[0]) copystring(text, "unnamed");
                 convert2utf8 newnameutf8(text);
           
@@ -3233,7 +3233,7 @@ namespace server
             case N_MAPVOTE:
             {
                 getstring(text, p);
-                filtertext(text, text);
+                filtertext(text, text, false, false);
                 int reqmode = getint(p);
                 if(!ci->local && !m_mp(reqmode)) reqmode = 0;
                 convert2utf8 utf8text(text);
@@ -3248,7 +3248,7 @@ namespace server
             case N_SWITCHTEAM:
             {
                 getstring(text, p);
-                filtertext(text, text, false, MAXTEAMLEN);
+                filtertext(text, text, false, false, MAXTEAMLEN);
                 convert2utf8 newteamutf8(text);
                 convert2utf8 oldteamutf8(ci->team);
                 
@@ -3271,7 +3271,7 @@ namespace server
             case N_MAPCHANGE:
             {
                 getstring(text, p);
-                filtertext(text, text, false);
+                filtertext(text, text, false, false);
                 int reqmode = getint(p);
                 if(type!=N_MAPVOTE && !mapreload) break;
                 if(!ci->local && !m_mp(reqmode)) reqmode = 0;
@@ -3408,7 +3408,7 @@ namespace server
             {
                 int victim = getint(p);
                 getstring(text, p);
-                filtertext(text, text);
+                filtertext(text, text, false, false);
                 trykick(ci, victim, text);
                 break;
             }
@@ -3435,7 +3435,7 @@ namespace server
             {
                 int who = getint(p);
                 getstring(text, p);
-                filtertext(text, text, false, MAXTEAMLEN);
+                filtertext(text, text, false, false, MAXTEAMLEN);
                 if(!ci->privilege && !ci->local) break;
                 clientinfo *wi = getinfo(who);
                 if(!m_teammode || !text[0] || !wi || !wi->connected || !strcmp(wi->team, text)) break;
@@ -3585,7 +3585,7 @@ namespace server
                 getstring(name, p, sizeof(name));
                 int victim = getint(p);
                 getstring(text, p);
-                filtertext(text, text);
+                filtertext(text, text, false, false);
 
                 tryauth(ci, name, desc, victim);
 
