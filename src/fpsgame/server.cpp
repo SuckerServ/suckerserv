@@ -2783,7 +2783,7 @@ namespace server
                 case N_CONNECT:
                 {
                     getstring(text, p);
-                    filtertext(text, text, false, MAXNAMELEN);
+                    filtertext(text, text, false, false, MAXNAMELEN);
                     if(!text[0]) copystring(text, "unnamed");
                     copystring(ci->name, text, MAXNAMELEN+1);
                     ci->playermodel = getint(p);
@@ -3140,7 +3140,7 @@ namespace server
             case N_TEXT:
             {
                 getstring(text, p);
-                filtertext(text, text);
+                filtertext(text, text, true, true);
                 
                 if(ci && (ci->privilege == PRIV_ADMIN || !message::limit(ci, &ci->n_text_millis, message::resend_time::text, "text")))
                 {
@@ -3173,8 +3173,8 @@ namespace server
             case N_SAYTEAM:
             {
                 getstring(text, p);
-                filtertext(text, text);
                 if(!ci || !cq || (ci->state.state==CS_SPECTATOR && !ci->privilege) || !m_teammode || !cq->team[0] || message::limit(ci, &ci->n_sayteam_millis, message::resend_time::sayteam, "team chat") || ci->spy) break;
+                filtertext(text, text, true, true);
                 convert2utf8 utf8text(text);
                 if(event_sayteam(event_listeners(), boost::make_tuple(ci->clientnum, utf8text.str())) == false)
                 {
@@ -3191,7 +3191,7 @@ namespace server
             case N_SWITCHNAME:
             {
                 getstring(text, p);
-                filtertext(text, text, false, MAXNAMELEN);
+                filtertext(ci->name, text, false, false, MAXNAMELEN);
                 if(!text[0]) copystring(text, "unnamed");
                 convert2utf8 newnameutf8(text);
           
@@ -3236,7 +3236,7 @@ namespace server
             case N_MAPVOTE:
             {
                 getstring(text, p);
-                filtertext(text, text);
+                filtertext(text, text, false);
                 int reqmode = getint(p);
                 if(!ci->local && !m_mp(reqmode)) reqmode = 0;
                 convert2utf8 utf8text(text);
@@ -3251,7 +3251,7 @@ namespace server
             case N_SWITCHTEAM:
             {
                 getstring(text, p);
-                filtertext(text, text, false, MAXTEAMLEN);
+                filtertext(text, text, false, false, MAXTEAMLEN);
                 convert2utf8 newteamutf8(text);
                 convert2utf8 oldteamutf8(ci->team);
                 
@@ -3438,7 +3438,7 @@ namespace server
             {
                 int who = getint(p);
                 getstring(text, p);
-                filtertext(text, text, false, MAXTEAMLEN);
+                filtertext(text, text, false, false, MAXTEAMLEN);
                 if(!ci->privilege && !ci->local) break;
                 clientinfo *wi = getinfo(who);
                 if(!m_teammode || !text[0] || !wi || !wi->connected || !strcmp(wi->team, text)) break;
