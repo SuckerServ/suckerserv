@@ -283,7 +283,7 @@ server.disable_commands({
 --server.module("balance/server_size/by_gamemode")       -- Increase/ Decrease server; depends on the current gamemode
 
 --server.module("override/gameduration")                 -- Change the usual 10 minutes game duration to 15 minutes
---server.module("override/default_mastermode")        	-- Change the default mastermode (to locked by default)
+--server.module("override/default_mastermode")           -- Change the default mastermode (to locked by default)
 
 --server.module("recordgames")                           -- Auto record demos of every game
 
@@ -297,12 +297,13 @@ server.disable_commands({
 
 --server.module("jabber/lua_jabber_bot")                 -- A ugly and unstable Jabber Bot
 --server.module("name_lock")                             -- Prevent players from renaming
---server.module("mute_spectators")                       -- Mute all spectators, requiered for --mutespecs and --unmutespecs commands
+--server.module("mute_spectators")                       -- Mute all spectators, requiered for #mutespecs and #unmutespecs commands
 
---server.module("teamkill_protect")			-- Disallow teamkills if the teamkiller tk/frags ratio is above 0.25
+--server.module("teamkill_protect")			 -- Disallow teamkills if the teamkiller tk/frags ratio is above 0.25
 
 --server.module("mapbattle")                             -- Vote for map at intermission
---server.module("mapsucks")                              -- Module for --mapsucks
+--server.module("mapsucks")                              -- Module for #mapsucks
+--server.module("flagrun")                               -- Record and display best flagrun time
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 --IRC MODULES
@@ -313,9 +314,9 @@ server.disable_commands({
 
 --After that you need to configure the config.py file. You can find it in the /python_bot folder. Have fun!
 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Message customization
-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Take the message's var you want customize from script/modules/declare/messages.vars
 -- Exemple: There's a "global forgive_actor_forgiven_message" in messages.vars
 --          So the line to put here, for exemple, is → forgive_actor_forgiven_message (concat "You've been forgiven by" (blue "%s"))

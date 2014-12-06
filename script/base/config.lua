@@ -15,6 +15,8 @@ server.flood_protect_switchname = 1000
 server.flood_protect_remip = 10000
 server.flood_protect_newmap = 10000
 server.flood_protect_spectator = 10000
+server.flood_protect_disc_timewindow = 30000
+server.flood_protect_disc_max = 3
 
 -- GeoIP module
 server.mmdb_file = "share/GeoLite2-City.mmdb"
