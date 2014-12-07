@@ -618,7 +618,7 @@ void set_player_privilege(int cn, int priv_code, bool public_priv = false)
 
     public_priv = !player->spy && public_priv;
     
-    if(player->privilege == priv_code) return;
+    if(player->privilege == priv_code && (currentmaster == cn || ! public_priv)) return;
     if(priv_code == PRIV_NONE) unset_player_privilege(cn);
     
     if(cn == currentmaster && !public_priv)
