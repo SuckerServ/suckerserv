@@ -68,13 +68,14 @@ server.master_domains = {"suckerserv:master"}          -- Domain for master
 server.invmaster_domains = {"suckerserv:master"}       -- Same
 server.auto_invmaster_domains = {"suckerserv:master"}  -- Same, if you want to be auto-invadmin at connection
 
-server.name_reservation_domain = "suckerserv"        -- Domain for name protect
+server.name_reservation_domain = "suckerserv"          -- Domain for name protect
 server.auth_domains = {"suckerserv"}                   -- Domain for privileges with new authserver
+server.server_auth_domain = "suckerserv:admin"         -- Domain allowing it's users to be always able to connect (server full, private, ban…)
 
-server.module("auth/name")                          -- Module for name protect
-server.module("auth/invmaster")                     -- Module for auto-invmaster
-server.module("auth/invadmin")                      -- Module for auto-invadmin
---server.module("auth/privileges")                   -- New privileges module to set inv-master/admin with new authserver. Disable auth/invadmin and auth/invmaster before enabling this 
+server.module("auth/name")                             -- Module for name protect
+server.module("auth/invmaster")                        -- Module for auto-invmaster
+server.module("auth/invadmin")                         -- Module for auto-invadmin
+--server.module("auth/privileges")                     -- New privileges module to set inv-master/admin with new authserver. Disable auth/invadmin and auth/invmaster before enabling this 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Jabber Bot

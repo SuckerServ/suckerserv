@@ -2810,12 +2810,7 @@ namespace server
                     getstring(desc, p, sizeof(desc));
                     uint id = (uint)getint(p);
                     getstring(ans, p, sizeof(ans));
-                    (void)id; // remove this line once we support it
-                    /*if(!answerchallenge(ci, id, ans, desc))*/ // not supported in hopmod for now
-                    {
-                        disconnect_client(sender, DISC_MSGERR/*ci->connectauth*/);
-                        return;
-                    }
+                    answerchallenge(ci, id, ans, desc);
                     break;
                 }
 
