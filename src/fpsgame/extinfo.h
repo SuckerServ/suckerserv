@@ -9,8 +9,8 @@
 #define EXT_PLAYERSTATS                 1
 #define EXT_TEAMSCORE                   2
 
-#define EXT_HOPMOD                      -2 // Case to identify Hopmod based servers
-#define EXT_HOPMOD_VERSION              1  // bump when changing hopmod related extensions
+#define EXT_SUCKERSERV                  -5 // Case to identify SuckerServ based servers
+#define EXT_SUCKERSERV_VERSION          1  // bump when changing SuckerServ related extensions
 
 /*
     Client:
@@ -60,8 +60,7 @@
             putint(q, !ext_admin_client ? -1 : (ip >> 24) & 0xFF); // send last byte as signed integer, -1 on error
         if(ext_hopmod_request)
         {
-            putint(q, EXT_HOPMOD);
-            putint(q, EXT_HOPMOD_VERSION);
+            putint(q, EXT_SUCKERSERV);
             putint(q, ci->state.suicides);
             putint(q, ci->state.shotdamage);
             putint(q, ci->state.damage);
@@ -145,8 +144,8 @@
                 /* hopmod extension */
                 if(req.remaining() && req.get() > 0)
                 {
-                    putint(p, EXT_HOPMOD);
-                    putint(p, EXT_HOPMOD_VERSION);
+                    putint(p, EXT_SUCKERSERV);
+                    putint(p, EXT_SUCKERSERV_VERSION);
                     putint(p, hopmod::revision());
                     sendstring(buildtime(), p);
                 }
@@ -154,7 +153,7 @@
             }
     
             /* hopmod extension */
-            case EXT_HOPMOD:
+            case EXT_SUCKERSERV:
             {
                 putint(p, EXT_NO_ERROR);
                 putint(p, hopmod::revision());
