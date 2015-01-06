@@ -2971,7 +2971,7 @@ namespace server
                     !message::limit(ci, &ci->n_switchteam_millis, message::resend_time::switchteam, "team change") &&
                     event_chteamrequest(event_listeners(), boost::make_tuple(ci->clientnum, ci->team, text)) == false;
                 
-                if(allow && addteaminfo(text))
+                if(allow)
                 {
                     bool cancel = ci->check_flooding(ci->sv_switchteam_hit,"switching teams") || 
                         (smode && !smode->canchangeteam(ci, ci->team, text)) ||
