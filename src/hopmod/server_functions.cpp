@@ -1161,5 +1161,3 @@ void editvar(int cn, const char *var, int value)
     if (!ci) return;
     sendf(cn, 1, "ri5si", N_CLIENT, cn, 100/*should be safe*/, N_EDITVAR, ID_VAR, var, value);
 }
-
-#endif
