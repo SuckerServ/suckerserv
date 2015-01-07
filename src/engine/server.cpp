@@ -589,11 +589,6 @@ void update_server(const boost::system::error_code & error)
         update_timer.expires_from_now(boost::posix_time::milliseconds(5));
         update_timer.async_wait(update_server);
     }
-}
-
-void update_server(const boost::system::error_code & error = boost::system::error_code())
-{
-    if(nonlocalclients > 0) sched_next_update();
     
     update_time_vars();
     
