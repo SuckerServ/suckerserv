@@ -444,22 +444,6 @@ namespace server
             sendf(clientnum, 1, "ris", N_SERVMSG, text);
         }
         
-        bool check_flooding(freqlimit & hit, const char * activity = NULL, bool sendwarning = true)
-        {
-            int remaining = hit.next(totalsecs);
-            bool flooding = remaining > 0;
-            if(flooding && activity && sendwarning)
-            {
-                defformatstring(blockedinfo)(RED "[Flood Protection] You are blocked from %s for another %i second%s.", 
-                    activity, 
-                    remaining,
-                    remaining != 1 ? "s" : ""
-                );
-                sendprivtext(blockedinfo);
-            }
-            return flooding;
-        }
-        
         const char * hostname()const
         {
             static char hostname_buffer[16];            
@@ -3004,21 +2988,13 @@ namespace server
                 
                 if(allow)
                 {
-                    bool cancel = ci->check_flooding(ci->sv_switchteam_hit,"switching teams") || 
-                        (smode && !smode->canchangeteam(ci, ci->team, text)) ||
-                        event_chteamrequest(event_listeners(), boost::make_tuple(ci->clientnum, ci->team, text));
-                    
-                    if(!cancel)
-                    {
-                        if(ci->state.state==CS_ALIVE) suicide(ci);
-                        string oldteam;
-                        copystring(oldteam, ci->team);
-                        copystring(ci->team, text);
-                        aiman::changeteam(ci);
-                        if(!ci->spy) sendf(-1, 1, "riisi", N_SETTEAM, sender, ci->team, ci->state.state==CS_SPECTATOR ? -1 : 0);
-                        event_reteam(event_listeners(), boost::make_tuple(ci->clientnum, oldteam, text));
-                    }
-                    else if(!ci->spy) sendf(-1, 1, "riisi", N_SETTEAM, sender, ci->team, ci->state.state==CS_SPECTATOR ? -1 : 0);
+                    if(ci->state.state==CS_ALIVE) suicide(ci);
+                    string oldteam;
+                    copystring(oldteam, ci->team);
+                    copystring(ci->team, text);
+                    aiman::changeteam(ci);
+                    event_reteam(event_listeners(), boost::make_tuple(ci->clientnum, oldteam, text));
+                    if(!ci->spy) sendf(-1, 1, "riisi", N_SETTEAM, sender, ci->team, ci->state.state==CS_SPECTATOR ? -1 : 0);
                 }
                 break;
             }
