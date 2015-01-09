@@ -10,7 +10,7 @@ lua::event< boost::tuple<int,int> >                                  event_renam
 lua::event< boost::tuple<int,const char *> >                         event_allow_rename("allow_rename");
 lua::event< boost::tuple<int,const char *,const char *> >            event_rename("rename");
 lua::event< boost::tuple<int,const char *,const char *> >            event_reteam("reteam");
-lua::event< boost::tuple<int,const char *,const char *> >            event_chteamrequest("chteamrequest");
+lua::event< boost::tuple<int,const char *,const char *, int> >       event_chteamrequest("chteamrequest");
 lua::event< boost::tuple<int,const char *> >                         event_text("text");
 lua::event< boost::tuple<int,const char *> >                         event_sayteam("sayteam");
 lua::event< boost::tuple<int,const char *,const char *> >            event_mapvote("mapvote");
@@ -32,7 +32,7 @@ lua::event< boost::tuple<int> >                                      event_spawn
 lua::event< boost::tuple<int, int, int, int> >                       event_damage("damage");
 lua::event< boost::tuple<int,const char*,bool> >                     event_setmaster("setmaster");
 lua::event< boost::tuple<int,int> >                                  event_respawnrequest("respawnrequest");
-lua::event< boost::tuple<> >                                         event_clearbans_request("clearbans_request");
+lua::event< boost::tuple<int> >                                      event_clearbans_request("clearbans_request");
 lua::event< boost::tuple<int, const char *, int, int, const char *> >  event_kick_request("kick_request");
 lua::event< boost::tuple<> >                                         event_intermission("intermission");
 lua::event< boost::tuple<> >                                         event_finishedgame("finishedgame");

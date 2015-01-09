@@ -108,18 +108,13 @@ server.event_handler("connect", check_name)
 
 server.event_handler("rename", check_name)
 
-server.event_handler("disconnect", function(cn)
-
-    server.player_vars(cn).reserved_tag = nil
-end)
-
-if server.file_exists("conf/clans")
-then
-    script("conf/clans")
-end
+exec_if_found("conf/clans.lua")
 
 
-return {unload = function()    
+return {unload = function()
+
+    server.is_clan_registrated = nil
+    
     for p in server.gall()
     do
 	p:vars().reserved_tag = nil

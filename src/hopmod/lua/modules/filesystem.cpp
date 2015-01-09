@@ -6,9 +6,9 @@ extern "C"{
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <cstring>
+#include <string.h>
 }
-#include <string> // Find out why placement new depends on a stdlib header
+#include "cube.h"
 
 class directory_iterator
 {
@@ -22,10 +22,16 @@ public:
         m_dir_path = new char[strlen(dirname) + 1];
         strcpy(m_dir_path, dirname);
     }
+
+    void closehandle()
+    {
+        if(m_dir) closedir(m_dir);
+        m_dir = NULL;
+    }
     
     ~directory_iterator()
     {
-        if(m_dir) closedir(m_dir);
+        closehandle();
         delete [] m_dir_path;
     }
     
@@ -38,6 +44,7 @@ public:
         
         static luaL_Reg funcs[] = {
             {"__gc", &directory_iterator::__gc},
+            {"close", &directory_iterator::close},
             {NULL, NULL}
         };
         
@@ -52,13 +59,13 @@ public:
         struct dirent * entry = readdir(self->m_dir);
         if(!entry) return 0;
         
-	    std::string filename;
-	    filename  = self->m_dir_path;
-	    filename += "/";
-	    filename += entry->d_name; 
+        char file[1024];
+        copystring(file, self->m_dir_path, sizeof(file));
+        concatstring(file, "/", sizeof(file));
+        concatstring(file, entry->d_name, sizeof(file));
 	    
         struct stat info;
-        if (stat(filename.c_str(), &info)) return 0;
+        if (stat(file, &info)) return 0;
         
         unsigned char file_type = DT_UNKNOWN;
         if (S_ISREG(info.st_mode))       file_type = DT_REG;
@@ -79,6 +86,12 @@ private:
     static int __gc(lua_State * L)
     {
         reinterpret_cast<directory_iterator *>(luaL_checkudata(L, 1, MT))->~directory_iterator();
+        return 0;
+    }
+
+    static int close(lua_State * L)
+    {
+        reinterpret_cast<directory_iterator *>(luaL_checkudata(L, 1, MT))->closehandle();
         return 0;
     }
     

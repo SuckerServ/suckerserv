@@ -6,5 +6,7 @@ function server.read_whole_file(filename)
         return
     end
     
-    return file:read("*a")
+    local whole = file:read("*a")
+    io.close(file)
+    return whole
 end

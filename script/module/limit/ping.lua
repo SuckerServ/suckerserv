@@ -20,9 +20,6 @@ local function unset_vars(cn)
     server.player_vars(cn).ping_warnings = nil
 end
 
-
-server.event_handler("disconnect", unset_vars)
-
 server.event_handler("intermission", function()
 
     is_intermission = true

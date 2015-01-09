@@ -1,17 +1,41 @@
-/*
-    This file is included from and is a part of "fpsgame/server.cpp".
-*/
-#ifdef INCLUDE_EXTSERVER_CPP
 
-int sv_text_hit_length = 0;
-int sv_sayteam_hit_length = 0;
-int sv_mapvote_hit_length = 0;
-int sv_switchname_hit_length = 0;
-int sv_switchteam_hit_length = 0;
-int sv_kick_hit_length = 0;
-int sv_remip_hit_length = 0;
-int sv_newmap_hit_length = 0;
-int sv_spec_hit_length = 0;
+namespace message{
+    
+    int disc_msgs;
+    int disc_window;
+    
+    namespace resend_time{
+        
+        int text = 0;
+        int sayteam = 0;
+        int mapvote = 0;
+        int switchname = 0;
+        int switchteam = 0;
+        int kick = 0;
+        int remip = 0;
+        int newmap = 0;
+        int spec = 0;
+
+    } //namespace resend_time
+    
+    bool limit(clientinfo * ci, int * millis, int resend_time, const char * message_type = NULL)
+    {
+        if(ci->privilege == PRIV_ADMIN) return false;
+        
+        int wait = totalmillis - *millis;
+        
+        if(wait >= resend_time){
+            *millis = totalmillis;
+        }
+        else{
+            defformatstring(error_message)(RED "Rejected %s message (wait %i seconds before resending)!", message_type, static_cast<int>(std::ceil((resend_time - wait)/1000.0)));
+            ci->sendprivtext(error_message);
+        }
+        
+        return wait < resend_time;
+    }
+    
+} //namespace message
 
 string ext_admin_pass = "";
 
@@ -117,6 +141,11 @@ int player_sessionid(int cn)
     return (ci ? ci->sessionid : -1);
 }
 
+int player_ownernum(int cn)
+{
+    return get_ci(cn)->ownernum;
+}
+
 const char * player_name(int cn){return get_ci(cn)->name;}
 
 void player_rename(int cn, const char * newname, bool public_rename)
@@ -203,12 +232,12 @@ const char * player_team(int cn)
 
 const char * player_ip(int cn)
 {
-    return get_ci(get_ci(cn)->ownernum)->hostname();
+    return get_ci(cn)->hostname();
 }
 
 unsigned long player_iplong(int cn)
 {
-    return ntohl(getclientip(get_ci(get_ci(cn)->ownernum)->clientnum));
+    return ntohl(getclientip(get_ci(cn)->clientnum));
 }
 
 int player_status_code(int cn)
@@ -437,17 +466,17 @@ void player_slay(int cn)
     sendf(-1, 1, "ri2", N_FORCEDEATH, cn);
 }
 
-bool player_changeteam(int cn,const char * newteam)
+bool player_changeteam(int cn,const char * newteam, bool dosuicide)
 {
     clientinfo * ci = get_ci(cn);
     
     if(!m_teammode || (smode && !smode->canchangeteam(ci, ci->team, newteam)) ||
-        event_chteamrequest(event_listeners(), boost::make_tuple(cn, ci->team, newteam))) 
+        event_chteamrequest(event_listeners(), boost::make_tuple(cn, ci->team, newteam, sender))) 
     {
         return false;
     }
     
-    if(smode || ci->state.state==CS_ALIVE) suicide(ci);
+    if(dosuicide && (smode || ci->state.state==CS_ALIVE)) suicide(ci);
     event_reteam(event_listeners(), boost::make_tuple(ci->clientnum, ci->team, newteam));
     
     copystring(ci->team, newteam, MAXTEAMLEN+1);
@@ -563,7 +592,11 @@ void cleanup_masterstate(clientinfo * master)
         mastermode = MM_OPEN;
         mastermode_owner = -1;
         mastermode_mtime = totalmillis;
-        allowedips.setsize(0);
+        if(reset_mm)
+        {
+            mastermode = display_open ? MM_OPEN : MM_AUTH;
+            allowedips.setsize(0);
+        }
     }
     
     if(gamepaused && cn == pausegame_owner) pausegame(false);
@@ -1100,21 +1133,6 @@ void player_respawn(int cn)
     try_respawn(ci, ci);
 }
 
-int revision()
-{
-#if defined(REVISION) && (REVISION + 0)
-    return REVISION;
-#endif
-    return -1;
-}
-
-const char *version()
-{
-    static char buf[40];
-    formatstring(buf)("%s %s", __TIME__, __DATE__);
-    return buf;
-}
-
 const char *extfiltertext(const char *src)
 {
     static string dst; 
@@ -1143,5 +1161,3 @@ void editvar(int cn, const char *var, int value)
     if (!ci) return;
     sendf(cn, 1, "ri5si", N_CLIENT, cn, 100/*should be safe*/, N_EDITVAR, ID_VAR, var, value);
 }
-
-#endif

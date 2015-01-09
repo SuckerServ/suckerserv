@@ -49,45 +49,58 @@ bool dir_exists(const char * name)
     else return false;
 }
 
-freqlimit::freqlimit(int length)
- :m_length(length),
-  m_hit(0)
+static std::vector<const char *> temp_files;
+
+void temp_file(const char * filename)
 {
-    
+    temp_files.push_back(filename);
 }
 
-unsigned int freqlimit::next(unsigned int time)
-{
-    if(time >= m_hit)
-    {
-        m_hit = time + m_length;
-        return 0;
-    }else return m_hit - time; 
-}
-
-static std::vector<const char *> info_files;
-
-bool info_file(const char * filename, const char * format, ...)
+void temp_file_printf(const char * filename, const char * format, ...)
 {
     FILE * file = fopen(filename, "w");
-    if(!file) return false;
+    if(!file) return;
+    
+    temp_file(filename);
+    
     va_list args;
     va_start (args, format);
     vfprintf(file, format, args);
     va_end(args);
+    
     fclose(file);
-    info_files.push_back(filename);
-    return true;
 }
 
-void cleanup_info_files()
+void delete_temp_files()
 {
-    for(std::vector<const char *>::const_iterator it = info_files.begin(); it != info_files.end(); it++)
+    for(std::vector<const char *>::const_iterator it = temp_files.begin(); it != temp_files.end(); it++)
         unlink(*it);
-    info_files.clear();
+    temp_files.clear();
 }
 
-void cleanup_info_files_on_shutdown(int type)
+void delete_temp_files_on_shutdown(int type)
 {
-    cleanup_info_files();
+    delete_temp_files();
 }
+
+namespace hopmod{
+
+int revision()
+{
+#if defined(REVISION) && (REVISION + 0)
+    return REVISION;
+#endif
+    return -1;
+}
+
+const char * build_date()
+{
+    return __DATE__;
+}
+
+const char * build_time()
+{
+    return __TIME__;
+}
+
+} //namespace hopmod

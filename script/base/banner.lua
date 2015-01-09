@@ -16,8 +16,8 @@ local function sendServerBanner(cn)
         
         server.player_msg(cn, server.motd)
         server.player_msg(cn, server.connect_info_message)
-
-        server.player_set_session_var(cn, "shown_banner", true)
+        
+        server.player_vars(cn).shown_banner = true
     end)
 end
 
@@ -56,4 +56,3 @@ end
 
 server.event_handler("connect",onConnect)
 server.event_handler("maploaded", sendServerBanner)
-server.event_handler("disconnect", function(cn) server.player_vars(cn).shown_banner = nil end)

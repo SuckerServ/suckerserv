@@ -1,7 +1,5 @@
-#ifndef HOPMOD_EXTAPI_HPP
-#define HOPMOD_EXTAPI_HPP
-
-#include "utils.hpp"
+#ifndef HOPMOD_SERVER_FUNCTIONS_HPP
+#define HOPMOD_SERVER_FUNCTIONS_HPP
 
 extern "C"{
 #include <lua.h>
@@ -12,6 +10,8 @@ extern "C"{
 
 namespace server
 {
+    struct clientinfo;
+    
     namespace aiman
     {
         extern int botlimit;
@@ -46,6 +46,7 @@ namespace server
     extern bool allow_mm_veto;
     extern bool allow_mm_locked;
     extern bool allow_mm_private;
+    extern bool reset_mm;
     extern bool allow_item[11];
 
     extern bool broadcast_mapmodified;
@@ -58,10 +59,34 @@ namespace server
     int revision();
     const char *version();
     const char *extfiltertext(const char *src);
+
+    namespace message{
+
+        extern int disc_msgs;
+        extern int disc_window;
+        
+        namespace resend_time{
+            
+            extern int text;
+            extern int sayteam;
+            extern int mapvote;
+            extern int switchname;
+            extern int switchteam;
+            extern int kick;
+            extern int remip;
+            extern int newmap;
+            extern int spec;
+            
+        } //namespace resend_time
+        
+        bool limit(clientinfo *, int * millis, int resend_time, const char * message_type);
+        
+    } //namespace message
     
     void started();
     int player_sessionid(int);
     int player_id(lua_State * L);
+    int player_ownernum(int);
     void player_msg(int,const char *);
     const char * player_name(int);
     void player_rename(int, const char *, bool);
@@ -117,7 +142,7 @@ namespace server
     void player_slay(int);
     void player_respawn(int);
     void player_nospawn(int, int);
-    bool player_changeteam(int,const char *);
+    bool player_changeteam(int,const char *, bool);
     int player_rank(int);
     bool player_isbot(int);
     void set_player_private_admin(int);
@@ -162,7 +187,7 @@ namespace server
     void recorddemo(const char *);
     void enddemorecord();
     void calc_player_ranks();
-    void script_set_mastermode(int);
+    void set_mastermode(int);
     int get_mastermode();
     void add_allowed_ip(const char *);
     bool compare_admin_password(const char *);
@@ -180,21 +205,7 @@ namespace server
     
     void suicide(int);
     
-    // Flood protection vars
-    extern int sv_text_hit_length;
-    extern int sv_sayteam_hit_length;
-    extern int sv_mapvote_hit_length;
-    extern int sv_switchname_hit_length;
-    extern int sv_switchteam_hit_length;
-    extern int sv_kick_hit_length;
-    extern int sv_remip_hit_length;
-    extern int sv_newmap_hit_length;
-    extern int sv_spec_hit_length;
-    
     extern string ext_admin_pass;
-    
-    void crash_handler(int signal);
-    void restore_server(const char * filename);
     
     void sendservmsg(const char *);
     
@@ -203,7 +214,6 @@ namespace server
     
     bool send_item(int item_code, int recipient);
     
-    struct clientinfo;
     void try_respawn(clientinfo * ci, clientinfo * cq);
     
 } //namespace server

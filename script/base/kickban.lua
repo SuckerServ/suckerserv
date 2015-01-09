@@ -79,7 +79,7 @@ function server.clearbans()
     server.msg(server.clearbans_message)
 end
 
-local function is_banned(ipmask)
+local function is_banned(ipmask, reserved_slot)
     local ban = server.ip_vars(ipmask)
     local bantime = ban.ban_expire
     if (ban.ignore_gban or false) then 
@@ -99,7 +99,7 @@ server.is_banned = is_banned
 
 server.event_handler("connecting", function(cn, hostname, name, password, reserved_slot)
     if server.player_priv_code(cn) ~= server.PRIV_NONE then return end
-    if is_banned(hostname) then
+    if is_banned(hostname, reserved_slot) then
         return -1
     end
 end)

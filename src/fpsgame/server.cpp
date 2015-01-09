@@ -5,7 +5,7 @@
 #include "game.h"
 
 #include "hopmod/hopmod.hpp"
-#include "hopmod/extapi.hpp"
+#include "hopmod/server_functions.hpp"
 lua::event_environment & event_listeners();
 
 #include <boost/lexical_cast.hpp>
@@ -286,15 +286,16 @@ namespace server
         bool spy;
         int last_lag;
         
-        freqlimit sv_text_hit;
-        freqlimit sv_sayteam_hit;
-        freqlimit sv_mapvote_hit;
-        freqlimit sv_switchname_hit;
-        freqlimit sv_switchteam_hit;
-        freqlimit sv_kick_hit;
-        freqlimit sv_remip_hit;
-        freqlimit sv_newmap_hit;
-        freqlimit sv_spec_hit;
+        int n_text_millis;
+        int n_sayteam_millis;
+        int n_mapvote_millis;
+        int n_switchname_millis;
+        int n_switchteam_millis;
+        int n_kick_millis;
+        int n_remip_millis;
+        int n_newmap_millis;
+        int n_spec_millis;
+        
         std::string disconnect_reason;
         int maploaded;
         int rank;
@@ -306,15 +307,16 @@ namespace server
            getdemo(NULL),
            getmap(NULL),
            clipboard(NULL),
-           sv_text_hit(sv_text_hit_length),
-           sv_sayteam_hit(sv_sayteam_hit_length),
-           sv_mapvote_hit(sv_mapvote_hit_length),
-           sv_switchname_hit(sv_switchname_hit_length),
-           sv_switchteam_hit(sv_switchteam_hit_length),
-           sv_kick_hit(sv_kick_hit_length),
-           sv_remip_hit(sv_remip_hit_length),
-           sv_newmap_hit(sv_newmap_hit_length),
-           sv_spec_hit(sv_spec_hit_length)
+            n_text_millis(0),
+            n_sayteam_millis(0),
+            n_mapvote_millis(0),
+            n_switchname_millis(0),
+            n_switchteam_millis(0),
+            n_kick_millis(0),
+            n_remip_millis(0),
+            n_newmap_millis(0),
+            n_spec_millis(0)
+
         { reset(); }
         
         ~clientinfo() { events.deletecontents(); cleanclipboard(); }
@@ -442,22 +444,6 @@ namespace server
             sendf(clientnum, 1, "ris", N_SERVMSG, text);
         }
         
-        bool check_flooding(freqlimit & hit, const char * activity = NULL, bool sendwarning = true)
-        {
-            int remaining = hit.next(totalsecs);
-            bool flooding = remaining > 0;
-            if(flooding && activity && sendwarning)
-            {
-                defformatstring(blockedinfo)(RED "[Flood Protection] You are blocked from %s for another %i second%s.", 
-                    activity, 
-                    remaining,
-                    remaining != 1 ? "s" : ""
-                );
-                sendprivtext(blockedinfo);
-            }
-            return flooding;
-        }
-        
         const char * hostname()const
         {
             static char hostname_buffer[16];            
@@ -520,6 +506,7 @@ namespace server
     bool allow_mm_veto = false;
     bool allow_mm_locked = false;
     bool allow_mm_private = false;
+    bool reset_mm = true;
     bool allow_item[11] = {true, true, true, true, true, true, true, true, true, true, true};
     
     string next_gamemode = "";
@@ -610,6 +597,8 @@ namespace server
     #define anticheat_helper_func
     #include "anticheat.h"
     #undef anticheat_helper_func
+    
+    hashtable<uint, vector<int> > disc_record;
 
     extern void setspectator(clientinfo * spinfo, bool val, bool broadcast=true);
     
@@ -801,7 +790,8 @@ namespace server
         {
             case PRIV_ADMIN: return "admin";
             case PRIV_MASTER: return "master";
-            default: return "none";
+            case PRIV_NONE: return "none";
+            default: return "unknown";
         }
     }
 
@@ -2219,8 +2209,6 @@ namespace server
         }
 
         anti_cheat_serverupdate();
-
-        update_hopmod();
         
         timer::time_diff_t elapsed = serverupdate_time.usec_elapsed();
         if(elapsed >= timer_alarm_threshold)
@@ -2233,6 +2221,25 @@ namespace server
                      <<timeleft<< " minutes left"
                      <<std::endl;
         }
+
+        static vector<uint> disc_topurge;
+
+        enumeratekt(disc_record, uint, ip, vector<int>, millis, {
+            int toremove = 0;
+            loopv(millis) if(totalmillis-millis[i] < message::disc_window)
+            {
+                toremove = i;
+                break;
+            }
+            if(toremove)
+            {
+                millis.remove(0, toremove);
+                if(millis.empty()) disc_topurge.add(ip);
+            }
+        });
+
+        loopv(disc_topurge) disc_record.remove(disc_topurge[i]);
+        disc_topurge.setsize(0);
     }
 
     struct crcinfo 
@@ -2252,7 +2259,7 @@ namespace server
 
     void noclients()
     {
-        event_clearbans_request(event_listeners(), boost::make_tuple());
+        event_clearbans_request(event_listeners(), boost::make_tuple(-1));
         aiman::clearai();
     }
     
@@ -2300,12 +2307,22 @@ namespace server
         {
             disc_reason_msg = (ci->disconnect_reason.length() ? ci->disconnect_reason.c_str() : disconnect_reason(reason));
             defformatstring(discmsg)("client (%s) disconnected because: %s", ci->hostname(), disc_reason_msg);
-            printf("%s",discmsg);
-            if(!ci->spy) sendservmsg(discmsg);
+            printf("%s\n",discmsg);
+            if (!ci->spy)
+            {
+                bool senddiscmsg = true;
+                if(message::disc_window > 0 && message::disc_msgs > 0)
+                {
+                    vector<int>& millis = disc_record[getclientip(n)];
+                    millis.put(totalmillis);
+                    senddiscmsg = millis.length() <= message::disc_msgs;
+                }
+                if(senddiscmsg) sendservmsg(discmsg);
+            }
         }
         else
         {
-            defformatstring(discmsg)("disconnected client (%s)",ci->hostname());
+            defformatstring(discmsg)("disconnected client (%s)", ci->hostname());
             puts(discmsg);
         }
         
@@ -2873,7 +2890,7 @@ namespace server
                 getstring(text, p);
                 filtertext(text, text);
                 
-                if(ci && (ci->privilege == PRIV_ADMIN || !ci->check_flooding(ci->sv_text_hit,"sending text")))
+                if(ci && (ci->privilege == PRIV_ADMIN || !message::limit(ci, &ci->n_text_millis, message::resend_time::text, "text")))
                 {
                     bool is_command = text[0] == '#';
 
@@ -2904,7 +2921,8 @@ namespace server
             case N_SAYTEAM:
             {
                 getstring(text, p);
-                if(!ci || !cq || (ci->state.state==CS_SPECTATOR && !ci->privilege) || !m_teammode || !cq->team[0] || ci->check_flooding(ci->sv_sayteam_hit,"sending text") || ci->spy) break;
+                filtertext(text, text);
+                if(!ci || !cq || (ci->state.state==CS_SPECTATOR && !ci->privilege) || !m_teammode || !cq->team[0] || message::limit(ci, &ci->n_sayteam_millis, message::resend_time::sayteam, "team chat") || ci->spy) break;
                 if(event_sayteam(event_listeners(), boost::make_tuple(ci->clientnum, text)) == false)
                 {
                     loopv(clients)
@@ -2927,6 +2945,7 @@ namespace server
                 copystring(oldname, ci->name);
                 
                 bool allow_rename = !ci->spy && strcmp(ci->name, text) &&
+                    !message::limit(ci, &ci->n_switchname_millis, message::resend_time::switchname, "name change") &&
                     event_allow_rename(event_listeners(), boost::make_tuple(ci->clientnum, text)) == false;
                 
                 if(allow_rename)
@@ -2961,23 +2980,21 @@ namespace server
             {
                 getstring(text, p);
                 filtertext(text, text, false, MAXTEAMLEN);
-                if(strcmp(ci->team, text) && m_teammode)
+                
+                bool allow = m_teammode && text[0] && strcmp(ci->team, text) && 
+                    (!smode || smode->canchangeteam(ci, ci->team, text)) &&
+                    !message::limit(ci, &ci->n_switchteam_millis, message::resend_time::switchteam, "team change") &&
+                    event_chteamrequest(event_listeners(), boost::make_tuple(ci->clientnum, ci->team, text, sender)) == false;
+                
+                if(allow)
                 {
-                    bool cancel = ci->check_flooding(ci->sv_switchteam_hit,"switching teams") || 
-                        (smode && !smode->canchangeteam(ci, ci->team, text)) ||
-                        event_chteamrequest(event_listeners(), boost::make_tuple(ci->clientnum, ci->team, text));
-                    
-                    if(!cancel)
-                    {
-                        if(ci->state.state==CS_ALIVE) suicide(ci);
-                        string oldteam;
-                        copystring(oldteam, ci->team);
-                        copystring(ci->team, text);
-                        aiman::changeteam(ci);
-                        if(!ci->spy) sendf(-1, 1, "riisi", N_SETTEAM, sender, ci->team, ci->state.state==CS_SPECTATOR ? -1 : 0);
-                        event_reteam(event_listeners(), boost::make_tuple(ci->clientnum, oldteam, text));
-                    }
-                    else if(!ci->spy) sendf(-1, 1, "riisi", N_SETTEAM, sender, ci->team, ci->state.state==CS_SPECTATOR ? -1 : 0);
+                    if(ci->state.state==CS_ALIVE) suicide(ci);
+                    string oldteam;
+                    copystring(oldteam, ci->team);
+                    copystring(ci->team, text);
+                    aiman::changeteam(ci);
+                    event_reteam(event_listeners(), boost::make_tuple(ci->clientnum, oldteam, text));
+                    if(!ci->spy) sendf(-1, 1, "riisi", N_SETTEAM, sender, ci->team, ci->state.state==CS_SPECTATOR ? -1 : 0);
                 }
                 break;
             }
@@ -2988,8 +3005,8 @@ namespace server
                 filtertext(text, text);
                 int reqmode = getint(p);
                 if(!ci->local && !m_mp(reqmode)) reqmode = 0;
-                if(!ci->check_flooding(ci->sv_mapvote_hit,"map voting") &&
-                   event_mapvote(event_listeners(), boost::make_tuple(ci->clientnum, text, modename(reqmode, "unknown"))) == false) 
+                if(!message::limit(ci, &ci->n_mapvote_millis, message::resend_time::mapvote, "mapvote") &&
+                   event_mapvote(event_listeners(), boost::make_tuple(ci->clientnum, text, modename(reqmode, "unknown"))) == false)
                 {
                     vote(text, reqmode, sender);
                 }
@@ -3109,18 +3126,7 @@ namespace server
                         {
                             break;
                         }
-                        event_setmastermode(event_listeners(), boost::make_tuple(ci->clientnum, mastermodename(mastermode), mastermodename(mm)));
-                        mastermode = mm;
-                        mastermode_owner = ci->clientnum;
-                        mastermode_mtime = totalmillis;
-                        allowedips.shrink(0);
-                        if(mm>=MM_PRIVATE)
-                        {
-                            loopv(clients) allowedips.add(getclientip(clients[i]->clientnum));
-                        }
-                        sendf(-1, 1, "rii", N_MASTERMODE, mastermode);
-                        //defformatstring(s)("mastermode is now %s (%d)", mastermodename(mastermode), mastermode);
-                        //sendservmsg(s);
+                        set_mastermode(mm);
                     }
                     else
                     {
@@ -3135,7 +3141,7 @@ namespace server
             {
                 if(ci->privilege)
                 {
-                    event_clearbans_request(event_listeners(), boost::make_tuple());
+                    event_clearbans_request(event_listeners(), boost::make_tuple(ci->clientnum));
                 }
                 break;
             }
@@ -3146,7 +3152,7 @@ namespace server
                 clientinfo *vc = (clientinfo *)getclientinfo(victim);
                 if(ci->privilege && vc && vc != ci && !vc->spy)
                 {
-                    if(ci->privilege < PRIV_ADMIN && ci->check_flooding(ci->sv_kick_hit, "kicking")) break;
+                    if(ci->privilege < PRIV_ADMIN && message::limit(ci, &ci->n_kick_millis, message::resend_time::kick, "kick")) break;
                     event_kick_request(event_listeners(), boost::make_tuple(ci->clientnum, ci->name, 14400, victim, ""));
                 }
                 break;
@@ -3156,7 +3162,7 @@ namespace server
             {
                 int spectator = getint(p), val = getint(p);
                 bool self = spectator == sender;
-                if(!ci->privilege && (!self || (ci->state.state==CS_SPECTATOR && mastermode>=MM_LOCKED) || (ci->state.state == CS_SPECTATOR && !val && !ci->allow_self_unspec) || ci->check_flooding(ci->sv_spec_hit, "switching"))) break;
+                if(!ci->privilege && (!self || (ci->state.state==CS_SPECTATOR && mastermode>=MM_LOCKED) || (ci->state.state == CS_SPECTATOR && !val && !ci->allow_self_unspec) || message::limit(ci, &ci->n_spec_millis, message::resend_time::spec, "spectator status change"))) break;
                 clientinfo *spinfo = (clientinfo *)getclientinfo(spectator); // no bots
                 if(!spinfo || (spinfo != ci && spinfo->spy)) break;
                 if(val && spinfo != ci && spinfo->privilege && ci->privilege < PRIV_ADMIN)
@@ -3180,7 +3186,7 @@ namespace server
                 clientinfo *wi = getinfo(who);
                 if(!wi || !strcmp(wi->team, text) || wi->spy) break;
                 if((!smode || smode->canchangeteam(wi, wi->team, text)) && 
-                    event_chteamrequest(event_listeners(), boost::make_tuple(wi->clientnum, wi->team, text)) == false)
+                    event_chteamrequest(event_listeners(), boost::make_tuple(wi->clientnum, wi->team, text, sender)) == false)
                 {
                     if(smode && wi->state.state==CS_ALIVE) suicide(wi);
                     event_reteam(event_listeners(), boost::make_tuple(wi->clientnum, wi->team, text));
@@ -3249,7 +3255,7 @@ namespace server
             {
                 int size = getint(p);
                 if(!ci->privilege && !ci->local && ci->state.state==CS_SPECTATOR) break;
-                if(ci->check_flooding(ci->sv_newmap_hit, "newmapping")) break;
+                if(message::limit(ci, &ci->n_newmap_millis, message::resend_time::newmap, "map change")) break;
                 if(size>=0)
                 {
                     smapname[0] = '\0';
@@ -3442,9 +3448,8 @@ namespace server
         return attr.length() && attr[0]==PROTOCOL_VERSION;
     }
     
-    #define INCLUDE_EXTSERVER_CPP
-    #include "extserver.cpp"
-    #undef INCLUDE_EXTSERVER_CPP
+    #include "hopmod/server_functions.cpp"
     
     #include "aiman.h"
+    
 } //namespace server

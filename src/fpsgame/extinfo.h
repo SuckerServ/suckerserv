@@ -121,6 +121,13 @@
                 putint(p,-1); //no bases follow
         }
     }
+    
+    static inline const char *buildtime()
+    {
+        static string buf = {0};
+        if(!buf[0]) formatstring(buf)("%s %s", hopmod::build_date(), hopmod::build_time());
+        return buf;
+    }
 
     void extserverinforeply(ucharbuf &req, ucharbuf &p)
     {
@@ -136,12 +143,12 @@
             {
                 putint(p, totalsecs); //in seconds
                 /* hopmod extension */
-                if(req.remaining() && req.remaining() > 0)
+                if(req.remaining() && req.get() > 0)
                 {
                     putint(p, EXT_HOPMOD);
                     putint(p, EXT_HOPMOD_VERSION);
-                    putint(p, revision());
-                    sendstring(version(), p);
+                    putint(p, hopmod::revision());
+                    sendstring(buildtime(), p);
                 }
                 break;
             }
@@ -150,8 +157,8 @@
             case EXT_HOPMOD:
             {
                 putint(p, EXT_NO_ERROR);
-                putint(p, revision());
-                sendstring(version(), p);
+                putint(p, hopmod::revision());
+                sendstring(buildtime(), p);
                 break;
             }
 
