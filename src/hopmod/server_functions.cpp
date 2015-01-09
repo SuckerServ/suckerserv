@@ -471,7 +471,7 @@ bool player_changeteam(int cn,const char * newteam, bool dosuicide)
     clientinfo * ci = get_ci(cn);
     
     if(!m_teammode || (smode && !smode->canchangeteam(ci, ci->team, newteam)) ||
-        event_chteamrequest(event_listeners(), boost::make_tuple(cn, ci->team, newteam, sender))) 
+        event_chteamrequest(event_listeners(), boost::make_tuple(cn, ci->team, newteam, -1))) 
     {
         return false;
     }
@@ -1025,7 +1025,7 @@ void calc_player_ranks()
     return calc_player_ranks(NULL);
 }
 
-void script_set_mastermode(int value)
+void set_mastermode(int value)
 {
     int old_mastermode = mastermode;
     
