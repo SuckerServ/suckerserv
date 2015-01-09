@@ -669,7 +669,7 @@ int main(int argc, char **argv)
     main_thread = boost::this_thread::get_id();
 
     signal_shutdown.connect(boost::bind(&shutdown_lua));
-    signal_shutdown.connect(&cleanup_info_files_on_shutdown);
+    signal_shutdown.connect(&delete_temp_files_on_shutdown);
 
     L = luaL_newstate();
     luaL_openlibs(L);
