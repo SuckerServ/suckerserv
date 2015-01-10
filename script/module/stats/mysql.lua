@@ -5,12 +5,6 @@ local connection
 local open_settings
 local queue = {}
 
-local function readWholeFile(filename)
-    local file, err = io.open(filename)
-    if not file then error(err) end
-    return file:read("*a")
-end
-
 local function escape_string(s)
     s = string.gsub(s, "\\", "\\\\")
     s = string.gsub(s, "%\"", "\\\"")
@@ -30,14 +24,14 @@ end
 
 local function install_db(connection, settings)
 
-    local schema = readWholeFile(settings.schema)
+    local schema = server.read_whole_file(settings.schema)
 
     for statement in string.gmatch(schema, "CREATE TABLE[^;]+") do
         local cursor, err = execute_statement(statement)
         if not cursor then error(err) end
     end
     
-    local triggers = readWholeFile(settings.triggers)
+    local triggers = server.read_whole_file(settings.triggers)
     
     for statement in string.gmatch(triggers, "CREATE TRIGGER[^~]+") do
         local cursor, err = execute_statement(statement)

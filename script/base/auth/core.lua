@@ -235,7 +235,7 @@ server.event_handler("auth_challenge_response", function(cn, request_id, answer)
 
 end)
 
-local function initClientTable(cn)
+local function init_client_state(cn)
 
     clients[cn] = {
         listeners = {},
@@ -247,7 +247,7 @@ local function initClientTable(cn)
 end
 
 server.event_handler("connect", function(cn)
-    initClientTable(cn)
+    init_client_state(cn)
 end)
 
 server.event_handler("disconnect", function(cn)
@@ -302,12 +302,13 @@ function auth.send_request(cn, domain_id, callback)
     
     local session_id = server.player_sessionid(cn)
     
-    server.sleep(5000, function()
-        
-        if session_id ~= server.player_sessionid(cn) then return end
-        
-        if not clients[cn].has_key[domain_id] then
-            call_listeners(cn, "", domain_id, auth.request_status.REQUEST_FAILED)
+    server.interval(1000, function()
+        if session_id ~= server.player_sessionid(cn) then return -1 end
+        if server.player_vars(cn).maploaded then
+            if not clients[cn].has_key[domain_id] then
+                call_listeners(cn, "", domain_id, auth.request_status.REQUEST_FAILED)
+            end
+            return -1
         end
     end)
     
@@ -348,6 +349,7 @@ function auth.query_id(user_id, domain_id, callback)
     send_query()
 end
 
-for _, cn in ipairs(server.players()) do
-    initClientTable(cn)
+-- initialization on (re)load lua (no bots)
+for p in server.gclients() do
+    init_client_state(p.cn)
 end
