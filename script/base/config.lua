@@ -92,6 +92,7 @@ server.allow_setmaster = 0
 server.irc_socket_password = ""
 
 server.ban_lists = {
-    "http://sauer.nomorecheating.org/hopmod/gbans.php",
-    "http://83.169.44.106/hopmod/gbans.php",
+    { url = "http://sauer.nomorecheating.org/hopmod/gbans.php", format = "json" },
+    { url = "http://83.169.44.106/hopmod/gbans.php", format = "json" },
+    { url = "https://raw.githubusercontent.com/pisto/ASkidban/master/compiled/ipv4", format = "raw", name = "ASkidban", reason = "proxy" }
 }

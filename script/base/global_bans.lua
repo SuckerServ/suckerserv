@@ -17,10 +17,9 @@ local MIRROR = 1
 local bans = {}
 
 local function update()
-    http.client.get(GBAN_MIRRORS[MIRROR], function(body, status)
-
+    http.client.get(GBAN_MIRRORS[MIRROR].url, function(body, status)
         if not body then
-            server.log_error(string.format("Failed to download the global ban list from %s", GBAN_MIRRORS[MIRROR]))
+            server.log_error(string.format("Failed to download the global ban list from %s", GBAN_MIRRORS[MIRROR].url))
 
             if MIRROR < #GBAN_MIRRORS then
                 MIRROR = MIRROR + 1
@@ -30,7 +29,15 @@ local function update()
             return
         end
 
-        local data = Json.Decode(body)
+        local data
+        if GBAN_MIRRORS[MIRROR].format == "json" then
+            data = Json.Decode(body)
+        elseif GBAN_MIRRORS[MIRROR].format == "raw" then
+            data = {}
+            for l in body:gmatch("([^\n]+)\n?") do
+                table.insert(data, { address = l, reason = GBAN_MIRRORS[MIRROR].reason, admin = GBAN_MIRRORS[MIRROR].name })
+            end
+        end
 
         local updated_bans = {}
         local change = false
@@ -43,7 +50,8 @@ local function update()
                 local bantime = tonumber(ban.expire) or -1
                 if bantime ~= -1 then bantime = bantime - os.time(os.date("!*t")) end
                 local reason = ban.reason or "global ban"
-                server.ban(ban.address, bantime, ADMIN_NAME, reason, nil, true)
+                local admin = ban.admin or ADMIN_NAME
+                server.ban(ban.address, bantime, admin, reason, nil, true)
                 change = true
             end
 
