@@ -12,8 +12,6 @@ local UPDATE_INTERVAL = 1000*60*60*0.5
 
 local GBAN_MIRRORS =
 {
-    { url = "http://sauer.nomorecheating.org/hopmod/gbans.php", format = "json" },
-    { url = "http://83.169.44.106/hopmod/gbans.php", format = "json" },
     { url = "https://raw.githubusercontent.com/pisto/ASkidban/master/compiled/ipv4", format = "raw", name = "ASkidban", reason = "proxy" }
 }
 
