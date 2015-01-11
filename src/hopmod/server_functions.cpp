@@ -1174,7 +1174,8 @@ void sendmap(int acn, int tcn)
     else if(target->getmap) sendf(acn, 1, "ris", N_SERVMSG, "already sending map");
     else
     {
-        sendservmsgf("[%s is getting the map]", colorname(target));
+        defformatstring(msg)("[%s is getting the map]", colorname(target));
+        sendservmsg(msg);
         if((target->getmap = sendfile(target->clientnum, 2, mapdata, "ri", N_SENDMAP)))
             target->getmap->freeCallback = freegetmap;
         target->needclipboard = totalmillis ? totalmillis : 1;

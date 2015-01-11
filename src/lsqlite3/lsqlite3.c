@@ -38,7 +38,6 @@
 //
 // Lua 5.2
 //
-#if LUA_VERSION_NUM >= 502
 #define lua_strlen lua_rawlen
 // luaL_typerror always used with arg at ndx == NULL
 #define luaL_typerror(L,ndx,str) luaL_error(L,"bad argument %d (%s expected, got nil)",ndx,str)

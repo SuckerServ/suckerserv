@@ -98,16 +98,14 @@ static int string_accessor(lua_State * L)
     if(lua_gettop(L) > 0) // Set variable
     {
         if(READ_ONLY) luaL_error(L, "variable is read-only");
-        convert2cube varcubeenc(lua_tostring(L, 1));
-        copystring(var, varcubeenc.str());
+        copystring(var, lua_tostring(L, 1));
         event_varchanged(event_listeners(), boost::make_tuple(lua_tostring(L, lua_upvalueindex(2))));
         return 0;
     }
     else // Get variable
     {
         if(WRITE_ONLY) luaL_error(L, "variable is write-only");
-        convert2utf8 varutf8(var);
-        lua::push(L, varutf8.str());
+        lua::push(L, var);
         return 1;
     }
 }
