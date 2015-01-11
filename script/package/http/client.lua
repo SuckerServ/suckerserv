@@ -184,7 +184,7 @@ function get(resource, callback, state)
     local ssl_context = nil
     
     if using_https then
-        ssl_context = net.ssl.context(net.ssl.METHOD_SSLV3)
+        ssl_context = net.ssl.context(net.ssl.METHOD_TLSV1)
         ssl_context:set_verify_mode(net.ssl.VERIFY_PEER)
         ssl_context:load_verify_file("share/cacert.pem")
     end
