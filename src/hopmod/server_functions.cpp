@@ -650,6 +650,7 @@ void unset_player_privilege(int cn)
 
 void set_player_privilege(int cn, int priv_code, bool public_priv = false)
 {
+    const char * change;
     clientinfo * player = get_ci(cn);
 
     if(player->privilege == priv_code && (currentmaster == cn || ! public_priv)) return;
@@ -677,7 +678,11 @@ void set_player_privilege(int cn, int priv_code, bool public_priv = false)
         sendf(player->clientnum, 1, "ri4", N_CURRENTMASTER, player->clientnum, player->privilege, mastermode);
     }
     
-    const char * change = (old_priv < player->privilege ? "\fs\f6raised\fr" : "\fs\f0lowered\fr");
+    if(old_priv == player->privilege)
+        change = "\fs\f2changed\fr";
+    else
+        change = (old_priv < player->privilege ? "\fs\f2raised\fr" : "\fs\f0lowered\fr");
+    
     defformatstring(msg)(message::set_player_privilege, change, public_priv ? "" : "\fs\f4invisible\fr ", privname(priv_code));
     player->sendprivtext(msg);
     
@@ -1031,18 +1036,30 @@ void calc_player_ranks()
 
 void set_mastermode(int value)
 {
-    int old_mastermode = mastermode;
-    
+    set_mastermode_cn(value, -1);
+}
+
+void set_mastermode_cn(int value, int cn)
+{
+    if(value == mastermode && mastermode_owner == cn)
+    {
+        return;
+    }
+
+    int prev_mastermode = mastermode;
+
     mastermode = value;
-    mastermode_owner = -1;
+    mastermode_owner = cn;
     mastermode_mtime = totalmillis;
-    allowedips.setsize(0);
-    if(allow_mm_private_reconnect && mastermode >= MM_PRIVATE)
+    allowedips.shrink(0);
+    if(allow_mm_private_reconnect && mastermode >= MM_PRIVATE )
     {
         loopv(clients) allowedips.add(getclientip(clients[i]->clientnum));
     }
-    
-    event_setmastermode(event_listeners(), boost::make_tuple(-1, mastermodename(old_mastermode), mastermodename(value)));
+
+    event_setmastermode(event_listeners(), boost::make_tuple(cn, mastermodename(prev_mastermode), mastermodename(mastermode)));
+
+    sendf(-1, 1, "rii", N_MASTERMODE, mastermode);
 }
 
 int get_mastermode()

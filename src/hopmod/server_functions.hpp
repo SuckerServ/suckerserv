@@ -193,6 +193,7 @@ namespace server
     void recorddemo(const char *);
     void enddemorecord();
     void calc_player_ranks();
+    void set_mastermode_cn(int, int);
     void set_mastermode(int);
     int get_mastermode();
     void add_allowed_ip(const char *);

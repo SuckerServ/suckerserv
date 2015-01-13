@@ -3132,7 +3132,7 @@ namespace server
                         {
                             break;
                         }
-                        set_mastermode(mm);
+                        set_mastermode_cn(mm, ci->clientnum);
                     }
                     else
                     {
