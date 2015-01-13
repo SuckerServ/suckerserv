@@ -183,3 +183,8 @@ local mapchange = server.event_handler("mapchange", function(map)
     flagruns = {}
     flagruns[map] = load_flagruns(map)
 end)
+
+local started = server.event_handler("started", function()
+    flagruns = {}
+    flagruns[server.map] = load_flagruns(server.map)
+end)
