@@ -1845,6 +1845,7 @@ namespace server
                 defformatstring(msg)("%s forced %s on map %s", ci->privilege && mastermode>=MM_VETO ? privname(ci->privilege) : "local player", modename(ci->modevote), ci->mapvote);
                 sendservmsg(msg);
             }
+            sendf(-1, 1, "risii", N_MAPCHANGE, ci->mapvote, ci->modevote, 1);
             changemap(ci->mapvote, ci->modevote);
         }
         else
