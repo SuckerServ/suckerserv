@@ -693,6 +693,7 @@ void unset_player_privilege(int cn)
 
 void set_player_privilege(int cn, int priv_code, bool public_priv = false)
 {
+    const char * change;
     clientinfo * player = get_ci(cn);
     const char * change;
     

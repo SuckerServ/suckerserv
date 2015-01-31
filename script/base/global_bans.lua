@@ -10,7 +10,10 @@ local Json = require "Json"
 local ADMIN_NAME = "global"
 local UPDATE_INTERVAL = 1000*60*60*0.5
 
-local GBAN_MIRRORS = server.ban_lists
+local GBAN_MIRRORS =
+{
+--    { url = "https://raw.githubusercontent.com/pisto/ASkidban/master/compiled/ipv4", format = "raw", name = "ASkidban", reason = "proxy" }
+}
 
 local MIRROR = 1
 
