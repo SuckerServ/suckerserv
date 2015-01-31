@@ -68,13 +68,6 @@ void conoutf(int type, const char *fmt, ...)
 }
 #endif
 
-//HOPMOD
-static inline bool is_bad_char(uchar c)
-{
-    return c == '\r' || c == '\n' || (c >= 11 && c <= 13);
-}
-//END HOPMOD
-
 enum { ST_EMPTY, ST_LOCAL, ST_TCPIP };
 
 struct client                   // server side version of "dynent" type
