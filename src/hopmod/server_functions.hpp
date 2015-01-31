@@ -54,6 +54,9 @@ namespace server
     extern bool reset_mm;
     extern bool allow_item[11];
 
+    extern bool restrictpausegame;
+    extern bool restrictgamespeed;
+
     extern bool broadcast_mapmodified;
     extern timer::time_diff_t timer_alarm_threshold;
     

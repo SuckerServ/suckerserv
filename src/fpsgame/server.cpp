@@ -822,7 +822,7 @@ namespace server
     {
         switch(type)
         {
-            case PRIV_ADMIN: return "\fs\f3admin\fr";
+            case PRIV_ADMIN: return "\fs\f6admin\fr";
             case PRIV_AUTH: return "\fs\f1auth\fr";
             case PRIV_MASTER: return "\fs\f0master\fr";
             case PRIV_NONE: return "\fs\ffnone\fr";
@@ -3606,7 +3606,7 @@ namespace server
             case N_PAUSEGAME:
             {
                 int val = getint(p);
-                if(ci->privilege<PRIV_ADMIN && !ci->local) break;
+                if(ci->privilege < (restrictpausegame ? PRIV_ADMIN : PRIV_MASTER) && !ci->local) break;
                 pausegame(val > 0, ci);
                 pausegame_owner = ci->clientnum;
                 break;

@@ -693,6 +693,7 @@ void unset_player_privilege(int cn)
 
 void set_player_privilege(int cn, int priv_code, bool public_priv = false)
 {
+    const char * change;
     clientinfo * player = get_ci(cn);
     
     if(player->privilege == priv_code && player->hide_privilege != public_priv) return;
@@ -706,7 +707,11 @@ void set_player_privilege(int cn, int priv_code, bool public_priv = false)
     
     player->hide_privilege = !public_priv;
     
-    const char * change = (old_priv < player->privilege ? "\fs\f6raised\fr" : "\fs\f0lowered\fr");
+    if(old_priv == player->privilege)
+        change = "\fs\f2changed\fr";
+    else
+        change = (old_priv < player->privilege ? "\fs\f2raised\fr" : "\fs\f0lowered\fr");
+    
     defformatstring(msg)(message::set_player_privilege, change, public_priv ? "" : "\fs\f4invisible\fr ", privname(priv_code));
     player->sendprivtext(msg);
     
