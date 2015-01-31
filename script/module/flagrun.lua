@@ -9,7 +9,6 @@ local query_backend_name = server.stats_query_backend
 local luasql = require("luasql_mysql")
 
 local flagruns = {}
-local tmpflags = {}
 local queue = {}
 
 local mysql_schema = [[
@@ -155,36 +154,27 @@ if using_mysql then
     })
 end
 
-local takeflag = server.event_handler("takeflag", function(cn)
-    tmpflags[cn] = server.gamemillis
-end)
-
-local scoreflag = server.event_handler("scoreflag", function(cn)
-    if tmpflags[cn] then
-        local time = server.gamemillis - tmpflags[cn]
+local scoreflag = server.event_handler("scoreflag", function(cn, team, score, timetrial)
+    if gamemodeinfo.ctf and timetrial > 0 then
         local playername = server.player_name(cn)
         local mapname = server.map
-        if not flagruns[server.map] or time < flagruns[server.map][2] then
-            commit_flagrun({ mapname = mapname, playername = playername, time = time})
+        if not flagruns[server.map] or timetrial < flagruns[server.map][2] then
+            commit_flagrun({ mapname = mapname, playername = playername, time = timetrial})
         end
-        server.msg(string.format(server.flagrun_message, playername, time/1000, flagruns[mapname][1], flagruns[mapname][2]/1000))
+        server.msg(string.format(server.flagrun_message, playername, timetrial/1000, flagruns[mapname][1], flagruns[mapname][2]/1000))
     end
-end)
-
-local dropflag = server.event_handler("dropflag", function(cn)
-    tmpflags[cn] = nil
-end)
-
-local intermission = server.event_handler("intermission", function()
-    tmpflags = {}
 end)
 
 local mapchange = server.event_handler("mapchange", function(map)
     flagruns = {}
-    flagruns[map] = load_flagruns(map)
+    if gamemodeinfo.ctf then
+        flagruns[map] = load_flagruns(map)
+    end
 end)
 
 local started = server.event_handler("started", function()
     flagruns = {}
-    flagruns[server.map] = load_flagruns(server.map)
+    if gamemodeinfo.ctf then
+        flagruns[server.map] = load_flagruns(server.map)
+    end
 end)
