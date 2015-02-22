@@ -16,7 +16,6 @@ end)
 server.event_handler("maploaded", function(cn)
     local allactive=true
     if validFunction then
-        validFunction= false
     
         player_active[cn]=true
         for i, cn_ in ipairs(server.players()) do
