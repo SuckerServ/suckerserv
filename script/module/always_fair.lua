@@ -10,6 +10,6 @@ server.event_handler("mapchange", function()
 end)
 
 server.event_handler("maploaded", function()
-      server.pausegame(true)
+      server.pausegame(false)
       server.msg(orange("--[ GO!"))
 end)
