@@ -3,8 +3,8 @@
     By Patrick Oberdorf
 ]]
 
-player_active = {}
-validFunction = false
+local player_active = {}
+local validFunction = false
 
 server.event_handler("mapchange", function()
     player_active = {}
