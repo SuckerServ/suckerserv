@@ -27,12 +27,13 @@ server.event_handler("maploaded", function(cn)
         if allactive then
             local countdown = 4
             server.interval(1000, function()
+                allactive=false
                 countdown = countdown - 1
                 server.msg(blue(string.format("-> %i...", countdown)))
                     if countdown == 0 then
+                        validFunction = false
                         server.pausegame(false)
                         server.msg(blue("-> GO!"))
-                        validFunction = false
                         return -1
                     end
             end)
