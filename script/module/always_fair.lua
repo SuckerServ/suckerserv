@@ -10,7 +10,7 @@ server.event_handler("mapchange", function()
     player_active = {}
     validFunction = true
     server.pausegame(true)
-    server.msg(orange("--[ Waiting until all Players loaded the Map."))
+    server.msg(blue("-> Waiting until all Players loaded the Map."))
 end)
 
 server.event_handler("maploaded", function(cn)
@@ -25,9 +25,17 @@ server.event_handler("maploaded", function(cn)
         end
         
         if allactive then
-            server.pausegame(false)
-            server.msg(orange("--[ GO!"))
-            validFunction = false
+            local countdown = 4
+            server.interval(1000, function()
+                countdown = countdown - 1
+                server.msg(blue(string.format("-> %i...", countdown)))
+                    if countdown == 0 then
+                        server.pausegame(false)
+                        server.msg(blue("-> GO!"))
+                        validFunction = false
+                        return -1
+                    end
+            end)
         end
     end
 end)
