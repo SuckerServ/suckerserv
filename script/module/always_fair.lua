@@ -1,6 +1,6 @@
 --[[
     Always start the game fair 
-    By Patrick Oberdorf
+    By Patrick Oberdorf <obi_de>
 ]]
 
 local player_active = {}
