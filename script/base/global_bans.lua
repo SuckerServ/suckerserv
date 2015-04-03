@@ -1,11 +1,5 @@
 local http = require "http.client"
 local Json = require "Json"
---[[
-    You can checkout the bans in a readable form here:
-
-        http://sauer.nomorecheating.org/hopmod/view_bans.php
-
---]]
 
 local ADMIN_NAME = "global"
 local UPDATE_INTERVAL = 1000*60*60*0.5
