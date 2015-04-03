@@ -422,6 +422,9 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "cheatdetection", server::anti_cheat_enabled);
     bind_var(L, T, "hide_and_seek", server::hide_and_seek);
 
+    bind_var(L, T, "restrict_pausegame", server::restrictpausegame);
+    bind_var(L, T, "restrict_gamespeed", server::restrictgamespeed);
+
     bind_var(L, T, "flood_protect_text", server::message::resend_time::text);
     bind_var(L, T, "flood_protect_sayteam", server::message::resend_time::sayteam);
     bind_var(L, T, "flood_protect_mapvote", server::message::resend_time::mapvote);

@@ -693,8 +693,8 @@ void unset_player_privilege(int cn)
 
 void set_player_privilege(int cn, int priv_code, bool public_priv = false)
 {
-    clientinfo * player = get_ci(cn);
     const char * change;
+    clientinfo * player = get_ci(cn);
     
     if(player->privilege == priv_code && player->hide_privilege != public_priv) return;
     

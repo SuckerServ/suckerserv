@@ -2185,6 +2185,7 @@ namespace server
         int fragvalue = smode ? smode->fragvalue(ci, ci) : -1;
         ci->state.frags += fragvalue;
         ci->state.deaths++;
+        ci->state.suicides++;
         teaminfo *t = m_teammode ? teaminfos.access(ci->team) : NULL;
         if(t) t->frags += fragvalue;
         sendf(-1, 1, "ri5", N_DIED, ci->clientnum, ci->clientnum, gs.frags, t ? t->frags : 0);
@@ -3601,7 +3602,7 @@ namespace server
             case N_PAUSEGAME:
             {
                 int val = getint(p);
-                if(ci->privilege<PRIV_ADMIN && !ci->local) break;
+                if(ci->privilege < (restrictpausegame ? PRIV_ADMIN : PRIV_MASTER) && !ci->local) break;
                 pausegame(val > 0, ci);
                 pausegame_owner = ci->clientnum;
                 break;

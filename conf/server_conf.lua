@@ -191,6 +191,9 @@ server.allow_mastermode_private = 0   -- Allow master to set private mastermode
 server.allow_reconnect_with_private_mastermode = 1 -- Allow a player to reconnect when private mastermode is set
 server.reset_mastermode = 1           -- Reset mastermode when last master leaves / drops privileges
 
+server.restrict_pausegame = 1         -- Restrict pausegame toggle to admins
+server.restrict_gamespeed = 1         -- Restrict gamespeed setting to admins
+
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Web admin configuration
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
