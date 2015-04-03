@@ -42,12 +42,6 @@ namespace utils
  {
      typedef index_holder<> type;
  };
-
- template <class A> 
- std::tuple<> get_tail(const std::tuple<A> &t)
- {
-     return std::tuple<>();
- }
  
  template <class A, class...ARGS> 
  std::tuple<ARGS...> get_tail(const std::tuple<A, ARGS...> &t)
