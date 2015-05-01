@@ -3191,7 +3191,7 @@ namespace server
             case N_SWITCHNAME:
             {
                 getstring(text, p);
-                filtertext(ci->name, text, false, false, MAXNAMELEN);
+                filtertext(text, text, false, false, MAXNAMELEN);
                 if(!text[0]) copystring(text, "unnamed");
                 convert2utf8 newnameutf8(text);
           
