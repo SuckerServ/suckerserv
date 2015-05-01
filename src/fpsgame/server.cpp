@@ -39,7 +39,7 @@ namespace server
     {
         int type;
         int spawntime;
-        char spawned;
+        bool spawned;
         int lastpickup;
     };
 
@@ -286,6 +286,7 @@ namespace server
         char *authkickreason;
 
         int clientmillis;
+        int timetrial;
 
         anticheat ac;
 
@@ -438,6 +439,7 @@ namespace server
             clientmillis = 0;
             last_lag = 0;
             spy = false;
+            timetrial = 0;
 
             aireinit = 0;
             using_reservedslot = false;
@@ -888,14 +890,14 @@ namespace server
         return n;
     }
     
-    bool duplicatename(clientinfo *ci, char *name)
+    bool duplicatename(clientinfo *ci, const char *name)
     {
         if(!name) name = ci->name;
         loopv(clients) if(clients[i]!=ci && (!strcmp(name, clients[i]->name) && !clients[i]->spy)) return true;
         return false;
     }
 
-    const char *colorname(clientinfo *ci, char *name = NULL)
+    const char *colorname(clientinfo *ci, const char *name = NULL)
     {
         if(!name) name = ci->name;
         if(name[0] && !duplicatename(ci, name) && ci->state.aitype == AI_NONE) return name;
@@ -3168,6 +3170,7 @@ namespace server
                 getstring(text, p);
                 filtertext(text, text, true, true);
                 if(!ci || !cq || (ci->state.state==CS_SPECTATOR && !ci->privilege) || !m_teammode || !cq->team[0] || message::limit(ci, &ci->n_sayteam_millis, message::resend_time::sayteam, "team chat") || ci->spy) break;
+                filtertext(text, text, true, true);
                 convert2utf8 utf8text(text);
                 if(event_sayteam(event_listeners(), std::make_tuple(ci->clientnum, utf8text.str())) == false)
                 {
@@ -3229,7 +3232,7 @@ namespace server
             case N_MAPVOTE:
             {
                 getstring(text, p);
-                filtertext(text, text, false, false);
+                filtertext(text, text, false);
                 int reqmode = getint(p);
                 if(!ci->local && !m_mp(reqmode)) reqmode = 0;
                 convert2utf8 utf8text(text);

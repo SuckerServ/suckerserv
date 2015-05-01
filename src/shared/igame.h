@@ -1,3 +1,6 @@
+#ifndef __IGAME_H__
+#define __IGAME_H__
+
 // the interface the engine uses to run the gameplay module
 
 #if 0
@@ -138,3 +141,4 @@ namespace server
     extern int spycn;
 }
 
+#endif

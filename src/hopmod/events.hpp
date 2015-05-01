@@ -53,7 +53,7 @@ extern lua::event< std::tuple<int,int> >                                  event_
 extern lua::event< std::tuple<const char *,const char *> >                event_votepassed;
 extern lua::event< std::tuple<int, const char *> >                        event_takeflag;
 extern lua::event< std::tuple<int, const char *> >                        event_dropflag;
-extern lua::event< std::tuple<int, const char *, int> >                   event_scoreflag;
+extern lua::event< std::tuple<int, const char *, int, int> >              event_scoreflag;
 extern lua::event< std::tuple<int, const char *> >                        event_returnflag;
 extern lua::event< std::tuple<const char *> >                             event_resetflag;
 extern lua::event< std::tuple<const char *, int> >                        event_scoreupdate;

@@ -397,6 +397,12 @@ int player_clientmillis(int cn)
     return ci->clientmillis;
 }
 
+int player_timetrial(int cn)
+{ 
+    clientinfo * ci = get_ci(cn);
+    return ci->timetrial ? ci->timetrial : -1;
+}
+
 int player_privilege_code(int cn)
 {
     return get_ci(cn)->privilege;
@@ -1141,7 +1147,8 @@ void try_respawn(clientinfo * ci, clientinfo * cq)
     if(!ci->clientmap[0] && !ci->mapcrc) 
     {
         ci->mapcrc = -1;
-        if(ci == cq ? ci->state.state!=CS_DEAD : cq->ownernum != ci->clientnum) return;
+        if(ci == cq) { if(ci->state.state != CS_DEAD) return; }
+        else if(cq->ownernum != ci->clientnum) { cq = NULL; return; }
     }
     if(cq->state.deadflush)
     {

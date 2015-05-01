@@ -49,7 +49,7 @@ lua::event< std::tuple<int,int> >                                  event_endreco
 lua::event< std::tuple<const char *,const char *> >                event_votepassed("votepassed");
 lua::event< std::tuple<int, const char *> >                        event_takeflag("takeflag");
 lua::event< std::tuple<int, const char *> >                        event_dropflag("dropflag");
-lua::event< std::tuple<int, const char *, int> >                   event_scoreflag("scoreflag");
+lua::event< std::tuple<int, const char *, int, int> >              event_scoreflag("scoreflag");
 lua::event< std::tuple<int, const char *> >                        event_returnflag("returnflag");
 lua::event< std::tuple<const char *> >                             event_resetflag("resetflag");
 lua::event< std::tuple<const char *, int> >                        event_scoreupdate("scoreupdate");

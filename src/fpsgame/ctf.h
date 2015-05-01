@@ -27,6 +27,7 @@ struct ctfclientmode : clientmode
         int team, droptime, owntime;
 #ifdef SERVMODE
         int owner, dropcount, dropper, invistime;
+        int tmillis;
 #else
         fpsent *owner;
         float dropangle, spawnangle;
@@ -47,6 +48,7 @@ struct ctfclientmode : clientmode
             dropcount = 0;
             owner = dropper = -1;
             invistime = owntime = 0;
+            tmillis = 0;
 #else
             if(id >= 0) loopv(players) players[i]->flagpickup &= ~(1<<id);
             owner = NULL;
@@ -103,6 +105,7 @@ struct ctfclientmode : clientmode
         f.spawnloc = o;
 #ifdef SERVMODE
         f.invistime = invistime;
+        f.tmillis = 0;
 #else
         f.vistime = vistime;
 #endif
@@ -135,6 +138,7 @@ struct ctfclientmode : clientmode
         else f.dropcount = 0;
         f.dropper = -1;
         f.invistime = 0;
+        f.tmillis = 0;
 #else
         loopv(players) players[i]->flagpickup &= ~(1<<f.id);
         if(!f.vistime) f.vistime = owntime;
@@ -342,12 +346,17 @@ struct ctfclientmode : clientmode
 
     void scoreflag(clientinfo *ci, int goal, int relay = -1)
     {
+        int flagIndex = relay >= 0 ? relay : goal;
+        int timetrial = flags[flagIndex].tmillis ? totalmillis - flags[flagIndex].tmillis : 0;
+
+        if (!ci->timetrial || timetrial < ci->timetrial) ci->timetrial = timetrial;
+
         returnflag(relay >= 0 ? relay : goal, m_protect ? lastmillis : 0);
         ci->state.flags++;
         int team = ctfteamflag(ci->team), score = addscore(team, 1);
         if(m_hold) spawnflag(goal);
         sendf(-1, 1, "rii9", N_SCOREFLAG, ci->clientnum, relay, relay >= 0 ? ++flags[relay].version : -1, goal, ++flags[goal].version, flags[goal].spawnindex, team, score, ci->state.flags);
-        event_scoreflag(event_listeners(), std::make_tuple(ci->clientnum, ci->team, score));
+        event_scoreflag(event_listeners(), std::make_tuple(ci->clientnum, ci->team, score, timetrial));
         if(score >= FLAGLIMIT) startintermission();
     }
 
@@ -355,6 +364,7 @@ struct ctfclientmode : clientmode
     {
         if(notgotflags || !flags.inrange(i) || ci->state.state!=CS_ALIVE || !ci->team[0]) return;
         flag &f = flags[i];
+        bool flag_dropped = f.dropper > -1;
         if((m_hold ? f.spawnindex < 0 : !ctfflagteam(f.team)) || f.owner>=0 || f.version != version || (f.droptime && f.dropper == ci->clientnum && f.dropcount >= 1)) return;
         int team = ctfteamflag(ci->team);
         if(m_hold || m_protect == (f.team==team))
@@ -362,6 +372,7 @@ struct ctfclientmode : clientmode
             loopvj(flags) if(flags[j].owner==ci->clientnum) return;
             ownflag(i, ci->clientnum, lastmillis);
             sendf(-1, 1, "ri4", N_TAKEFLAG, ci->clientnum, i, ++f.version);
+            if (!flag_dropped) f.tmillis = totalmillis;
             event_takeflag(event_listeners(), std::make_tuple(ci->clientnum, ctfflagteam(f.team)));
         }
         else if(m_protect)
@@ -903,6 +914,7 @@ struct ctfclientmode : clientmode
 
     void checkitems(fpsent *d)
     {
+        if(d->state!=CS_ALIVE) return;
         vec o = d->feetpos();
         loopv(flags)
         {

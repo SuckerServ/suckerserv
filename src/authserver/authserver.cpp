@@ -1,5 +1,13 @@
 // Original source code copied from engine/master.cpp found in Sauerbraten's source tree.
 
+#ifdef WIN32
+#define FD_SETSIZE 4096
+#else
+#include <sys/types.h>
+#undef __FD_SETSIZE
+#define __FD_SETSIZE 4096
+#endif
+
 #include <boost/unordered_map.hpp>
 #include <boost/shared_ptr.hpp>
 
@@ -19,10 +27,10 @@
 #define AUTH_TIME (30*1000)
 #define AUTH_LIMIT 100
 #define AUTH_THROTTLE 1000
-#define CLIENT_LIMIT 8192
+#define CLIENT_LIMIT 4096
 #define DUP_LIMIT 16
 #define KEEPALIVE_TIME (65*60*1000)
-#define SERVER_LIMIT (10*1024)
+#define SERVER_LIMIT 4096
 #define DEFAULT_SERVER_PORT 28787
 
 using namespace boost::asio;

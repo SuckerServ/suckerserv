@@ -71,7 +71,7 @@ namespace aiman
 
     static inline bool validaiclient(clientinfo *ci)
     {
-        return ci->clientnum >= 0 && ci->state.aitype == AI_NONE && (ci->state.state!=CS_SPECTATOR || ci->local || ci->privilege) && !ci->spy;
+        return ci->clientnum >= 0 && ci->state.aitype == AI_NONE && (ci->state.state!=CS_SPECTATOR || ci->local || (ci->privilege && !ci->warned)) && !ci->spy;
     }
     
 	clientinfo *findaiclient(clientinfo *exclude = NULL)
