@@ -1,4 +1,4 @@
-find_package(ENet 1.3.9)
+find_package(ENet 1.3.13)
 
 if(ENET_FOUND)
     set(ENET_INCLUDE_DIRS ${ENET_INCLUDE_DIR})    
@@ -18,8 +18,8 @@ else(LUA5.2_FOUND)
     add_subdirectory(lua)
 endif(LUA5.2_FOUND)
 
-
-find_package(Boost 1.35.0 COMPONENTS system thread)
+set(Boost_DEBUG TRUE)
+find_package(Boost 1.35.0 OPTIONAL_COMPONENTS system thread)
 
 if(Boost_FOUND)
     set(BOOST_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
