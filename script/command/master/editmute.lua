@@ -14,7 +14,7 @@ end
 
 local function init()
 	server.event_handler("editpacket", function(cn) 
-		if editmute or server.player_vars(target).editmute then
+		if editmute or server.player_vars(cn).editmute then
 			return -1
 		end
 	end)
@@ -22,7 +22,8 @@ local function init()
 end
 
 local function run(cn, option, target)
-	option, target = tonumber(option), tonumber(target)
+	local option = tonumber(option)
+	local target = tonumber(target)
 
 	if option and (option == 0 or option == 1) then
 		option = (option == 1)
@@ -36,7 +37,7 @@ local function run(cn, option, target)
 		else
 			return false, usage
 		end
-		cn = target
+		local cn = target
 	else
 		editmute = option
 	end
