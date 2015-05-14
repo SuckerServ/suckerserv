@@ -9,12 +9,22 @@ endif(USE_CRC32)
 include(CheckFunctionExists)
 include(CheckTypeSize)
 
+check_function_exists(getaddrinfo     GETADDRINFO_FUNCTION_FOUND)
+check_function_exists(getnameinfo     GETNAMEINFO_FUNCTION_FOUND)
 check_function_exists(gethostbyaddr_r GETHOSTBYADDR_R_FUNCTION_FOUND)
 check_function_exists(gethostbyname_r GETHOSTBYNAME_R_FUNCTION_FOUND)
 check_function_exists(poll            POLL_FUNCTION_FOUND)
 check_function_exists(fcntl           FCNTL_FUNCTION_FOUND)
 check_function_exists(inet_pton       INET_PTON_FUNCTION_FOUND)
 check_function_exists(inet_ntop       INET_NTOP_FUNCTION_FOUND)
+
+if(GETADDRINFO_FUNCTION_FOUND)
+    add_definitions(-DHAS_GETADDRINFO)
+endif(GETADDRINFO_FUNCTION_FOUND)
+
+if(GETNAMEINFO_FUNCTION_FOUND)
+    add_definitions(-DHAS_GETNAMEINFO)
+endif(GETNAMEINFO_FUNCTION_FOUND)
 
 if(GETHOSTBYADDR_R_FUNCTION_FOUND)
     add_definitions(-DHAS_GETHOSTBYADDR_R)

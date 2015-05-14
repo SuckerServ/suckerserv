@@ -1,7 +1,7 @@
 #### Dependencies ####
 
 ## Enet ##
-find_package(ENet 1.3.12)
+find_package(ENet 1.3.13)
 
 if(ENET_FOUND)
     set(ENET_INCLUDE_DIRS ${ENET_INCLUDE_DIR})    
