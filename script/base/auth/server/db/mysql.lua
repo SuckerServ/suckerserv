@@ -4,10 +4,10 @@ local connection = {}
 connection.settings = {}
 
 local msg = {}
-msg.no_domain = "Domain, %s does not exist."
-msg.domain = "Domain, %s already exists."
-msg.no_user = "User, %s@%s does not exist."
-msg.user = "User, %s@%s already exists."
+msg.no_domain = "Domain %s does not exist."
+msg.domain = "Domain %s already exists."
+msg.no_user = "User %s@%s does not exist."
+msg.user = "User %s@%s already exists."
 msg.same = "%s is named %s."
 msg.mysql = {}
 msg.mysql.unknown = "Connection to the mysql database failed."
@@ -28,20 +28,43 @@ local function domain_id(domain)
     return
 end
 
-local function is_user(name, domain_id)
-    local sql = [[SELECT *
-                    FROM domains_users
-                    WHERE (SELECT id
-                            FROM users
-                            WHERE name = '%s') = user_id AND domain_id = %i]]
-							
-    local tab = mysql.row(mysql.exec(connection, string.format(sql, mysql.escape_string(name), domain_id)))
+local function domain_user_id(name, did)
+
+    local sql = [[SELECT user_id
+                      FROM domains_users
+                      JOIN users ON domains_users.user_id = users.id
+                      WHERE users.name = '%s'
+                      AND domains_users.domain_id = %i]]
+
+    local tab = mysql.row(mysql.exec(connection, string.format(sql, mysql.escape_string(name), did)))
+
     if tab
     then
-        return true
+        return tab.user_id
     end
-    
-    return
+
+    return false
+end
+
+local function is_user(name, did)
+    return domain_user_id(name, did) ~= false
+end
+
+local function user_user_id(name, pubkey)
+
+    local sql = [[SELECT id
+                      FROM users
+                      WHERE name = '%s'
+                      AND pubkey = '%s']]
+
+    local tab = mysql.row(mysql.exec(connection, string.format(sql, mysql.escape_string(name), pubkey)))
+
+    if tab
+    then
+        return tab.id
+    end
+
+    return false
 end
 
 local function pubkey(name, domain_id)
@@ -139,18 +162,23 @@ local function add_user(name, domain_id, pubkey, domain, priv)
     then 
         return msg.mysql.unknown
     end
-	
-	local sql = [[INSERT INTO users (name, pubkey) 
-					VALUES('%s', '%s')]]
-    local cursor = mysql.exec(connection, string.format(sql, mysql.escape_string(name), mysql.escape_string(pubkey)))
-    if not cursor
-    then
-	return string.format(msg.mysql.no_insert, string.format("%s@%s", name, domain))
+
+    local uid = user_user_id(name, pubkey)
+
+    if not uid then
+        local sql = [[INSERT INTO users (name, pubkey) 
+                        VALUES('%s', '%s')]]
+        local cursor = mysql.exec(connection, string.format(sql, mysql.escape_string(name), mysql.escape_string(pubkey)))
+        if not cursor then
+            return string.format(msg.mysql.no_insert, string.format("%s@%s", name, domain))
+        end
+
+        uid = "LAST_INSERT_ID()"
     end
 
-        local sql = [[INSERT INTO domains_users (user_id, domain_id, privilege)
-                                        VALUES(LAST_INSERT_ID(), %i, '%s')]]
-    local cursor = mysql.exec(connection, string.format(sql, domain_id, priv))
+    local sql = [[INSERT INTO domains_users (user_id, domain_id, privilege)
+                    VALUES(%s, %i, '%s')]]
+    local cursor = mysql.exec(connection, string.format(sql, uid, domain_id, priv))
     if not cursor
     then
         return string.format(msg.mysql.no_insert, string.format("%s@%s", name, domain))
@@ -261,36 +289,27 @@ end
 local function external_del_user(name, domain)
 
     local did = domain_id(domain)
-    if not did
-    then
+    if not did then
 	return string.format(msg.no_domain, domain)
     end
     
-    if not is_user(name, did)
-    then
-	return string.format(msg.no_user, name, domain)
-    end
+    local uid = domain_user_id(name, did)
+    if not uid then
+        return string.format(msg.no_user, name, domain)
+    end   
     
     if not mysql.exec(connection, "START TRANSACTION")
     then 
         return msg.mysql.unknown
     end
---        local sql = [[DELETE du
---                          FROM domains_users du
---                          JOIN users ON users.id = du.user_id
---                          WHERE users.name = '%s'
---                              AND du.domain_id = %i]]
 
-        local sql = [[DELETE
-                          FROM domains_users
-                          WHERE user_id IN (
-                              SELECT id
-                              FROM users
-                              WHERE name = '%s')
-                              AND domain_id = %i]]
+    local sql = [[DELETE
+                      FROM domains_users
+                      WHERE user_id = %i
+                      AND domain_id = %i]]
 
 
-    local cursor = mysql.exec(connection, string.format(sql, mysql.escape_string(name), did))
+    local cursor = mysql.exec(connection, string.format(sql, uid, did))
     if not cursor
     then
         return string.format(msg.mysql.no_delete, string.format("%s@%s", name, domain))
