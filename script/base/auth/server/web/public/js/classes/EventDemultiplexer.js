@@ -23,7 +23,7 @@ function EventDemultiplexer(){
                 return;
             }
             callback(true, response.listenerURI);
-        }, "json");
+        });
     }
     
     this.startListening = function(errorCallback){
@@ -33,7 +33,7 @@ function EventDemultiplexer(){
                 
                 if(!continueListening) return;
                 
-                $.getJSON(listenerURI, function(events, textStatus){
+                $.get(listenerURI, function(events, textStatus){
                     
                     if(textStatus != "success"){
                         errorCallback();

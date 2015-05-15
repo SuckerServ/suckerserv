@@ -7,11 +7,6 @@ function UserUpdateSet(server){
     this.domains = {};
     this.numberOfUsers = 0;
 
-/*    this.getUser = function(id){
-        return self.users[id];
-    }
-*/
-
     var eventService = new EventDemultiplexer();
     var listeners = {};
 
@@ -35,17 +30,16 @@ function UserUpdateSet(server){
             return user.domain && user.domain.length;
         }
 
-	var id = user.id;
-        self.users[id] = user;
+        self.users[user.domain + "/" + user.name] = user;
         if(inDomain(user)){
             if(self.domains[user.domain] === undefined) self.domains[user.domain] = {};
-            self.domains[user.domain][id] = user;
+            self.domains[user.domain][user.name] = user;
        }
     }
 
-    function updateUser(id, data){
+    function updateUser(data){
 
-        var user = self.users[id];
+        var user = self.users[data.domain + "/" + data.name];
         $.each(data, function(name, value){
             user[name] = value;
         });
@@ -54,13 +48,13 @@ function UserUpdateSet(server){
     }
 
     function getFullUserState(domain, name, callback){
-        $.getJSON("/users/" + domain + "/" + name, function(response, textStatus){
+        $.get("/users/" + domain + "/" + name, function(response, textStatus){
             if(textStatus != "success"){
                 callback(false);
                 return;
             }
-            callback(true, response.id);
-            updateUser(response.id, response);
+            callback(true);
+            updateUser(response);
         });
     }
 
@@ -68,7 +62,7 @@ function UserUpdateSet(server){
 
         var addNewUser = options && options.addNewUser;
 
-        $.getJSON("/users", function(response, textStatus){
+        $.get("/users", function(response, textStatus){
             if(textStatus != "success"){
                	server.signalError();
                 return;
@@ -80,7 +74,7 @@ function UserUpdateSet(server){
             $.each(response, function(){
                 $.each(this, function(){
 
-                    var id = this.id;
+                    var id = this.domain + "/" + this.name;
 
                     if(!self.users[id]){
 
@@ -94,7 +88,7 @@ function UserUpdateSet(server){
                         }
                     }
 
-                    updateUser(id, this);
+                    updateUser(this);
                 });
             });
 
@@ -109,27 +103,27 @@ function UserUpdateSet(server){
 
     event_handler("adduser", function(name, desc, pubkey, priv){
 
-        self.numberOfClients++;
+        var user = new User(self.server);
+        self.users[name + "/" + desc] = user;
 
-        getFullUserState(desc, name, function(success, id){
+        self.numberOfUsers++;
+
+        getFullUserState(desc, name, function(success){
             if(!success) return;
-            var user = new User(self.server);
-            user.id = id;
-            self.users[id] = user;
-            callListeners(listeners.connect, self.users[id]);
+            callListeners(listeners.connect, self.users[name + "/" + desc]);
         });
     });
 
     event_handler("deleteuser", function(name, desc){
-        $.each(self.domains[desc], function(){
-            if(this.name == name){
-                self.numberOfClients--;
-                updateUserArrays(this);
-                delete self.users[this.id];
-                callListeners(listeners.disconnect, client);
-                return;
-            }
-        });
+
+        var user = self.users[desc + "/" + name];
+
+        self.numberOfUsers--;
+
+        updateUserArrays(user);
+        delete self.users[desc + "/" + name];
+
+        callListeners(listeners.disconnect, user);
     });
 
 

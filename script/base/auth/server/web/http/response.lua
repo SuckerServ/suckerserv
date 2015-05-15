@@ -10,7 +10,7 @@ local function send_html(request, html)
     
     local response = http_server.response(request, 200)
     
-    response:header("Content-Type", "text/html")
+    response:header("Content-Type", "text/html; charset=utf-8")
     response:set_content_length(#html)
     response:send_header()
     

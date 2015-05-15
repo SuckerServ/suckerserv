@@ -230,24 +230,19 @@ function createUserTablesManager(containerElements, server){
 /*    var events = [
         "rename", "spawn", "privilege", "suicide"
     ];
+    
+    for(var i = 0; i < events.length; i++){
+        server.users.addListener(events[i], updateTableRow);
+    }
 */
     
-/*    for(var i = 0; i < events.length; i++){
-        server.clients.addListener(events[i], updateTableRow);
-    }
-    
-    server.clients.addListener("connect", function(client){
-        if(client.status == "spectator"){
-            addSpectatorTableRow(client);
-        }
-        else{
-            addUserTableRow(client);
-        }
+    server.users.addListener("adduser", function(user){
+        addUserTableRow(user);
     });
     
-    server.clients.addListener("disconnect", removeTableRow);
+    server.users.addListener("deleteuser", removeTableRow);
     
-    server.clients.addListener("reteam", function(client){
+/*    server.clients.addListener("reteam", function(client){
         removeTableRow(client);
         addUserTableRow(client);
     });
@@ -306,7 +301,7 @@ function createUserControlLinks(user){
     deluser.href="#";
     deluser.title="Delete";
     deluser.onclick = function(){
-        var yes = confirm("Are you sure you want to delete " + user.name + "(" + user.id + ")");
+        var yes = confirm("Are you sure you want to delete " + user.name + "?");
         if(yes){
             user.deluser();
         }
@@ -332,8 +327,19 @@ function createUserCommandLinks(parent, server){
         server.executeCommand(server.makeCommand("add_user", name, domain, pubkey, priv));
     }
 
+    function addDomain(){
+        var domain = prompt("Domain name");
+        if(!domain) return;
+
+        var case_insensitive = prompt("Case insensitive: 0 or 1");
+        if(!case_insensitive) return;
+
+        server.executeCommand(server.makeCommand("add_domain", domain, case_insensitive));
+    }
+
     var userCommands = [
-        {label:"Add user", _function:addUser}
+        {label:"Add user", _function:addUser},
+        {label:"Add domain", _function:addDomain}
     ];
 
     function createLinks(commands, groupTitle){
@@ -371,7 +377,6 @@ function UsersTable(parent){
 
     var table = new HtmlTable();
     table.columns([
-        {label:"ID",            key:"id"},
         {label:"Name",          key:"name"},
         {label:"Pubkey",          key:"pubkey"},
         {label:"Privileges",         key:"priv"},
@@ -444,7 +449,7 @@ function createNetstatsView(parent, server){
     }
     
     function updateNetstats(){
-        $.getJSON("/netstats", function(response, textStatus){
+        $.get("/netstats", function(response, textStatus){
                 
             if(textStatus != "success"){
                 return;

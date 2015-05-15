@@ -2,7 +2,6 @@ function User(server){
 
     this.serverObject = server;
 
-    this.id = 0;
     this.name = "";
 
     this.pubkey = "";

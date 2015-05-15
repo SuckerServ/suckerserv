@@ -3,9 +3,8 @@ require "Json"
 
 local function user(domain, name)
     local output = {}
-    users = internal.list_users(domain, false)
+    users = server.listusers(domain)
 
-    output.id = users[name].id
     output.name = name
     output.domain = domain
     output.pubkey = users[name].pubkey
@@ -19,16 +18,18 @@ local function list_users(domain)
 
     if not internal.domains[domain]
     then
-        return "list_users: Domain, " .. domain .. " does not exist."
+        server.log_error("list_users: Domain, " .. domain .. " does not exist.")
+        return {}
     end
 
-    local users, err = internal.list_users(domain)
+    local users, err = server.listusers(domain)
     if err
     then
-        return "list_users (backend): " .. err
+        server.log_error("list_users (backend): " .. err)
+        return {}
     end
 
-    if #users == "0"
+    if not next(users)
     then
         server.log("No users in " .. domain .. ".")
     else
@@ -89,4 +90,3 @@ http_server_root["users"] = http_server.resource({
         http_response.send_json(request, users(false))
     end
 })
-

@@ -4,9 +4,8 @@ local users = {}
 local sessions = {}
 
 local function createUsersTable()
-    local parse = server.parse_list
-    for _, entry in ipairs(parse(server.web_admins)) do
-        local fields = parse(entry)
+    for _, entry in ipairs(server.web_admins) do
+        local fields = {string.match(entry, "(%w+) (%w+) (%w+)")}
         if #fields >= 3 then
             local name = fields[1]
             local password_hash = fields[2]
@@ -82,7 +81,10 @@ local function getLoginFormHtml(attributes)
     end
     
     local html = [[
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <title>SuckerServ Authserver Admin Login</title>
         <link rel="stylesheet" type="text/css" href="/static/presentation/screen.css" />
@@ -92,7 +94,7 @@ local function getLoginFormHtml(attributes)
     </head>
     <body>
         <div id="loginpage">
-        <h1>%s - <span id="app-title">Cube 2 Authserver Control Panel</span></h2>
+        <h1>%s - <span id="app-title">Cube 2 Authserver Control Panel</span></h1>
         <form method="post" id="login-form" name="login" action="?return=%s">
             %s
             <p><label for="username">Username</label><input type="text" name="username" id="username" value="%s" /></p>

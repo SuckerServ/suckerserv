@@ -4,18 +4,20 @@ local content_handler = {}
 
 content_handler["text/x-lua"] = function(request, code)
     
-    local error_message, result = eval_lua(code)
-    
-    result = tostring(result)
+    local result
     
     local responseStatus = 200
     
     --if #result == 0 then responseStatus = 204 end
-    
+
+    local chunk, error_message = load(code)
+
     if error_message then
         server.log_error("http resource authexec error: " .. error_message .. "\n<!-- start code -->\n" .. code .. "\n<!-- end code -->")
         responseStatus = 400
         result = error_message
+    else
+        result = tostring(chunk() or "")
     end
     
     local response = http_server.response(request, responseStatus)

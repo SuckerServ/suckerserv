@@ -35,7 +35,7 @@ function Authserver(){
     }
     
     this.signalError = function(){
-        self.executeCommand("// nop");
+        self.executeCommand("-- nop");
     }
     
     this.signalLostConnection = function(){
@@ -91,7 +91,7 @@ function Authserver(){
 
     this.users.addListener("ready", function(){addReady("user");});
 
-    this.executeCommand("// nop"); //try to trigger an error
+    this.executeCommand("-- nop"); //try to trigger an error
 }
 
 Authserver.prototype.executeCommand = function(commandLine, responseHandler){
@@ -128,7 +128,7 @@ Authserver.prototype.executeCommand = function(commandLine, responseHandler){
     $.ajax({
         type:"POST",
         url:"/authexec",
-        contentType: "text/x-cubescript",
+        contentType: "text/x-lua",
         data: commandLine,
         success: success,
         error: error
@@ -136,14 +136,14 @@ Authserver.prototype.executeCommand = function(commandLine, responseHandler){
 }
 
 Authserver.prototype.makeCommand = function(){
-    var commandLine = "";
+    var commandLine = "server.";
     for(var i = 0; i < arguments.length; i++){
         var argument = "" + arguments[i];
         if(argument.match(/[\r\n ;$@\/#"]/m)){
             argument = argument.replace(/([\r\n"])/gm, "\\$1");
             argument = "\"" + argument + "\"";
         }
-        commandLine += (i > 0 ? " " : "") + argument;
+        commandLine += (i > 1 ? ", " : "") + (i > 0 ? "\"" : "" ) + argument + (i > 0 ? "\"" : "") + (i == 0 ? "(" : i == arguments.length-1 ? ")" : "");
     }
     return commandLine;
 }
@@ -152,8 +152,8 @@ Authserver.prototype.getServerVariables = function(varset, completionHandler){
 
     var serverObject = this;
     var queryvars = $.toJSON(varset);
+
     $.post("/queryvars", queryvars, function(response, textStatus){
-        
         if(textStatus != "success"){
             completionHandler(false, {});
             serverObject.signalError();
@@ -162,7 +162,7 @@ Authserver.prototype.getServerVariables = function(varset, completionHandler){
         
         completionHandler(true, response);
         
-    }, "json");
+    });
 }
 
 Authserver.prototype.serverCalls = function(calls, completionHandler){
@@ -179,6 +179,5 @@ Authserver.prototype.serverCalls = function(calls, completionHandler){
         
         completionHandler(true, response);
         
-    }, "json");
+    });
 }
-
