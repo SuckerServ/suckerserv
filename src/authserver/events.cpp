@@ -1,20 +1,20 @@
 #include "lua/event.hpp"
 
-lua::event< boost::tuple<> >                                         event_init("init");
+lua::event< std::tuple<> >                                         event_init("init");
 
-lua::event< boost::tuple<> >                                         event_started("started");
-lua::event< boost::tuple<int> >                                      event_shutdown("shutdown");
-lua::event< boost::tuple<> >                                         event_shutdown_scripting("shutdown_scripting");
-lua::event< boost::tuple<> >                                         event_reloadhopmod("reloadhopmo");
+lua::event< std::tuple<> >                                         event_started("started");
+lua::event< std::tuple<int> >                                      event_shutdown("shutdown");
+lua::event< std::tuple<> >                                         event_shutdown_scripting("shutdown_scripting");
+lua::event< std::tuple<> >                                         event_reloadhopmod("reloadhopmo");
 
-lua::event< boost::tuple<const char *> >                             event_varchanged("varchanged");
+lua::event< std::tuple<const char *> >                             event_varchanged("varchanged");
 
-lua::event< boost::tuple<> >                                         event_sleep("sleep");
-lua::event< boost::tuple<> >                                         event_interval("interval");
+lua::event< std::tuple<> >                                         event_sleep("sleep");
+lua::event< std::tuple<> >                                         event_interval("interval");
 
-lua::event< boost::tuple<const char *, const char *, const char *, const char *> > event_adduser("adduser");
-lua::event< boost::tuple<const char *, const char *> >               event_deleteuser("deleteuser");
-lua::event< boost::tuple<> >                                         event_clearusers("clearusers");
+lua::event< std::tuple<const char *, const char *, const char *, const char *> > event_adduser("adduser");
+lua::event< std::tuple<const char *, const char *> >               event_deleteuser("deleteuser");
+lua::event< std::tuple<> >                                         event_clearusers("clearusers");
 
 void register_event_idents(lua::event_environment & env)
 {

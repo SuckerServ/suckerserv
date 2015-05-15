@@ -8,15 +8,16 @@ include_directories(
     ${BOOST_INCLUDE_DIRS}
     ${FUNGU_INCLUDE_DIRS})
 
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 add_definitions(-DSTANDALONE)
 
 add_executable(sauer_authserver 
 	authserver.cpp
 	core_bindings.cpp
-	../hopmod/signals.cpp
 	events.cpp
 	../hopmod/scheduler.cpp
 	../hopmod/lua.cpp)
+
 target_link_libraries(sauer_authserver
     sauertools
     lua_modules

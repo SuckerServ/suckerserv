@@ -50,6 +50,8 @@ void bind_core_functions(lua_State * L, int T)
     bind_function(L, T, "adduser", authserver::adduser);
     bind_function(L, T, "deleteuser", authserver::deleteuser);
     bind_function(L, T, "clearusers", authserver::clearusers);
+
+    bind_function(L, T, "listusers", authserver::lua_user_list);
     
     bind_function(L, T, "log_status", authserver::log_status);
     bind_function(L, T, "log_error", authserver::log_error);
@@ -88,7 +90,7 @@ static int variable_accessor(lua_State * L)
     {
         if(READ_ONLY) luaL_error(L, "variable is read-only");
         *var = lua::to(L, 1, lua::return_tag<T>());
-        event_varchanged(event_listeners(), boost::make_tuple(lua_tostring(L, lua_upvalueindex(2))));
+        event_varchanged(event_listeners(), std::make_tuple(lua_tostring(L, lua_upvalueindex(2))));
         return 0;
     }
     else // Get variable
@@ -108,7 +110,7 @@ static int string_accessor(lua_State * L)
         if(READ_ONLY) luaL_error(L, "variable is read-only");
         convert2cube varcubeenc(lua_tostring(L, 1));
         copystring(var, varcubeenc.str());
-        event_varchanged(event_listeners(), boost::make_tuple(lua_tostring(L, lua_upvalueindex(2))));
+        event_varchanged(event_listeners(), std::make_tuple(lua_tostring(L, lua_upvalueindex(2))));
         return 0;
     }
     else // Get variable
@@ -186,7 +188,7 @@ static int property_accessor(lua_State * L)
     {
         if(!set) luaL_error(L, "cannot set value");
         set(lua::to(L, 1, lua::return_tag<T>()));
-        event_varchanged(event_listeners(), boost::make_tuple(lua_tostring(L, lua_upvalueindex(3))));
+        event_varchanged(event_listeners(), std::make_tuple(lua_tostring(L, lua_upvalueindex(3))));
         return 0;
     }
     else

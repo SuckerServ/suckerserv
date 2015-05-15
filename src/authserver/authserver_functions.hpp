@@ -19,6 +19,8 @@ namespace authserver
     extern void log_error(const char * msg);
     extern void shutdown();
 
+    int lua_user_list(lua_State *);
+
     extern string ip;
     extern int port;
     extern bool debug;

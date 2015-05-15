@@ -33,7 +33,7 @@
 #define SERVER_LIMIT 4096
 #define DEFAULT_SERVER_PORT 28787
 
-using namespace boost::asio;
+using namespace asio;
 
 static io_service main_io_service;
 
@@ -67,10 +67,10 @@ static inline bool htcmp(const userkey &x, const userkey &y) { return !strcmp(x.
 
 struct userinfo : userkey
 {
-    void *pubkey;
+    const char *pubkey;
     const char *privilege;
     userinfo() : pubkey(NULL), privilege(NULL) {}
-    ~userinfo() { delete[] name; delete[] desc; if(pubkey) freepubkey(pubkey); delete[] privilege; }
+    ~userinfo() { delete[] name; delete[] desc; delete[] pubkey; delete[] privilege; }
 };
 hashset<userinfo> users; 
 
@@ -78,12 +78,11 @@ void adduser(const char *name, const char *desc, const char *pubkey, const char 
 {
     userkey key(name, desc);
     userinfo &u = users[key];
-    if(u.pubkey) { freepubkey(u.pubkey); u.pubkey = NULL; }
+    if(!u.pubkey) u.pubkey = newstring(pubkey);
     if(!u.name) u.name = newstring(name);
     if(!u.desc) u.desc = newstring(desc);
-    u.pubkey = parsepubkey(pubkey);
     if(!u.privilege) u.privilege = newstring(priv);
-    event_adduser(event_listeners(), boost::make_tuple(name, desc, pubkey, priv));
+    event_adduser(event_listeners(), std::make_tuple(name, desc, pubkey, priv));
     if(debug) std::cout<<"Adding user "<<name<<"@"<<(desc[0] ? desc : "<none>")<<" with priv "<<priv<<std::endl;
 } 
 
@@ -92,7 +91,7 @@ void deleteuser(const char *name, const char *desc)
     userkey key(name, desc);
     if(users.remove(key))
     {
-        event_deleteuser(event_listeners(), boost::make_tuple(name, desc));
+        event_deleteuser(event_listeners(), std::make_tuple(name, desc));
         if(debug) std::cout<<"Removing user "<<name<<"@"<<(desc ? desc : "<none>")<<std::endl;
     }
     else
@@ -104,7 +103,7 @@ void deleteuser(const char *name, const char *desc)
 void clearusers()
 {
     users.clear();
-    event_clearusers(event_listeners(), boost::make_tuple());
+    event_clearusers(event_listeners(), std::make_tuple());
     if(debug) std::cout<<"Cleared all users"<<std::endl;
 } 
 
@@ -244,7 +243,7 @@ void reqauth(client & c, uint id, char * name, char * domain)
     
     string ip;
     if(enet_address_get_host_ip(&c.address, ip, sizeof(ip)) < 0) copystring(ip, "-");
-    printf("%s: attempting \"%s\"@\"%s\" as %u from %s", ct ? ct : "-", name, domain ? domain : "", id, ip);
+    printf("%s: attempting \"%s\"@\"%s\" as %u from %s\n", ct ? ct : "-", name, domain ? domain : "", id, ip);
     
     
     userinfo *u = users.access(userkey(name, domain));
@@ -252,7 +251,7 @@ void reqauth(client & c, uint id, char * name, char * domain)
     if(!u)
     {
         outputf(c, "failauth %u\n", id);
-        printf("Failed %u from %s: user %s@%s not found.", id, ip, name, domain ? domain : "<none>");
+        printf("Failed %u from %s: user %s@%s not found.\n", id, ip, name, domain ? domain : "<none>");
         return;
     }
     
@@ -270,8 +269,10 @@ void reqauth(client & c, uint id, char * name, char * domain)
 
     static vector<char> buf;
     buf.setsize(0);
-    a.answer = genchallenge(u->pubkey, seed, sizeof(seed), buf);
-    
+    void *pubkey = parsepubkey(u->pubkey);
+    a.answer = genchallenge(pubkey, seed, sizeof(seed), buf);
+    freepubkey(pubkey);
+
     outputf(c, "chalauth %u %s\n", id, buf.getbuf());
 }
 
@@ -287,12 +288,12 @@ void confauth(client &c, uint id, const char *val)
         if(checkchallenge(val, c.authreqs[i].answer))
         {
             outputf(c, "succauth %u\n", id);
-            printf("succeeded %u from %s", id, ip);
+            printf("succeeded %u from %s\n", id, ip);
         }
         else 
         {
             outputf(c, "failauth %u\n", id);
-            printf("failed %u from %s", id, ip);
+            printf("failed %u from %s\n", id, ip);
         }
         freechallenge(c.authreqs[i].answer);
         c.authreqs.remove(i--);
@@ -312,7 +313,7 @@ void queryid(client & c, uint id, char * name, char * domain)
     if(!u)
     {
         outputf(c, "NotFound %u\n", id);
-        printf("Failed %u from %s: user %s@%s not found.", id, ip, name, domain ? domain : "<none>");
+        printf("Failed %u from %s: user %s@%s not found.\n", id, ip, name, domain ? domain : "<none>");
         return;
     }
     
@@ -453,19 +454,25 @@ void stopauthserver(int)
     if(serversocket != ENET_SOCKET_NULL) enet_socket_destroy(serversocket);
     serversocket = ENET_SOCKET_NULL;
 
-    boost::system::error_code error;
+    std::error_code error;
 
     update_timer.cancel(error);
     if(error)
         std::cerr<<"Error while trying to stop the update timer: "<<error.message()<<std::endl;
 }
 
+void signal_shutdown(int val)
+{
+    shutdown_lua();
+    delete_temp_files_on_shutdown(val);
+}
+
 static void initiate_shutdown()
 {
     authserver::stopauthserver(SHUTDOWN_NORMAL);
 
-    event_shutdown(event_listeners(), boost::make_tuple(static_cast<int>(SHUTDOWN_NORMAL)));
-    signal_shutdown(SHUTDOWN_NORMAL);
+    event_shutdown(event_listeners(), std::make_tuple(static_cast<int>(SHUTDOWN_NORMAL)));
+    authserver::signal_shutdown(SHUTDOWN_NORMAL);
 
     // Now wait for the main event loop to process work that is remaining and then exit
     get_main_io_service().stop();
@@ -481,9 +488,11 @@ static void shutdown_from_signal(int i)
     authserver::shutdown();
 }
 
+#include "authserver_functions.cpp"
+
 } //namespace authserver
 
-void update_server(const boost::system::error_code & error);
+void update_server(const std::error_code & error);
 
 void sched_next_update()
 {
@@ -496,7 +505,7 @@ void sched_next_update()
     }
 }
 
-void update_server(const boost::system::error_code & error = boost::system::error_code())
+void update_server(const std::error_code & error = std::error_code())
 {
     sched_next_update();
 
@@ -506,9 +515,6 @@ void update_server(const boost::system::error_code & error = boost::system::erro
 
 static void init_authserver()
 {
-    signal_shutdown.connect(boost::bind(&shutdown_lua));
-    signal_shutdown.connect(&delete_temp_files_on_shutdown);
-
     init_lua();
     lua_State * L = get_lua_state();
     
@@ -525,24 +531,22 @@ static void init_authserver()
        	lua_pop(L, 1);
     }
     
-    event_init(event_listeners(), boost::make_tuple());
+    event_init(event_listeners(), std::make_tuple());
 }
 
 static void reload_authserver_now()
 {
-    event_reloadhopmod(event_listeners(), boost::make_tuple());
+    event_reloadhopmod(event_listeners(), std::make_tuple());
 
     reloaded = true;
 
-    event_shutdown(event_listeners(), boost::make_tuple(static_cast<int>(SHUTDOWN_RELOAD)));
+    event_shutdown(event_listeners(), std::make_tuple(static_cast<int>(SHUTDOWN_RELOAD)));
 
-    signal_shutdown(SHUTDOWN_RELOAD);
-
-    signal_shutdown.disconnect_all_slots();
+    authserver::signal_shutdown(SHUTDOWN_RELOAD);
 
     init_authserver();
 
-    event_started(event_listeners(), boost::make_tuple());
+    event_started(event_listeners(), std::make_tuple());
 
     std::cout<<"-> Reloaded Authserver."<<std::endl;
 
@@ -576,7 +580,7 @@ int main(int argc, char **argv)
     
     authserver::setupserver(authserver::port, (authserver::ip[0] ? authserver::ip : NULL));
     
-    event_started(event_listeners(), boost::make_tuple());
+    event_started(event_listeners(), std::make_tuple());
     
     std::cout<<"*READY*"<<std::endl;
     std::cout.flush();
@@ -587,7 +591,7 @@ int main(int argc, char **argv)
     {
         main_io_service.run();
     }
-    catch(const boost::system::system_error & se)
+    catch(const std::system_error & se)
     {
         std::cerr<<se.what()<<std::endl;
            throw;

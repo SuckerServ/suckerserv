@@ -1,9 +1,8 @@
 #ifndef HOPMOD_HPP
 #define HOPMOD_HPP
 
-#include "signals.hpp"
-#include "utils.hpp"
 #include "events.hpp"
+#include "utils/files.hpp"
 
 #include "net/address.hpp"
 #include "net/address_mask.hpp"
