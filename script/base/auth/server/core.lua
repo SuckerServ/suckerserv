@@ -78,9 +78,9 @@ function server.add_user(name, domain, pubkey, priv)
     if internal.case_insensitive_domains[domain]
     then
 	server.adduser(string.lower(name), domain, pubkey, priv)
+    else
+        server.adduser(name, domain, pubkey, priv)
     end
-    
-    server.adduser(name, domain, pubkey, priv)
     
     server.log("Added: " .. name .. "@" .. domain .. ".")
 end
@@ -92,13 +92,13 @@ function server.del_user(name, domain)
 	server.log_error("del_user: Domain, " .. domain .. " does not exist.")
 	return
     end
-    
+
     if not internal.is_user(name, domain)
     then
 	server.log_error("del_user: " .. name .. "@" .. domain .. " does not exist.")
 	return
     end
-    
+
     local err = internal.del_user(name, domain)
     if err
     then
