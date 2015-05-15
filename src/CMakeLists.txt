@@ -95,7 +95,7 @@ add_subdirectory(fungu)
 add_subdirectory(lsqlite3)
 add_subdirectory(hopmod/standalone/luapp)
 add_subdirectory(luasql)
-#add_subdirectory(authserver)
+add_subdirectory(authserver)
 
 
 include(CheckLibraryExists)
