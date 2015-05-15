@@ -93,7 +93,7 @@ local function player_timezone(cn)
         local timezone
 	if server.enable_timezone == 1 then
 		local ret, val = pcall(function() return server.mmdatabase:lookup_ip(server.player_ip(cn), "location", "time_zone") end)
-		if ret then
+		if ret and val ~= "" then
 			timezone = val
 		else
 			timezone = messages.DEFAULT_TIMEZONE
