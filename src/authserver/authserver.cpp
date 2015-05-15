@@ -39,7 +39,7 @@ io_service & get_main_io_service()
     return main_io_service;
 }
 
-deadline_timer update_timer(main_io_service);
+high_resolution_timer update_timer(main_io_service);
 
 size_t tx_packets = 0 , rx_packets = 0, tx_bytes = 0, rx_bytes = 0;
 bool reloaded = false;
@@ -493,11 +493,11 @@ void update_server(const std::error_code & error);
 
 void sched_next_update()
 {
-    boost::posix_time::time_duration expires_from_now = update_timer.expires_from_now();
+    std::chrono::duration<long int, std::ratio<1l, 1000000000l> > expires_from_now = update_timer.expires_from_now();
 
-    if(expires_from_now.is_special() || expires_from_now.is_negative())
+    if(expires_from_now < std::chrono::duration<long int, std::ratio<1l, 1000000000l> >::zero())
     {
-        update_timer.expires_from_now(boost::posix_time::milliseconds(5));
+        update_timer.expires_from_now(std::chrono::duration<long int, std::milli>(5));
         update_timer.async_wait(update_server);
     }
 }
