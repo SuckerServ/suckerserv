@@ -5,7 +5,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/../hopmod
     ${ENET_INCLUDE_DIRS}
     ${LUA_INCLUDE_DIRS}
-    ${BOOST_INCLUDE_DIRS}
+    ${ASIO_INCLUDE_DIRS}
     ${FUNGU_INCLUDE_DIRS})
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
@@ -22,7 +22,6 @@ target_link_libraries(sauer_authserver
     sauertools
     lua_modules
     ${ENET_LIBRARY}
-    ${BOOST_THREAD_LIBRARY}
     -lrt)
 
 install(TARGETS
