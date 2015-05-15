@@ -2,14 +2,16 @@ language: cpp
 git:
   submodules: false
 before_install:
+  - sudo sh -c "echo 'deb http://llvm.org/apt/precise/ llvm-toolchain-precise-3.6-binaries main' >> /etc/apt/sources.list"
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
   - sudo apt-get update -qq
   - sudo apt-get -y install build-essential zlib1g-dev libluajit-5.1-dev
-  - if [ "$CXX" = "clang++" ]; then sudo apt-get install -qq libstdc++-4.9-dev; fi
+  - if [ "$CXX" = "clang++" ]; then sudo apt-get install -qq libstdc++-4.9-dev llvm-3.6 llvm-3.6-dev; fi
   - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq gcc-4.9 g++-4.9; fi
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
   
 script:
+  - if [ "$CXX" = "clang++" ]; then export CXX=clang++-3.6; export CC=clang-3.6; fi
   - ./compile.sh
 
 compiler:
