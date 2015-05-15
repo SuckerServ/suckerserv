@@ -9,7 +9,7 @@ include_directories(
     ${FUNGU_INCLUDE_DIRS})
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-add_definitions(-DSTANDALONE)
+add_definitions(-DSTANDALONE -DASIO_STANDALONE)
 
 add_executable(sauer_authserver 
 	authserver.cpp
