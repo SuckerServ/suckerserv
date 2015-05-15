@@ -8,9 +8,6 @@
 #define __FD_SETSIZE 4096
 #endif
 
-#include <boost/unordered_map.hpp>
-#include <boost/shared_ptr.hpp>
-
 #include "cube.h"
 #include "hopmod.hpp"
 
