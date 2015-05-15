@@ -11,6 +11,9 @@
 #include "cube.h"
 #include "hopmod.hpp"
 
+#include <asio.hpp>
+#include <asio/high_resolution_timer.hpp>
+
 #include "hopmod/lua/modules.hpp"
 #include "hopmod/main_io_service.hpp"
 
