@@ -265,8 +265,7 @@ void reqauth(client & c, uint id, char * name, char * domain)
     authreq &a = c.authreqs.add();
     a.reqtime = servtime;
     a.id = id;
-    uint seed[3] = { starttime, servtime, randomMT() };
-
+    uint seed[3] = { uint(starttime), servtime, randomMT() };
     static vector<char> buf;
     buf.setsize(0);
     void *pubkey = parsepubkey(u->pubkey);
