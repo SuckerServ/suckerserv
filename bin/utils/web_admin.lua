@@ -6,7 +6,7 @@ local function generateSalt()
     for _ = 1, 15 do 
         chars[#chars + 1] = math.random(97,122)
     end
-    return string.char(table.unpack(chars))
+    return string.char(unpack(chars))
 end
 
 local username = arg[1]

@@ -15,7 +15,7 @@
 #include "libpq-fe.h"
 
 #include "luajit-2.0/lua.h"
-#include "lauxlib.h"
+#include "luajit-2.0/lauxlib.h"
 
 
 #include "luasql.h"
