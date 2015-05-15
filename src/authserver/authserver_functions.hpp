@@ -1,8 +1,6 @@
 #ifndef HOPMOD_EXTAPI_HPP
 #define HOPMOD_EXTAPI_HPP
 
-#include "utils.hpp"
-
 extern "C"{
 #include <luajit-2.0/lua.h>
 }

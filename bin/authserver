@@ -109,7 +109,7 @@ p_start() {
 
 p_stop() {
 
-    if ! p_exec shutdown
+    if ! p_exec "server.shutdown()"
     then
         return 1
     fi
