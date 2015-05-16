@@ -26,7 +26,7 @@ local function rename(cn)
 
     server.player_rename(cn, "unnamed", true)
     
-    server.player_msg(cn, server.name_rename_message)
+    server.player_msg(cn, "nameprotect_rename")
     server.player_msg(cn, " ")
 end
 

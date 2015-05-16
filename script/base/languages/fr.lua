@@ -1,5 +1,4 @@
 return {
-
 server_start_message = "--> Démarrage de Suckerserv réussi.",
 
 client_connect = "(%{green}%{time}%{white}) Connecté de %{yellow}%{country}%{white} : %{blue}%{name} %{magenta}(%{cn}) %{white}(%{priv}%{white})",
@@ -21,8 +20,11 @@ inactivitylimit = "%{red}>>> %{white}Le serveur vous a mit %{magenta}spectateur 
 
 command_disabled = "%{red}>>> ERREUR: %{white}Commande désactivée",
 command_permission_denied = "%{red}>>> ERREUR: %{white}Permission refusée",
+command_internal_error = "%{red}>>> ERREUR: %{white}Erreur interne",
+command_internal_error = "%{red}>>> ERREUR: %{white}Erreur de syntaxe dans la commande: %{err}",
 
 master_already = "%{red}>>> %{white}Un %{orange}admin %{white}ou un %{green}master %{white}est déjà %{blue}présent%{white}.",
+setmaster_refused = "%{red}>>> %{orange}Attention%{white}: n'accepte plus vos requêtes %{blue}setmaster%{white}.",
 
 demo_recording = "%{red}>>> %{white}Enregistrement de la partie",
 
@@ -36,5 +38,6 @@ stats_logged_in = "%{red}>>> %{white}Vous êtes connecté en tant que %{blue}%{u
 mapbattle_winner = "%{red}>>> %{green}Carte %{white}gagnante : %{blue}%{mapbattle_winner}",
 mapbattle_vote = "%{red}>>> %{yellow}Votez %{white}pour la carte %{blue}%{map1} %{white}ou %{blue}%{map2} %{white}en écrivant %{green}1 %{white}ou %{green}2",
 
-client_nameprotect = "Vous êtes %{yellow}enregistré %{white}en temps que %{blue}%{user_id}%{white}."
+client_nameprotect = "%{red}>>> %{white}Vous êtes %{yellow}enregistré %{white}en temps que %{blue}%{user_id}%{white}.",
+nameprotect_rename = "%{red}>>> %{white}Vous avez utilisé un nom reservé par un autre joueur. Le serveur vous a %{blue}renommé %{white}en %{blue}'unnamed'%{white}."
 }
