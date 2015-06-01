@@ -161,7 +161,7 @@ local scoreflag = server.event_handler("scoreflag", function(cn, team, score, ti
         if not flagruns[server.map] or timetrial < flagruns[server.map][2] then
             commit_flagrun({ mapname = mapname, playername = playername, time = timetrial})
         end
-        server.msg(string.format(server.flagrun_message, playername, timetrial/1000, flagruns[mapname][1], flagruns[mapname][2]/1000))
+        server.msg("flagrun", {name = playername, time = string.format("%.3f", timetrial/1000), bestname = flagruns[mapname][1], besttime = string.format("%.3f", flagruns[mapname][2]/1000) })
     end
 end)
 

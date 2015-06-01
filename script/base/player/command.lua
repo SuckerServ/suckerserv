@@ -155,7 +155,7 @@ local function exec_command(cn, text, force)
 
     
     if not arguments then
-        server.player_msg(cn, server.command_syntax_message, {err = error_message})
+        server.player_msg(cn, "command_syntax_error", {err = error_message})
         return -1
     end
     

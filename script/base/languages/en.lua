@@ -21,7 +21,7 @@ inactivitylimit = "%{red}>>> %{white}Server moved you to spectators, because you
 command_disabled = "%{red}>>> ERROR: %{white}Command disabled",
 command_permission_denied = "%{red}>>> ERROR: %{white}Permission Denied",
 command_internal_error = "%{red}>>> ERROR: %{white}Internal error",
-command_internal_error = "%{red}>>> ERROR: %{white}Command syntax error: %{err}",
+command_syntax_error = "%{red}>>> ERROR: %{white}Command syntax error: %{err}",
 
 master_already = "%{red}>>> %{white}An %{orange}admin %{white}or %{green}master %{white}is already %{blue}here%{white}.",
 setmaster_refused = "%{red}>>> %{orange}WARNING%{white}: no longer accepting your %{blue}setmaster %{white}requests",
@@ -39,5 +39,9 @@ mapbattle_winner = "%{red}>>> %{white}Winner: %{blue}%{mapbattle_winner}",
 mapbattle_vote = "%{red}>>> %{white}Vote for map %{blue}%{map1} %{white}or %{blue}%{map2} %{white}with %{green}1 %{white}or %{green}2",
 
 client_nameprotect = "%{red}>>> %{white}You are %{yellow}logged in %{white}as %{blue}%{user_id}%{white}.",
-nameprotect_rename = "%{red}>>> %{white}You have used a reserved name of another player. Server %{blue}renamed %{white}you to %{blue}'unnamed'%{white}."
+nameprotect_rename = "%{red}>>> %{white}You have used a reserved name of another player. Server %{blue}renamed %{white}you to %{blue}'unnamed'%{white}.",
+
+flagrun = "%{red}>>> %{blue}%{name} %{white}scored in %{magenta}%{time} %{white}seconds. Best: %{blue}%{bestname} %{white}in %{magenta}%{besttime} %{white}seconds.",
+
+giveadmin = "%{red}>>> %{blue}%{name} %{white}has passed admin privilege to you."
 }
