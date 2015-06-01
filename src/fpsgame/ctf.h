@@ -386,7 +386,7 @@ struct ctfclientmode : clientmode
         {
             returnflag(i);
             sendf(-1, 1, "ri4", N_RETURNFLAG, ci->clientnum, i, ++f.version);
-            event_returnflag(event_listeners(), stf::make_tuple(ci->clientnum, ctfflagteam(f.team)));
+            event_returnflag(event_listeners(), std::make_tuple(ci->clientnum, ctfflagteam(f.team)));
             return;
         }
         else
