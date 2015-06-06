@@ -98,11 +98,6 @@ server.event_handler("maploaded", function(cn)
 
     players[server.player_id(cn)] = "loaded"
 
-    if true ~= started then
-        server.player_nospawn(cn, 1)
-        server.player_slay(cn)
-    end
-
     if true == started then
         server.unspec(cn)
         server.player_nospawn(cn, 0)
