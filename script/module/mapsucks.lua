@@ -16,7 +16,7 @@ function server.mapsucks_vote(cn)
     server.player_vars(cn).votesucks = true
     mapsucks = mapsucks + 1
 
-    server.player_msg(cn, "mapsucks" { nb = (mapsucks - 1) })
+    server.player_msg(cn, "mapsucks", { nb = (mapsucks - 1) })
     server.msg("mapsucks_announce", { name = server.player_displayname(cn) })
 
     if mapsucks > (#server.players() / ratio) then

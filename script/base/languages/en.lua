@@ -53,7 +53,7 @@ claimadmin = "%{red}>>> %{blue}%{name} %{white}claimed %{orange}admin %{white}as
 votekick_passed = "%{red}>>> %{white}Vote passed to %{red}kick %{white}player %{blue}%{name}",
 votekick_vote = "%{red}>>> %{green}%{actor} %{white}voted to %{red}kick %{orange}%{victim}%{white}. Votes: %{blue}%{nb} %{white}of %{magenta}%{total}",
 
-unban_message = "%{red}>>> %{blue}%{name} %{white}unbanned %{ip}, check with #banlist"
+unban_message = "%{red}>>> %{blue}%{name} %{white}unbanned %{ip}, check with #banlist",
 no_matching_ban ="%{red}>>> %{white}No matching ban found: %{blue}%{ip}",
 
 specall_command = "%{red}>>> %{white}All players have been %{blue}spectated",
@@ -77,16 +77,16 @@ overtime = "%{red}>>> %{orange}One minute overtime!",
 suddendeath = "%{red}>>> %{orange}Suddendeath - next score wins!",
 
 killingspree = {
-	5 = "%{blue}%{name} %{white}is on a %{orange}KILLING SPREE%{white}!",
-	10 = "%{blue}%{name} %{white}is on a %{orange}RAMPAGE%{white}!",
-	15 = "%{blue}%{name} %{white}is on a %{orange}DOMINATING%{white}!",
-	20 = "%{blue}%{name} %{white}is on a %{orange}UNSTOPPABLE%{white}!",
-	30 = "%{blue}%{name} %{white}is on a %{orange}GODLIKE%{white}!"
+	[5] = "%{blue}%{name} %{white}is on a %{orange}KILLING SPREE%{white}!",
+	[10] = "%{blue}%{name} %{white}is on a %{orange}RAMPAGE%{white}!",
+	[15] = "%{blue}%{name} %{white}is on a %{orange}DOMINATING%{white}!",
+	[20] = "%{blue}%{name} %{white}is on a %{orange}UNSTOPPABLE%{white}!",
+	[30] = "%{blue}%{name} %{white}is on a %{orange}GODLIKE%{white}!"
 },
 killingspree_multiple = {
-	2 = "%{yellow}You scored a %{orange}DOUBLE KILL!!",
-	3 = "%{yellow}You scored a %{orange}TRIPLE KILL!!",
-	"multiple" = %{yellow}You scored %{orange}%{nb} MULTIPLE KILLS!!"
+	[2] = "%{yellow}You scored a %{orange}DOUBLE KILL!!",
+	[3] = "%{yellow}You scored a %{orange}TRIPLE KILL!!",
+	multiple = "%{yellow}You scored %{orange}%{nb} MULTIPLE KILLS!!"
 },
 killingspree_firstkill = "%{blue}%%{name} %{white}made the %{orange}FIRST KILL%{white}!",
 killingspree_stopped = "%{yellow}%{victim}%{white} was stopped by %{orange}%{actor}!!",

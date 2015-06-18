@@ -9,5 +9,5 @@ do
 end
 
 function server.info_msg(text)
-    server.msg("server_info" { msg = text })
+    server.msg("server_info", { msg = text })
 end

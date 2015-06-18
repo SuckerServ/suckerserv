@@ -60,7 +60,7 @@ end)
 
 server.event_handler("connect", function(cn)
     if server.current_master_authed then
-        server.player_msg(cn, "claimmaster, { name = server.player_displayname(server.current_master_authed), uid = server.current_master_global_auth_user })
+        server.player_msg(cn, "claimmaster", { name = server.player_displayname(server.current_master_authed), uid = server.current_master_global_auth_user })
     end
 end)
 server.event_handler("disconnect", function(cn)
