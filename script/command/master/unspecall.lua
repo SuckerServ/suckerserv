@@ -6,5 +6,5 @@
 
 return function()
     server.unspecall(true)
-    server.msg(server.unspecall_command_message)
+    server.msg("unspecall_command")
 end

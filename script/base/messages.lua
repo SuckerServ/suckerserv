@@ -57,7 +57,12 @@ function server.player_lang(cn)
 end
 
 function server.parse_message(cn, text, vars)
-	text = messages[server.player_lang(cn)][text] or messages[messages.languages["default"]][text] or text
+	if type(text) == "table" then
+		text = messages[server.player_lang(cn)][text[1]][text[2]] or messages[messages.languages["default"]][text[1]][text[2]] or text[1]
+	else
+		text = messages[server.player_lang(cn)][text] or messages[messages.languages["default"]][text] or text
+	end
+
 	if server.enable_timezone == 1 then
 		if messages.USE_LUATZ then
 			messages.FORMAT_TABLE.time = os.date("!"..messages.TIME_STRING, server.player_vars(cn).timezone:localise(luatz.time()))

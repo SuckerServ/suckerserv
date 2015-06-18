@@ -19,7 +19,7 @@ return function(cn)
       if sid == server.player_sessionid(cn) and status == auth.request_status.SUCCESS then
         server.setmaster(cn)
 
-        server.msg(string.format(server.claimmaster_message, server.player_displayname(cn), user_id))
+        server.msg("claimmaster", { name = server.player_displayname(cn), uid = user_id })
         server.log(string.format("%s playing as %s(%i) used auth to claim master.", user_id, server.player_name(cn), cn))
         server.admin_log(string.format("%s playing as %s(%i) used auth to claim master.", user_id, server.player_name(cn), cn))
       end

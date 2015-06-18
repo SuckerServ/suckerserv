@@ -20,7 +20,7 @@ return function(cn)
       if sid == server.player_sessionid(cn) and status == auth.request_status.SUCCESS then
         server.setadmin(cn)
 
-        server.msg(string.format(server.claimadmin_message, server.player_displayname(cn), user_id))
+        server.msg("claimadmin", { name = server.player_displayname(cn), uid = user_id })
         server.log(string.format("%s playing as %s(%i) used auth to claim admin.", user_id, server.player_name(cn), cn))
         server.admin_log(string.format("%s playing as %s(%i) used auth to claim admin.", user_id, server.player_name(cn), cn))
       end

@@ -6,9 +6,8 @@ function server.restart()
     if tonumber(server.playercount) == 0 then return server.restart_now() end
 
     set_cancel_restart = false
-    local warning_msg = server.restart_warning_message
     
-    server.msg(warning_msg)
+    server.msg("restart_warning")
     
     local con_handler -- seems it must be declared before assignment to be included in event handler's closure
     con_handler = server.event_handler("connect", function(cn)
@@ -16,7 +15,7 @@ function server.restart()
         if set_cancel_restart then
             server.cancel_handler(con_handler)
         else
-            server.player_msg(cn, warning_msg) 
+            server.player_msg(cn, "restart_warning") 
         end
     end)
     
@@ -33,6 +32,6 @@ function server.restart()
 end
 
 function server.cancel_restart()
-    server.msg(server.restart_cancelled_message)
+    server.msg("restart_cancelled")
     set_cancel_restart = true
 end

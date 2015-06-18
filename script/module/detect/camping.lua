@@ -21,7 +21,7 @@ server.event_handler("frag", function(target, actor)
     last_positions[actor_id] = {x = x, y = y, z = z}
     
     if average_distances[actor_id] <= MAX_CAMP_VALUE then
-        server.msg(string.format(server.camping_message, server.player_displayname(actor)))
+        server.msg("camping", { name = server.player_displayname(actor) })
         average_distances[actor_id] = nil
     end
 end)

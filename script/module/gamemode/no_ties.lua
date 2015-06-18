@@ -10,9 +10,6 @@ local default_enabled = server.no_ties_enabled_by_default == 1
 
 local is_enabled
 
-local msg_overtime = "One minute overtime!"
-
-
 function server.no_ties(enable)
 
     if not enable
@@ -39,7 +36,7 @@ server.event_handler("timeupdate", function(mins, secs)
 		if scores[score]
 		then
 		    server.changetime(60000)
-		    server.msg(msg_overtime)
+		    server.msg("overtime")
 		    break
 		end
 		
@@ -53,7 +50,7 @@ server.event_handler("timeupdate", function(mins, secs)
     		if scores[score]
 		then
 		    server.changetime(60000)
-		    server.msg(msg_overtime)
+		    server.msg("overtime")
 		    break
 		end
 		

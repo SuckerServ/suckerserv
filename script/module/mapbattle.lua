@@ -40,15 +40,15 @@ function mapbattle.process_vote(cn, vote)
     vote = tonumber(vote)
 
     if table_count(server.players(), cn) ~= 1 then
-        server.player_msg(cn, server.mapbattle_cant_vote_message)
+        server.player_msg(cn, "mapbattle_cant_vote")
         return false
     else
         if mapbattle.votes[1][cn] == true or mapbattle.votes[2][cn] == true then
-            server.player_msg(cn, server.mapbattle_vote_already)
+            server.player_msg(cn, "mapbattle_vote_already")
             return false
         end
         mapbattle.votes[vote][cn] = true
-        server.msg(string.format(server.mapbattle_vote_ok, server.player_displayname(cn), mapbattle.maps[vote]))
+        server.msg("mapbattle_vote_ok", { name = server.player_displayname(cn), mapname = mapbattle.maps[vote] })
         return true
     end
 end

@@ -16,8 +16,8 @@ function server.mapsucks_vote(cn)
     server.player_vars(cn).votesucks = true
     mapsucks = mapsucks + 1
 
-    server.player_msg(cn, string.format(server.mapsucks_message, (mapsucks - 1)))
-    server.msg(string.format(server.mapsucks_announce_message, server.player_displayname(cn)))
+    server.player_msg(cn, "mapsucks" { nb = (mapsucks - 1) })
+    server.msg("mapsucks_announce", { name = server.player_displayname(cn) })
 
     if mapsucks > (#server.players() / ratio) then
       server.changetime(lower_time*60*1000)
@@ -26,18 +26,18 @@ function server.mapsucks_vote(cn)
       plural_players = (#server.players() > 1) and "s" or ""
       conjugate = (#server.players() > 1) and "" or "s"
 
-      server.msg(string.format(server.mapsucks_timelowered_message, lower_time, plural_time, mapsucks, #server.players(), plural_players, conjugate))
+      server.msg("mapsucks_timelowered", { time = lower_time, ts = plural_time, nb = mapsucks, total = #server.players(), ps = plural_players, vs = conjugate })
     end
     return
   else
-    server.player_msg(cn, server.mapbattle_vote_already)
+    server.player_msg(cn, "mapbattle_vote_already")
     return
   end
 end
 
 server.event_handler("text", function(cn, text)
   if text:lower():match("sucks") and not text:lower():match("[#!@]mapsucks") then 
-    server.player_msg(cn, server.mapsucks_analysetext_message)
+    server.player_msg(cn, "mapsucks_analysetext")
   end
 end)
 

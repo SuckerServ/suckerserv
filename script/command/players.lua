@@ -8,7 +8,7 @@ return function(cn)
         local city = mmdb.lookup_ip(p:ip(), "city", "names", "en")
         if not country or #country < 1 then country = "Unknown" end
         if not city or #city < 1 then city = "Unknown" end
-        server.player_msg(cn, string.format(server.player_list_message, p:displayname(), city, country, p:frags(), p:deaths(), p:accuracy()))
+        server.player_msg(cn, "player_list", { name = p:displayname(), city = city, country = country, frags = p:frags(), deaths = p:deaths(), acc = p:accuracy() })
     end
 end
 

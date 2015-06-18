@@ -51,7 +51,7 @@ auth.listener("", function(cn, user_id, domain, status, kick_cn)
         if server.setauth(cn) then
             server.current_master_global_authed = cn
             server.current_master_global_auth_user = user_id
-            server.msg(string.format(server.claimmaster_message, server.player_displayname(cn), user_id))
+            server.msg("claimmaster", { name = server.player_displayname(cn), uid = user_id })
             server.log(string.format("%s(%i) claimed master as '%s'", name, cn, user_id))
             server.admin_log(string.format("%s(%i) claimed master as '%s'", name, cn, user_id))
         end
@@ -60,7 +60,7 @@ end)
 
 server.event_handler("connect", function(cn)
     if server.current_master_authed then
-        server.player_msg(cn, string.format(server.claimmaster_message, server.player_displayname(server.current_master_authed), server.current_master_global_auth_user))
+        server.player_msg(cn, "claimmaster, { name = server.player_displayname(server.current_master_authed), uid = server.current_master_global_auth_user })
     end
 end)
 server.event_handler("disconnect", function(cn)

@@ -25,16 +25,16 @@ return function(cn,cheat)
   server.player_vars(cn).cheater[cheat] = cheat_report
 
   if cheat_report > 4 then
-    server.player_msg(cn, string.format(server.cheater_spam_message))
+    server.player_msg(cn, "cheater_spam")
   end
 
   if cheat_report < 8 then
     if server.player_connection_time(cheat) > 10 then
-      server.player_msg(cn, string.format(server.cheater_thanks_message))
-            for p in server.gplayers() do
-                if p:priv_code() >= server.PRIV_MASTER then p:msg(string.format(server.cheater_admin_message, server.player_displayname(cn), server.player_displayname(cheat))) end
-            end
+      server.player_msg(cn, "cheater_thanks")
+      for p in server.gplayers() do
+          if p:priv_code() >= server.PRIV_MASTER then p:msg("cheater_admin", { actor = server.player_displayname(cn), victim = server.player_displayname(cheat) }) end
+      end
       server.log("CHEATER: " .. server.player_displayname(cheat) .. "(" .. cheat .. ") was reported by " .. server.player_displayname(cn) .. "(" .. cn .. ")")
-        end
     end
+  end
 end

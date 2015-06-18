@@ -22,21 +22,13 @@
         * Report accuracy fluctuations
 ]]
 
--- Keep these messages at the top of the file so users can find them easily
-local killingspree_message = {}
-killingspree_message[5]  = blue("%s") .. " is on a " .. orange("KILLING SPREE") .. "!"
-killingspree_message[10] = blue("%s") .. " is on a " .. orange("RAMPAGE") .. "!"
-killingspree_message[15] = blue("%s") .. " is "      .. orange("DOMINATING") .. "!"
-killingspree_message[20] = blue("%s") .. " is "      .. orange("UNSTOPPABLE") .. "!"
-killingspree_message[30] = blue("%s") .. " is "      .. orange("GODLIKE") .. "!"
-
 local long_killingspree = 15
 local multikill_timelimit = 2000
 local first_frag = true
 
 local function send_first_frag_message(target, actor)
     if not first_frag or target == actor then return end
-    server.msg(string.format(blue("%s") .. " made the " .. orange("FIRST KILL") .. "!", server.player_displayname(actor)))
+    server.msg("killingspree_firstkill", { name = server.player_displayname(actor) })
     first_frag = false
 end
 
@@ -52,15 +44,12 @@ local function send_killingspree_message(target_cn, target_vars, actor_cn, actor
         actor_killingspree = 0
     end
     
-    if killingspree_message[actor_killingspree] then
-    
-        local message = string.format(killingspree_message[actor_killingspree], server.player_displayname(actor_cn))
-        
-        server.msg(message)
+    if messages[messages.languages["default"]]["killingspree"][actor_killingspree] then
+        server.msg({ "killingspree", actor_killingspree }, { name = server.player_displayname(actor_cn) })
     end
     
     if target_killingspree >= long_killingspree then
-        server.msg(string.format("\f2%s was stopped by \f6%s!!", server.player_displayname(target_cn), server.player_displayname(actor_cn)))
+        server.msg("killingspree_stopped", { victim = server.player_displayname(target_cn), actor = server.player_displayname(actor_cn) })
     end
     
     target_vars.killingspree = 0
@@ -82,15 +71,15 @@ local function send_multikills_message(target_cn, target_vars, actor_cn, actor_v
         
         if (actor_multikills == 2) and gamemodeinfo.insta then
         
-            server.player_msg(actor_cn, yellow("You scored a ") .. orange("DOUBLE KILL!!"))
+            server.player_msg(actor_cn, { "killingspree_multiple", 2 })
         
         elseif actor_multikills == 3 then
         
-            server.player_msg(actor_cn, yellow("You scored a ") .. orange("TRIPLE KILL!!"))
+            server.player_msg(actor_cn, { "killingspree_multiple", 3 })
             
         elseif actor_multikills > 3 then
         
-            server.player_msg(actor_cn, yellow("You scored ") ..  orange(string.format("%i MULTIPLE KILLS!!",actor_multikills)))
+            server.player_msg(actor_cn, { "killingspree_multiple", "multiple" }, { nb = actor_multikills })
             
         end
         

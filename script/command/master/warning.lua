@@ -25,11 +25,10 @@ return function(cn, tcn, ...)
 
   local warn_count = (server.player_vars(tcn).warning_count or 1)
   if warn_count <= limit then
-    local msg = ((warn_count == limit and limit > 1) and "Last" or "") .. "Warning"
-
-    server.player_msg(tcn," ")
-    server.msg(string.format(server.warning_warn_message, msg, server.player_displayname(tcn), text))
-    server.player_msg(tcn," ")
+    for c in server.gclients() do
+      local last = (warn_count == limit and limit > 1) and server.parse_message(cn, "last") or ""
+      c:msg("warning_warn", { last = last, name = server.player_displayname(tcn), text = text })
+    end
 
     server.player_vars(tcn).warning_count = warn_count + 1
   else

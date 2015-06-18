@@ -39,9 +39,6 @@ local mode_map = {
     ["regen capture"]		= "capture"
 }
 
-local msg_start = "Suddendeath - next score wins!"
-
-
 local function clean()
 
     mode = {}
@@ -127,7 +124,7 @@ server.event_handler("timeupdate", function(mins, secs)
 	if is_tie()
 	then
 	    server.changetime(60000)
-	    server.msg(msg_start)
+	    server.msg("suddendeath")
 	    mode[mode_map[server.gamemode]] = true
 	    is_active = true
 	end

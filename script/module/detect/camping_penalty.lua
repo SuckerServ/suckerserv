@@ -27,12 +27,12 @@ server.event_handler("frag", function(target, actor)
     
     if average_distances[actor_id] <= MAX_CAMP_VALUE then
         local countdown = server.camping_penalty_timeout 
-        server.msg(string.format(server.camping_penalty_announce_message, server.player_displayname(actor)))
+        server.msg("camping_penalty_announce", { name = server.player_displayname(actor) })
         server.spec(actor)
         server.interval(1000, function()
             if actor_id ~= server.player_sessionid(actor) then return end
             countdown = countdown - 1
-            server.player_msg(actor, string.format(server.camping_penalty_countdown_message, countdown))
+            server.player_msg(actor, "camping_penalty_countdown", { countdown =  countdown })
             if countdown <= 0 then
                 server.unspec(actor)
                 return -1

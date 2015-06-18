@@ -11,7 +11,7 @@ local function check_kick(cn)
   if required_votes < server.votekick_min_votes_required then required_votes = server.votekick_min_votes_required end
   if votes[tostring(server.player_ip(cn))].votes >= required_votes then
     server.kick(cn, 3600, "server", "votekick by "..votes[tostring(server.player_ip(cn))].votes.." players")
-    server.msg(string.format(server.votekick_passed_message, server.player_displayname(cn)))
+    server.msg("votekick_passed", { name = server.player_displayname(cn) })
     votes[tostring(server.player_ip(cn))] = nil
   end
     return required_votes
@@ -80,16 +80,11 @@ local function run(cn,victim)
   votes[victim_id].votes = votes[victim_id].votes + 1
 
   local required_votes = check_kick(victim)
-  local msg = string.format(server.votekick_vote_message, server.player_displayname(cn), server.player_displayname(victim), votes[victim_id].votes, required_votes)
 
-  if server.player_priv_code(victim) == server.PRIV_MASTER then
-    for p in server.gplayers() do
-      if not p.cn == victim then
-        p:msg(msg)
-      end
+  for p in server.gplayers() do
+    if server.player_priv_code(victim) ~= server.PRIV_MASTER or not p.cn == victim then
+      p:msg("votekick_vote", {actor = server.player_displayname(cn), victim = server.player_displayname(victim), nb = votes[victim_id].votes, total = required_votes} )
     end
-  else
-    server.msg(msg)
   end
 end
 

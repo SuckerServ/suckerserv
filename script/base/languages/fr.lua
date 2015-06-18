@@ -43,5 +43,10 @@ nameprotect_rename = "%{red}>>> %{white}Vous avez utilisé un nom reservé par u
 
 flagrun = "%{red}>>> %{blue}%{name} %{white}scored in %{magenta}%{time} %{white}seconds. Best: %{blue}%{bestname} %{white}in %{magenta}%{besttime} %{white}seconds.",
 
-giveadmin = "%{red}>>> %{blue}%{name} %{white}vous a donné les privilèges administrateur."
+giveadmin = "%{red}>>> %{blue}%{name} %{white}vous a donné les privilèges administrateur.",
+claimmaster = "%{red}>>> %{blue}%{name} %{white}claimed %{green}master %{white}as %{magenta}'%{uid}'",
+claimadmin = "%{red}>>> %{blue}%{name} %{white}claimed %{orange}admin %{white}as %{magenta}'%{uid}'",
+
+votekick_passed = "%{red}>>> %{white}Vote passed to %{red}kick %{white}player %{blue}%{name}"
+
 }
