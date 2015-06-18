@@ -115,7 +115,7 @@ function internal.updatePlayer(cn)
     t.team = server.player_team(cn)
     t.ipaddr = server.player_ip(cn)
     t.ipaddrlong = server.player_iplong(cn)
-    t.coutrny = server.mmdatabase:lookup_ip(server.player_ip(cn), "country", "iso_code")
+    t.country = server.mmdatabase:lookup_ip(server.player_ip(cn), "country", "iso_code")
 
     for field, field_update in pairs(fields) do
         t[field] = field_update(cn)
