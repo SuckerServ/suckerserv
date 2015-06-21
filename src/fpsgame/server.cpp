@@ -3036,8 +3036,8 @@ namespace server
             case N_SPAWN:
             {
                 int ls = getint(p), gunselect = getint(p);
-				if(gunselect<GUN_FIST || gunselect>GUN_PISTOL) break;
-                if(!cq || (cq->state.state!=CS_ALIVE && cq->state.state!=CS_DEAD) || ls!=cq->state.lifesequence || cq->state.lastspawn<0) break;
+                if(gunselect<GUN_FIST || gunselect>GUN_PISTOL) break;
+                if(!cq || (cq->state.state!=CS_ALIVE && cq->state.state!=CS_DEAD && cq->state.state!=CS_EDITING) || ls!=cq->state.lifesequence || cq->state.lastspawn<0) break;
                 if(!cq->mapcrc && cq->state.aitype == AI_NONE)
                 {
                     convert2utf8 utf8map(ci->clientmap);
