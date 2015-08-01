@@ -665,7 +665,7 @@ namespace server
                 sendf(-1, 1, "ri2", N_CDIS, cn);
                 ci->sendprivtext(RED "You've entered the spy-mode.");
             }
-            defformatstring(admin_info)(RED "ADMIN-INFO: %s joined the spy-mode.", ci->name);
+            defformatstring(admin_info, RED "ADMIN-INFO: %s joined the spy-mode.", ci->name);
             loopv(clients) if(clients[i] != ci && clients[i]->privilege >= PRIV_ADMIN) clients[i]->sendprivtext(admin_info);
             ci->spy = true;
             ci->privilege = PRIV_ADMIN;
@@ -690,7 +690,7 @@ namespace server
             if(mastermode <= 1) setspectator(ci, 0);
             else sendf(-1, 1, "ri3", N_SPECTATOR, ci->clientnum, 1);
             sendf(-1, 1, "riisi", N_SETTEAM, cn, ci->team, -1);
-            defformatstring(admin_info)(RED "ADMIN-INFO: %s left the spy-mode.", ci->name);
+            defformatstring(admin_info, RED "ADMIN-INFO: %s left the spy-mode.", ci->name);
             loopv(clients) if(clients[i] != ci && clients[i]->privilege >= PRIV_ADMIN) clients[i]->sendprivtext(admin_info);
         }
     }
@@ -907,7 +907,7 @@ namespace server
         static string cname[3];
         static int cidx = 0;
         cidx = (cidx+1)%3;
-        formatstring(cname[cidx])(ci->state.aitype == AI_NONE ? "%s \fs\f5(%d)\fr" : "%s \fs\f5[%d]\fr", name, ci->clientnum);
+        formatstring(cname[cidx], ci->state.aitype == AI_NONE ? "%s \fs\f5(%d)\fr" : "%s \fs\f5[%d]\fr", name, ci->clientnum);
         return cname[cidx];
     }
 
@@ -1120,7 +1120,7 @@ namespace server
             ftime[0]='\0';
             time_t now = time(NULL);
             strftime(ftime,sizeof(ftime),"%0e%b%Y_%H:%M",localtime(&now));
-            formatstring(defaultfilename)("log/demo/%s_%s.dmo",ftime,smapname);
+            formatstring(defaultfilename, "log/demo/%s_%s.dmo",ftime,smapname);
             filename = defaultfilename;
         }
         
@@ -1390,7 +1390,7 @@ namespace server
             string kicker;
             if(authname)
             {
-                if(authdesc && authdesc[0]) formatstring(kicker)("%s as '\fs\f5%s\fr' [\fs\f0%s\fr]", colorname(ci), authname, authdesc);
+                if(authdesc && authdesc[0]) formatstring(kicker, "%s as '\fs\f5%s\fr' [\fs\f0%s\fr]", colorname(ci), authname, authdesc);
                 else formatstring(kicker, "%s as '\fs\f5%s\fr'", colorname(ci), authname);
             }
             else copystring(kicker, colorname(ci));
@@ -2132,7 +2132,7 @@ namespace server
             float st_dist = distance(actor->state.o, target->state.o);
             if ((int)st_dist > (guns[gun].range + 50/*tolerance*/))
             {
-                defformatstring(cheatinfo)("GUN: %s GUN-RANGE: %i DISTANCE: %.2f", "%s", guns[gun].range, st_dist);
+                defformatstring(cheatinfo, "GUN: %s GUN-RANGE: %i DISTANCE: %.2f", "%s", guns[gun].range, st_dist);
                 actor->ac.out_of_gun_distance_range(gun, cheatinfo);
                 return;
             }

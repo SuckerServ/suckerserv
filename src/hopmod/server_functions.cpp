@@ -28,7 +28,7 @@ namespace message{
             *millis = curmillis;
         }
         else{
-            defformatstring(error_message)(RED "Rejected %s message (wait %i seconds before resending)!", message_type, static_cast<int>(std::ceil((resend_time - wait)/1000.0)));
+            defformatstring(error_message, RED "Rejected %s message (wait %i seconds before resending)!", message_type, static_cast<int>(std::ceil((resend_time - wait)/1000.0)));
             ci->sendprivtext(error_message);
         }
 
@@ -671,7 +671,7 @@ void unsetmaster()
         clientinfo * master = clients[i];
         if(master->privilege != PRIV_MASTER) continue;
         
-        defformatstring(msg)("The server has revoked your master privilege.");
+        defformatstring(msg, "The server has revoked your master privilege.");
         master->sendprivtext(msg);
         
         master->privilege = PRIV_NONE;
@@ -718,7 +718,7 @@ void set_player_privilege(int cn, int priv_code, bool public_priv = false)
     else
         change = (old_priv < player->privilege ? "\fs\f2raised\fr" : "\fs\f0lowered\fr");
     
-    defformatstring(msg)(message::set_player_privilege, change, public_priv ? "" : "\fs\f4invisible\fr ", privname(priv_code));
+    defformatstring(msg, message::set_player_privilege, change, public_priv ? "" : "\fs\f4invisible\fr ", privname(priv_code));
     player->sendprivtext(msg);
     
     send_currentmaster();

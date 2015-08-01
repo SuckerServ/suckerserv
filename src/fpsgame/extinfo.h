@@ -110,7 +110,7 @@
     static inline const char *buildtime()
     {
         static string buf = {0};
-        if(!buf[0]) formatstring(buf)("%s %s", hopmod::build_date(), hopmod::build_time());
+        if(!buf[0]) formatstring(buf, "%s %s", hopmod::build_date(), hopmod::build_time());
         return buf;
     }
 
