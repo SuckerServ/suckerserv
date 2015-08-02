@@ -139,6 +139,7 @@ namespace server
     extern int gamespeed;
     extern void real_cn(int &n);
     extern int spycn;
+    extern bool extinfoip;
 }
 
 #endif

@@ -53,8 +53,11 @@ server.master_password = ""
 -- Time in ms to wait at intermession before changing map — affect also mapbattle module
 server.intermission_time = 30000
 
--- Toogles wether teamkilling the flag runner in CTF modes should disallow the teamkiller from stealing the flag
+-- Toggles whether teamkilling the flag runner in CTF modes should disallow the teamkiller from stealing the flag
 server.ctf_teamkill_penalty = true
+
+--Show client IP in extinfo answers
+server.extinfo_show_ip = true
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Authkey configuration for Name protection & Admin

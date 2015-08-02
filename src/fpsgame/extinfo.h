@@ -10,7 +10,7 @@
 #define EXT_TEAMSCORE                   2
 
 #define EXT_SUCKERSERV                  -5 // Case to identify SuckerServ based servers
-#define EXT_SUCKERSERV_VERSION          1  // bump when changing SuckerServ related extensions
+#define EXT_SUCKERSERV_VERSION          2  // bump when changing SuckerServ related extensions
 
 /*
     Client:
@@ -31,6 +31,8 @@
     --------------
     B:C:default: 0 command EXT_ACK EXT_VERSION EXT_ERROR
 */
+
+    bool extinfoip = false;
     static bool ext_admin_client = false;
     static bool ext_hopmod_request = false;
     extern string ext_admin_pass;
@@ -53,11 +55,19 @@
         putint(q, ci->state.gunselect);
         putint(q, ci->privilege);
         putint(q, ci->state.state);
-        uint ip = getclientip(ci->clientnum);
-        q.put((uchar*)&ip, 3);
+        if(extinfoip || ext_admin_client)
+        {
+            uint ip = getclientip(ci->clientnum);
+            q.put((uchar*)&ip, 3);
+
         /* hopmod extension */
-        if(ext_admin_client || ext_hopmod_request)
-            putint(q, !ext_admin_client ? -1 : (ip >> 24) & 0xFF); // send last byte as signed integer, -1 on error
+            if(ext_admin_client || ext_hopmod_request)
+                putint(q, !ext_admin_client ? -1 : (ip >> 24) & 0xFF); // send last byte as signed integer, -1 on error
+        }
+        else if(ext_hopmod_request)
+        {
+            loopi(4) q.put(-1);
+        }
         if(ext_hopmod_request)
         {
             putint(q, EXT_SUCKERSERV);

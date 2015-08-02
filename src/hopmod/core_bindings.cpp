@@ -422,6 +422,7 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "specslots", server::spec_slots);
     bind_var(L, T, "cheatdetection", server::anti_cheat_enabled);
     bind_var(L, T, "hide_and_seek", server::hide_and_seek);
+    bind_var(L, T, "extinfo_show_ip", server::extinfoip);
 
     bind_var(L, T, "restrict_pausegame", server::restrictpausegame);
     bind_var(L, T, "restrict_gamespeed", server::restrictgamespeed);
