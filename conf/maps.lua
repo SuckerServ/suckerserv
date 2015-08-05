@@ -8,14 +8,14 @@ server.ffa_maps = {
 "simplicity", "pitch_black", "duel7", "suburb", "roughinery", "stemple", "tejen", "pgdm", "deathtek",
 "hades", "corruption", "paradigm", "lostinspace", "wdcd", "sauerstruck", "neonpanic", "phosgene",
 "oddworld", "guacamole", "wake5", "frostbyte", "thor", "ksauer1", "kmap5", "thetowers", "darkdeath",
-"gubo", "teahupoo", "force"
+"gubo", "teahupoo", "force", "rm1"
 }
 
 server.small_ffa_maps = {
 "complex", "douze", "ot", "academy", "metl2", "metl3", "justice", "turbine", "dock", "frozen",
 "curvy_castle", "duel8", "nmp8", "tartech", "aard3c", "skrdm1", "dune", "duel7", "oddworld", "wake5", "hog2",
 "torment", "kffa", "memento", "sauerstruck", "neonpanic", "sdm1", "island", "metl4", "outpost", "rm5",
-"depot", "elegy", "shiva", "simplicity", "tumwalk", "gubo", "mbt9", "shiva", "force"
+"depot", "elegy", "shiva", "simplicity", "tumwalk", "gubo", "mbt9", "shiva", "force", "rm1"
 }
 
 server.big_ffa_maps = {
@@ -35,13 +35,13 @@ server.instagib_maps = {
 "shiva", "shindou", "sdm1", "island", "osiris", "injustice", "konkuri-to", "moonlite", "darkdeath",
 "castle_trap", "orion", "katrez_d", "thor", "frostbyte", "ogrosupply", "kmap5", "thetowers",
 "guacamole", "tejen", "hades", "paradigm", "wdcd", "stemple", "corruption", "lostinspace", "ksauer1",
-"force"
+"force", "rm1"
 }
 
 server.small_instagib_maps = {
 "complex", "douze", "ot", "academy", "metl2", "metl3", "justice", "turbine", "dock", "curvy_castle", "duel8",
 "nmp8", "tartech", "aard3c", "duel7", "oddworld", "wake5", "hog2", "kffa", "memento", "neonpanic", "sdm1",
-"island", "frozen", "depot", "elegy", "shiva", "sauerstruck", "force"
+"island", "frozen", "depot", "elegy", "shiva", "sauerstruck", "force", "rm1"
 }
 
 server.big_instagib_maps = {
