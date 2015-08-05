@@ -3,7 +3,7 @@ int lua_user_list(lua_State * L)
     const char *desc = luaL_checkstring(L,1);
     lua_newtable(L);
 
-    enumerates(users, userinfo, u,
+    enumerate(users, userinfo, u,
         if(!strcmp(u.desc, desc)) {
             lua_pushstring(L, u.name);
             lua_newtable(L);
