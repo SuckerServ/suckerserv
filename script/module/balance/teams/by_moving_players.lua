@@ -148,7 +148,7 @@ server.event_handler("chteamrequest", function(cn, old, new)
 	then
 	    local sizes = server.team_sizes()
 	    
-	    if (math.abs((sizes[old] - 1) - (sizes[new] + 1))) > 1
+	    if (math.abs(((sizes[old] or 0) - 1) - ((sizes[new] or 0) + 1))) > 1
 	    then
 		server.player_msg(cn, string.format(server.balance_disallow_message, new))
 		return (-1)
