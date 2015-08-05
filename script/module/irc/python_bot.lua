@@ -357,6 +357,72 @@ auth.listener("", function(cn, user_id, domain, status)
     sendmsg(irc_color_red("AUTH: ") .. msg)
 end)
 
+-- Privilege events
+local function send_priv_msg(cn, priv, user_id, give)
+    local msg
+    local msg_head = irc_color_pink("PRIVILEGE: ") .. irc_color_green("%s (%i)")
+    local msg_body = priv
+    local msg_tail = irc_color_purple("%s")
+    if give then
+        msg = msg_head .. " has been given " .. msg_body .. " by " .. msg_tail
+    elseif not user_id then
+        msg = msg_head .. " relinquished " .. msg_body
+    else
+        msg = msg_head .. " claimed " .. msg_body .. " as " .. msg_tail
+    end
+    sendmsg(string.format(msg, server.player_name(cn), cn, user_id))
+end
+
+server.event_handler("admin-command", function(cn, user_id)
+    send_priv_msg(cn, irc_color_orange("admin"), user_id)
+end)
+
+server.event_handler("master-command", function(cn, user_id)
+    send_priv_msg(cn, irc_color_green("master"), user_id)
+end)
+
+server.event_handler("invadmin-command", function(cn, user_id)
+    send_priv_msg(cn, irc_color_light_grey("invisible ") .. irc_color_orange("admin"), user_id)
+end)
+
+server.event_handler("invmaster-command", function(cn, user_id)
+    send_priv_msg(cn, irc_color_light_grey("invisible ") .. irc_color_green("master"), user_id)
+end)
+
+server.event_handler("giveadmin-command", function(cn, user_id)
+    send_priv_msg(cn, irc_color_orange("admin"), user_id, true)
+end)
+
+server.event_handler("givemaster-command", function(cn, user_id)
+    send_priv_msg(cn, irc_color_green("master"), user_id, true)
+end)
+
+server.event_handler("invadmin-module", function(cn, user_id)
+    send_priv_msg(cn, irc_color_light_grey("invisible ") .. irc_color_orange("admin"), user_id)
+end)
+
+server.event_handler("invmaster-module", function(cn, user_id)
+    send_priv_msg(cn, irc_color_light_grey("invisible ") .. irc_color_green("master"), user_id)
+end)
+
+server.event_handler("privilege", function(cn, oldpriv, curpriv)
+    local priv
+
+    if oldpriv == server.PRIV_ADMIN then
+        priv = irc_color_orange("admin")
+    elseif oldpriv == server.PRIV_AUTH then
+        priv = irc_color_green("auth")
+    elseif oldpriv == server.PRIV_AUTH then
+        priv = irc_color_green("master")
+    else
+        return
+    end
+
+    if curpriv == server.PRIV_NONE then
+        send_priv_msg(cn, priv)
+    end
+end)
+
 
 --> MapBattle Listener
 server.event_handler("intermission", function() -- shows wich maps are selected
