@@ -262,7 +262,7 @@ class anticheat
                 lastjumphack_dist = jumpdist;
                 jumphack_dist += jumpdist;
                 
-                //defformatstring(debug)("jumphack %i %2.f (%d) %ix", clientnum, jumpdist, last_action, jumphack);
+                //defformatstring(debug, "jumphack %i %2.f (%d) %ix", clientnum, jumpdist, last_action, jumphack);
                 //sendservmsg(debug);
                     
                 jumpdist = 0;
@@ -371,7 +371,7 @@ class anticheat
         if (initialized && lastspawn > -1 && totalmillis - lastspawn >= 2000)
         {
             //if (!is_item_mode() && impossible(1, item)) return;
-            defformatstring(info)("TRIED ITEM: %i ITEMLIST LENGTH: %i", item, len);
+            defformatstring(info, "TRIED ITEM: %i ITEMLIST LENGTH: %i", item, len);
             cheat(clientnum, 19, 0, info);
         }
     }
@@ -385,7 +385,7 @@ class anticheat
         if (initialized && lastspawn > -1 && totalmillis - lastspawn >= 2000)
         {
             //if (!is_item_mode() && impossible(0, item)) return; // There are item pick ups in insta. You just don't see them.
-            defformatstring(info)("TRIED ITEM: %i SPAWNTIME: %i", item, spawntime);
+            defformatstring(info, "TRIED ITEM: %i SPAWNTIME: %i", item, spawntime);
             cheat(clientnum, 20, 0, info);
         }
     }

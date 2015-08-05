@@ -664,7 +664,7 @@ namespace server
                 sendf(-1, 1, "ri2", N_CDIS, cn);
                 ci->sendprivtext(RED "You've entered the spy-mode.");
             }
-            defformatstring(admin_info)(RED "ADMIN-INFO: %s joined the spy-mode.", ci->name);
+            defformatstring(admin_info, RED "ADMIN-INFO: %s joined the spy-mode.", ci->name);
             loopv(clients) if(clients[i] != ci && clients[i]->privilege >= PRIV_ADMIN) clients[i]->sendprivtext(admin_info);
             ci->spy = true;
             ci->privilege = PRIV_ADMIN;
@@ -689,7 +689,7 @@ namespace server
             if(mastermode <= 1) setspectator(ci, 0);
             else sendf(-1, 1, "ri3", N_SPECTATOR, ci->clientnum, 1);
             sendf(-1, 1, "riisi", N_SETTEAM, cn, ci->team, -1);
-            defformatstring(admin_info)(RED "ADMIN-INFO: %s left the spy-mode.", ci->name);
+            defformatstring(admin_info, RED "ADMIN-INFO: %s left the spy-mode.", ci->name);
             loopv(clients) if(clients[i] != ci && clients[i]->privilege >= PRIV_ADMIN) clients[i]->sendprivtext(admin_info);
         }
     }
@@ -904,7 +904,7 @@ namespace server
         static string cname[3];
         static int cidx = 0;
         cidx = (cidx+1)%3;
-        formatstring(cname[cidx])(ci->state.aitype == AI_NONE ? "%s \fs\f5(%d)\fr" : "%s \fs\f5[%d]\fr", name, ci->clientnum);
+        formatstring(cname[cidx], ci->state.aitype == AI_NONE ? "%s \fs\f5(%d)\fr" : "%s \fs\f5[%d]\fr", name, ci->clientnum);
         return cname[cidx];
     }
 
@@ -933,7 +933,7 @@ namespace server
     bool pruneteaminfo()
     {
         int oldteams = teaminfos.numelems;
-        enumerates(teaminfos, teaminfo, old,
+        enumerate(teaminfos, teaminfo, old,
             if(!old.frags && !teamhasplayers(old.team)) teaminfos.remove(old.team);
         );
         return teaminfos.numelems < oldteams;
@@ -1091,7 +1091,7 @@ namespace server
         time_t t = time(NULL);
         char *timestr = ctime(&t), *trim = timestr + strlen(timestr);
         while(trim>timestr && isspace(*--trim)) *trim = '\0';
-        formatstring(d.info)("%s: %s, %s, %.2f%s", timestr, modename(gamemode), smapname, len > 1024*1024 ? len/(1024*1024.f) : len/1024.0f, len > 1024*1024 ? "MB" : "kB");
+        formatstring(d.info, "%s: %s, %s, %.2f%s", timestr, modename(gamemode), smapname, len > 1024*1024 ? len/(1024*1024.f) : len/1024.0f, len > 1024*1024 ? "MB" : "kB");
         sendservmsgf("demo \"%s\" recorded", d.info);
         d.data = new uchar[len];
         d.len = len;
@@ -1117,7 +1117,7 @@ namespace server
             ftime[0]='\0';
             time_t now = time(NULL);
             strftime(ftime,sizeof(ftime),"%0e%b%Y_%H:%M",localtime(&now));
-            formatstring(defaultfilename)("log/demo/%s_%s.dmo",ftime,smapname);
+            formatstring(defaultfilename, "log/demo/%s_%s.dmo",ftime,smapname);
             filename = defaultfilename;
         }
         
@@ -1218,16 +1218,16 @@ namespace server
         demoheader hdr;
         string msg;
         msg[0] = '\0';
-        defformatstring(file)("%s.dmo", smapname);
+        defformatstring(file, "%s.dmo", smapname);
         demoplayback = opengzfile(file, "rb");
-        if(!demoplayback) formatstring(msg)("could not read demo \"%s\"", file);
+        if(!demoplayback) formatstring(msg, "could not read demo \"%s\"", file);
         else if(demoplayback->read(&hdr, sizeof(demoheader))!=sizeof(demoheader) || memcmp(hdr.magic, DEMO_MAGIC, sizeof(hdr.magic)))
-            formatstring(msg)("\"%s\" is not a demo file", file);
+            formatstring(msg, "\"%s\" is not a demo file", file);
         else 
         { 
             lilswap(&hdr.version, 2);
-            if(hdr.version!=DEMO_VERSION) formatstring(msg)("demo \"%s\" requires an %s version of Cube 2: Sauerbraten", file, hdr.version<DEMO_VERSION ? "older" : "newer");
-            else if(hdr.protocol!=PROTOCOL_VERSION) formatstring(msg)("demo \"%s\" requires an %s version of Cube 2: Sauerbraten", file, hdr.protocol<PROTOCOL_VERSION ? "older" : "newer");
+            if(hdr.version!=DEMO_VERSION) formatstring(msg, "demo \"%s\" requires an %s version of Cube 2: Sauerbraten", file, hdr.version<DEMO_VERSION ? "older" : "newer");
+            else if(hdr.protocol!=PROTOCOL_VERSION) formatstring(msg, "demo \"%s\" requires an %s version of Cube 2: Sauerbraten", file, hdr.protocol<PROTOCOL_VERSION ? "older" : "newer");
         }
         if(msg[0])
         {
@@ -1344,7 +1344,7 @@ namespace server
     void hashpassword(int cn, int sessionid, const char *pwd, char *result, int maxlen)
     {
         char buf[2*sizeof(string)];
-        formatstring(buf)("%d %d ", cn, sessionid);
+        formatstring(buf, "%d %d ", cn, sessionid);
         concatstring(buf, pwd, sizeof(buf));
         if(!hashstring(buf, result, maxlen)) *result = '\0';
     }
@@ -1387,8 +1387,8 @@ namespace server
             string kicker;
             if(authname)
             {
-                if(authdesc && authdesc[0]) formatstring(kicker)("%s as '\fs\f5%s\fr' [\fs\f0%s\fr]", colorname(ci), authname, authdesc);
-                else formatstring(kicker)("%s as '\fs\f5%s\fr'", colorname(ci), authname);
+                if(authdesc && authdesc[0]) formatstring(kicker, "%s as '\fs\f5%s\fr' [\fs\f0%s\fr]", colorname(ci), authname, authdesc);
+                else formatstring(kicker, "%s as '\fs\f5%s\fr'", colorname(ci), authname);
             }
             else copystring(kicker, colorname(ci));
             if(reason && reason[0]) sendservmsgf("%s kicked %s because: %s", kicker, colorname(vinfo), reason);
@@ -1805,7 +1805,7 @@ namespace server
         if(m_teammode)
         {
             putint(p, N_TEAMINFO);
-            enumerates(teaminfos, teaminfo, t,
+            enumerate(teaminfos, teaminfo, t,
                 if(t.frags) { sendstring(t.team, p); putint(p, t.frags); }
             );
             sendstring("", p);
@@ -2129,7 +2129,7 @@ namespace server
             float st_dist = distance(actor->state.o, target->state.o);
             if ((int)st_dist > (guns[gun].range + 50/*tolerance*/))
             {
-                defformatstring(cheatinfo)("GUN: %s GUN-RANGE: %i DISTANCE: %.2f", "%s", guns[gun].range, st_dist);
+                defformatstring(cheatinfo, "GUN: %s GUN-RANGE: %i DISTANCE: %.2f", "%s", guns[gun].range, st_dist);
                 actor->ac.out_of_gun_distance_range(gun, cheatinfo);
                 return;
             }
@@ -2142,7 +2142,7 @@ namespace server
         if(target==actor) target->setpushed();
         else if(!hitpush.iszero())
         {
-            ivec v = vec(hitpush).rescale(DNF);
+            ivec v(vec(hitpush).rescale(DNF));
             sendf(ts.health<=0 ? -1 : target->ownernum, 1, "ri7", N_HITPUSH, target->clientnum, gun, damage, v.x, v.y, v.z);
             target->setpushed();
         }
@@ -2543,7 +2543,7 @@ namespace server
         {
             disc_reason_msg = (ci->disconnect_reason.length() ? ci->disconnect_reason.c_str() : disconnect_reason(reason));
             convert2cube disc_reason_msg_cubeenc(disc_reason_msg);
-            defformatstring(discmsg)("client (%s) disconnected because: %s", ci->hostname(), disc_reason_msg_cubeenc.str());
+            defformatstring(discmsg, "client (%s) disconnected because: %s", ci->hostname(), disc_reason_msg_cubeenc.str());
             printf("%s\n", discmsg);
             if (!ci->spy)
             {
@@ -2559,7 +2559,7 @@ namespace server
         }
         else
         {
-            defformatstring(discmsg)("disconnected client (%s)", ci->hostname());
+            defformatstring(discmsg, "disconnected client (%s)", ci->hostname());
             puts(discmsg);
         }
         
@@ -3387,7 +3387,7 @@ namespace server
                     }
                     else
                     {
-                        defformatstring(s)("mastermode %d is disabled on this server", mm);
+                        defformatstring(s, "mastermode %d is disabled on this server", mm);
                         sendf(sender, 1, "ris", N_SERVMSG, s);
                     }
                 }

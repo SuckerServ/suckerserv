@@ -266,7 +266,7 @@ namespace aiman
         if(ci && !ci->local && ci->privilege < PRIV_ADMIN) return;
         botlimit = clamp(limit, 0, MAXBOTS);
         dorefresh = true;
-        defformatstring(msg)("bot limit is now %d", botlimit);
+        defformatstring(msg, "bot limit is now %d", botlimit);
         sendservmsg(msg);
     }
 
@@ -275,7 +275,7 @@ namespace aiman
         if(ci && !ci->local && !ci->privilege) return;
         botbalance = balance ? 1 : 0;
         dorefresh = true;
-        defformatstring(msg)("bot team balancing is now %s", botbalance ? "enabled" : "disabled");
+        defformatstring(msg, "bot team balancing is now %s", botbalance ? "enabled" : "disabled");
         sendservmsg(msg);
     }
 

@@ -7,7 +7,7 @@ namespace e
 {
     bool loadents(const char *mname, vector<entity> &ents, uint &mapcrc)
     {
-        defformatstring(mf)("mapinfo/%s.ents", mname);
+        defformatstring(mf, "mapinfo/%s.ents", mname);
         stream *f = opengzfile(path(mf), "rb");
         if (!f) return false;
 
@@ -63,7 +63,7 @@ namespace e
     bool writeents(const char *mapname, vector<entity> &ents, uint mapcrc)
     {
         string file;
-        formatstring(file)("mapinfo/%s.ents", mapname);
+        formatstring(file, "mapinfo/%s.ents", mapname);
 
         stream *mapi = opengzfile(path(file), "w+b");
 
