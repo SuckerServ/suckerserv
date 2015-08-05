@@ -2,7 +2,18 @@
 	A player command to raise privilege to (invisble) admin
 ]]
 
-return function(cn, pw)
+local trigger_event
+local id_event
+
+local function init()
+    trigger_event, id_event = server.create_event_signal("invadmin-command")
+end
+
+local function unload()
+    server.cancel_event_signal(id_event)
+end
+
+local function run(cn, pw)
   local domains = table_unique(server.parse_list(server["invadmin_domains"])) or table_unique(server.parse_list(server["admin_domains"]))
 
   if not domains then
@@ -28,9 +39,13 @@ return function(cn, pw)
           else
             server.log(string.format("%s playing as %s(%i) used auth to claim (inv)admin.", name, server.player_name(cn), cn))
           end
+
+          trigger_event(cn, user_id)
         end
       end)
     end
   end
 end
+
+return {init = init,run = run,unload = unload}
 

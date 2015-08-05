@@ -10,6 +10,8 @@ if not domains then
     return
 end
 
+local trigger_event = server.create_event_signal("invmaster-module")
+
 server.event_handler("connect", function(cn)
     
     if server.is_bot(cn) then
@@ -34,6 +36,8 @@ server.event_handler("connect", function(cn)
                         
                         server.log(user_id .. " playing as " .. server.player_name(cn) .. "(" .. cn .. ") used auth to claim invisible master.")
                         server.admin_log(user_id .. " playing as " .. server.player_name(cn) .. "(" .. cn .. ") used auth to claim invisible master.")
+
+                        trigger_event(cn, user_id)
                     end)
                 end
             end

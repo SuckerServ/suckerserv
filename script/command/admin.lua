@@ -6,7 +6,18 @@
 
 ]]
 
-return function(cn)
+local trigger_event
+local id_event
+
+local function init()
+    trigger_event, id_event = server.create_event_signal("admin-command")
+end
+
+local function unload()
+    server.cancel_event_signal(id_event)
+end
+
+local function run(cn)
   local domains = table_unique(server.parse_list(server["admin_domains"]))
 
   if not domains then
@@ -23,8 +34,11 @@ return function(cn)
         server.msg(string.format(server.claimadmin_message, server.player_displayname(cn), user_id))
         server.log(string.format("%s playing as %s(%i) used auth to claim admin.", user_id, server.player_name(cn), cn))
         server.admin_log(string.format("%s playing as %s(%i) used auth to claim admin.", user_id, server.player_name(cn), cn))
+
+        trigger_event(cn, user_id)
       end
     end)
   end
 end
 
+return {init = init,run = run,unload = unload}
