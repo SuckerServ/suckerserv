@@ -2,7 +2,18 @@
 	A player command to raise privilege to (invisble) master
 ]]
 
-return function(cn, pw)
+local trigger_event
+local id_event
+
+local function init()
+    trigger_event, id_event = server.create_event_signal("invmaster-command")
+end
+
+local function unload()
+    server.cancel_event_signal(id_event)
+end
+
+local function run(cn, pw)
   local domains = table_unique(server["invmaster_domains"]) or table_unique(server["master_domains"])
 
   if not domains then
@@ -32,8 +43,12 @@ return function(cn, pw)
         end
         
         set_invmaster(cn, user_id)
+
+        trigger_event(cn, user_id)
       end)
     end
   end
 end
+
+return {init = init,run = run,unload = unload}
 
