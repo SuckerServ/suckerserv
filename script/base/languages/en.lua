@@ -107,7 +107,8 @@ player_list = "%{red}>>> %{blue}Name %{white}%{name} %{blue}City %{white}%{city}
 
 stats_current = "Current game stats for %{name}:",
 stats_player = "%{red}>>> %{blue}Score %{white}%{score} %{blue}Frags %{white}%{frags} %{blue}Deaths %{white}%{deaths} %{blue}Accuracy %{white}%{acc}%%",
-stats_teamkills = "%{red}>>> %{blue}Teamkills%{white}: %{tk}"
+stats_teamkills = "%{red}>>> %{blue}Teamkills%{white}: %{tk}",
 
+help_command = "#%{command_name} %{help_parameters}: %{help_message}"
 
 }

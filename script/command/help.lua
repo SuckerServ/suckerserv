@@ -18,7 +18,7 @@ return function(cn, command_name)
       return false, server.help_no_description_message % { command_name = command_name }
     end
     
-    server.player_msg(cn, server.help_command_message % { command_name = command_name, help_parameters = command.help_parameters or "", help_message = command.help_message })
+    server.player_msg(cn, "help_command", { command_name = command_name, help_parameters = command.help_parameters or "", help_message = command.help_message })
     return
   end
 
