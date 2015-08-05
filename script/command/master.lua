@@ -4,7 +4,18 @@
 
 ]]
 
-return function(cn)
+local trigger_event
+local id_event
+
+local function init()
+    trigger_event, id_event = server.create_event_signal("master-command")
+end
+
+local function unload()
+    server.cancel_event_signal(id_event)
+end
+
+local function run(cn)
   local domains = table_unique(server.master_domains)
 
   if not domains then
@@ -22,7 +33,11 @@ return function(cn)
         server.msg("claimmaster", { name = server.player_displayname(cn), uid = user_id })
         server.log(string.format("%s playing as %s(%i) used auth to claim master.", user_id, server.player_name(cn), cn))
         server.admin_log(string.format("%s playing as %s(%i) used auth to claim master.", user_id, server.player_name(cn), cn))
+
+        trigger_event(cn, user_id)
       end
     end)
   end
 end
+
+return {init = init,run = run,unload = unload}

@@ -49,6 +49,9 @@ local function trigger_event(event_id, ...)
     
     for _, listener in pairs(listeners) do
         local pcall_status, result = pcall(listener, unpack({...}))
+        if type(result) == "table" then
+            result = result[1]
+        end
         if not pcall_status then
             server.log_event_error(event_id, result or "unknown error")
         else
