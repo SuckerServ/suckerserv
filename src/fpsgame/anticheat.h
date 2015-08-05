@@ -661,7 +661,7 @@ class anticheat
 
 #ifdef anticheat_parsepacket
 
-#define AC_PROTOCOL_VERSION 259
+#define AC_PROTOCOL_VERSION 260
 #define ac_check_sender if (ca->clientnum != ci->clientnum && ca->ownernum != ci->clientnum) break;
 #define ac_check_invis if ((ca->state.state == CS_ALIVE || ca->state.state == CS_LAGGED) && ac->is_player_invisible()) ci->state.state = CS_LAGGED;
 
