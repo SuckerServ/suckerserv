@@ -271,7 +271,7 @@ static int string_accessor(lua_State * L)
     {
         if(READ_ONLY) luaL_error(L, "variable is read-only");
         convert2cube varcubeenc(lua_tostring(L, 1));
-        copystring(var, varcubeenc.str());
+        copystring(var, varcubeenc.str(), MAXSTRLEN);
         event_varchanged(event_listeners(), boost::make_tuple(lua_tostring(L, lua_upvalueindex(2))));
         return 0;
     }
