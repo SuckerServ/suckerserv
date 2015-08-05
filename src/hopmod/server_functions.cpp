@@ -1242,7 +1242,7 @@ int hitpush(lua_State * L)
     if(target==actor) ci->setpushed();
     else if(!push.iszero())
     {
-        ivec v = vec(push).rescale(DNF);
+        ivec v(vec(push).rescale(DNF));
         sendf(ts.health<=0 ? -1 : ci->ownernum, 1, "ri7", N_HITPUSH, target, gun, damage, v.x, v.y, v.z);
         ci->setpushed();
     }
