@@ -247,7 +247,7 @@ case "$1" in
 	        	    	    exit 2
 	        	    	fi
 	    		
-	    	        	p_exec "add_user \"$4\" \"$5\" \"$6\""
+	    	        	p_exec "server.add_user(\"$4\", \"$5\", \"$6\")"
 	            	    ;;
 		            'del')
 		            	if [ "x$5" = "x" ] || [ "x$4" = "x" ]
@@ -256,7 +256,7 @@ case "$1" in
 	        	    	    exit 2
 	            		fi
 			
-		            	p_exec "del_user \"$4\" \"$5\""
+		            	p_exec "server.del_user(\"$4\", \"$5\")"
 		                ;;
 		            'change')
 	            		case "$4" in
@@ -267,7 +267,7 @@ case "$1" in
 		            	    	    exit 2
 		                		fi
 				
-		            	    	p_exec "change_user_name \"$5\" \"$6\" \"$7\""
+		            	    	p_exec "server.change_user_name(\"$5\", \"$6\", \"$7\")"
 		            	        ;;
 		            	    'key')
 		                		if [ "x$7" = "x" ] || [ "x$6" = "x" ] || [ "x$5" = "x" ]
@@ -276,7 +276,7 @@ case "$1" in
 	        			            exit 2
 	        		        	fi
 				
-		        	        	p_exec "change_user_key \"$5\" \"$6\" \"$7\""
+		        	        	p_exec "server.change_user_key(\"$5\", \"$6\", \"$7\")"
 		                	    ;;
 		            	    'domain')
 		                		if [ "x$7" = "x" ] || [ "x$6" = "x" ] || [ "x$5" = "x" ]
@@ -285,7 +285,7 @@ case "$1" in
 		                		    exit 2
 		                		fi
 				
-		                		p_exec "change_user_domain \"$5\" \"$6\" \"$7\""
+		                		p_exec "server.change_user_domain(\"$5\", \"$6\", \"$7\")"
 			                    ;;
 		        	        *)
 			                	p_help
@@ -310,9 +310,9 @@ case "$1" in
 			
 		            	if [ ! "x$5" = "x" ]
 	            		then
-	        	    	    p_exec "add_domain \"$4\" \"$5\""
+	        	    	    p_exec "server.add_domain(\"$4\", \"$5\")"
 	        	    	else
-	        	    	    p_exec "add_domain \"$4\""
+	        	    	    p_exec "server.add_domain(\"$4\")"
 	        	    	fi
 	        	        ;;
 		            'del')
@@ -322,7 +322,7 @@ case "$1" in
 		            	    exit 2
 		            	fi
 			
-		            	p_exec "del_domain \"$4\""
+		            	p_exec "server.del_domain(\"$4\")"
 		                ;;
 		            'change')
 		            	case "$4" in
@@ -333,7 +333,7 @@ case "$1" in
 			                	    exit 2
 			            	    fi
 				
-    			            	p_exec "change_domain_name \"$5\" \"$6\""
+    			            	p_exec "server.change_domain_name(\"$5\" \"$6\")"
 	    		                ;;
 		    	            'sensitivity')
 			                	if [ "x$5" = "x" ]
@@ -344,9 +344,9 @@ case "$1" in
 				
     		            		if [ ! "x$6" = "x" ]
 	    		            	then
-		                		    p_exec "change_domain_sensitivity \"$5\" \"$6\""
+		                		    p_exec "server.change_domain_sensitivity(\"$5\", \"$6\")"
 		                		else
-		                		    p_exec "change_domain_sensitivity \"$4\""
+		                		    p_exec "server.change_domain_sensitivity(\"$4\")"
 		                		fi
 		            	        ;;
     		        	    *)
@@ -364,7 +364,7 @@ case "$1" in
 	        'list')
 		        case "$3" in
 		            'domains')
-		            	p_exec "list_domains"
+		            	p_exec "server.list_domains()"
 		                ;;
 		            'users')
 	            		if [ "x$4" = "x" ]
@@ -373,7 +373,7 @@ case "$1" in
 		            	    exit 2
 		            	fi
 			
-		            	p_exec "list_users \"$4\""
+		            	p_exec "server.list_users(\"$4\")"
 		                ;;
 		            *)
 		            	p_help
