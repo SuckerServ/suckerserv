@@ -3,7 +3,7 @@
 ]]
 
 return function(cn, pw)
-  local domains = table_unique(server.parse_list(server["invmaster_domains"])) or table_unique(server.parse_list(server["master_domains"]))
+  local domains = table_unique(server["invmaster_domains"]) or table_unique(server["master_domains"])
 
   if not domains then
     server.log_error("invmaster command: no domains set")
