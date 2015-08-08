@@ -55,19 +55,13 @@
         putint(q, ci->state.gunselect);
         putint(q, ci->privilege);
         putint(q, ci->state.state);
+        uint ip = 0;
         if(extinfoip || ext_admin_client)
-        {
-            uint ip = getclientip(ci->clientnum);
-            q.put((uchar*)&ip, 3);
-
+            ip = getclientip(ci->clientnum);
+        q.put((uchar*)&ip, 3);
         /* hopmod extension */
-            if(ext_admin_client || ext_hopmod_request)
-                putint(q, !ext_admin_client ? -1 : (ip >> 24) & 0xFF); // send last byte as signed integer, -1 on error
-        }
-        else if(ext_hopmod_request)
-        {
-            loopi(4) q.put(-1);
-        }
+        if(ext_admin_client || ext_hopmod_request)
+            putint(q, !ext_admin_client ? -1 : (ip >> 24) & 0xFF); // send last byte as signed integer, -1 on error
         if(ext_hopmod_request)
         {
             putint(q, EXT_SUCKERSERV);
