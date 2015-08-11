@@ -281,14 +281,6 @@ server.event_handler("setmastermode", function(cn, oldmode, newmode)
     sendmsg(string.format("\0034MM\003    Mastermode changed to %s",newmode))
 end)
 
-server.event_handler("masterchange", function(cn, value)
-
-    local action_tag = "claimed"
-    if tonumber(value) == 0 then action_tag = "relinquished" end
-
-    sendmsg(string.format(irc_color_blue("%s ")..irc_color_green("(%i) ")..irc_color_green("claimed ")..irc_color_blue("%s"), server.player_name(cn), cn, action_tag, server.player_priv(cn)))
-end)
-
 server.sleep(1, function()
 	auth.listener("", function(cn, user_id, domain, status)
 		if status ~= auth.request_status.SUCCESS then return end
@@ -412,7 +404,7 @@ server.event_handler("privilege", function(cn, oldpriv, curpriv)
         priv = irc_color_orange("admin")
     elseif oldpriv == server.PRIV_AUTH then
         priv = irc_color_green("auth")
-    elseif oldpriv == server.PRIV_AUTH then
+    elseif oldpriv == server.PRIV_MASTER then
         priv = irc_color_green("master")
     else
         return
