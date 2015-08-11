@@ -412,7 +412,7 @@ server.event_handler("privilege", function(cn, oldpriv, curpriv)
         priv = irc_color_orange("admin")
     elseif oldpriv == server.PRIV_AUTH then
         priv = irc_color_green("auth")
-    elseif oldpriv == server.PRIV_AUTH then
+    elseif oldpriv == server.PRIV_MASTER then
         priv = irc_color_green("master")
     else
         return
