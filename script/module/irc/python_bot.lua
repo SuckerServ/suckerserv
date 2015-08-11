@@ -308,16 +308,6 @@ server.event_handler("setmastermode", function(cn, oldmode, newmode)
     end
 end)
 
-server.event_handler("masterchange", function(cn, value)
-
-    local action_tag = "claimed"
-    if tonumber(value) == 0 then action_tag = "relinquished" end
-
-    if sendmsg ~= nil then
-        sendmsg(string.format(irc_color_blue("%s ")..irc_color_green("(%i) ")..irc_color_green("claimed ")..irc_color_blue("%s"), server.player_name(cn), cn, action_tag, server.player_priv(cn)))
-    end
-end)
-
 server.sleep(1, function()
 	auth.listener("", function(cn, user_id, domain, status)
 		if status ~= auth.request_status.SUCCESS then return end
