@@ -2681,7 +2681,6 @@ namespace server
         if(ci->state.state==CS_SPECTATOR && !ci->privilege && !ci->local) return;
         if(event_editpacket(event_listeners(), std::make_tuple(ci->clientnum))) return;
         if(mapdata) DELETEP(mapdata);
-        if(!len) return;
         mapdata = opentempfile("mapdata", "w+b");
         if(!mapdata) { sendf(sender, 1, "ris", N_SERVMSG, "failed to open temporary file for map"); return; }
         mapdata->write(data, len);
