@@ -34,8 +34,8 @@ server.event_handler("intermission", function()
 end)
 
 server.event_handler("text", function(cn, text)
-  if (string.match(text, "np") or string.match(text, "no problem") or string.match(text, "NO PROBLEM") or string.match(text, "NP")) then 
-  server.player_msg(cn, string.format(server.forgive_analysetext_message))
+  if (string.match(text:lower(), "^np") or string.match(text:lower(), "no problem") then
+    server.player_msg(cn, string.format(server.forgive_analysetext_message))
   end
 end)
 
