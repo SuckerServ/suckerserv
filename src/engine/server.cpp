@@ -559,21 +559,13 @@ static void check_timeouts()
     }
 }
 
-uint totalsecs = 0;
+ullong startup = 0;
 
 static void update_time_vars()
 {
     int millis = (int)getmilliseconds();
     curtime = millis - totalmillis;
     lastmillis = totalmillis = millis;
-
-    static int lastsec = 0;
-    if(totalmillis - lastsec >= 1000) 
-    {
-        int cursecs = (totalmillis - lastsec) / 1000;
-        totalsecs += cursecs;
-        lastsec += cursecs * 1000;
-    }
 }
 
 void update_server(const boost::system::error_code & error)
@@ -832,6 +824,7 @@ bool setuplistenserver(bool dedicated)
 
 void initserver(bool listen, bool dedicated)
 {    
+    startup = getnanoseconds();
     struct sigaction terminate_action;
     sigemptyset(&terminate_action.sa_mask);
     terminate_action.sa_handler = shutdown_from_signal;
