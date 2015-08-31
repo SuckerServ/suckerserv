@@ -393,7 +393,7 @@ int serverport = server::serverport();
 int curtime = 0, lastmillis = 0, elapsedtime = 0, totalmillis = 0;
 #endif
 
-uint totalsecs = 0;
+ullong startup = 0;
 
 void update_server(const boost::system::error_code & error);
 bool serverhost_service();
@@ -409,14 +409,6 @@ static void update_time()
     if(server::ispaused()) curtime = 0;
     lastmillis += curtime;
     totalmillis = millis;
-
-    static int lastsec = 0;
-    if(totalmillis - lastsec >= 1000)
-    {
-        int cursecs = (totalmillis - lastsec) / 1000;
-        totalsecs += cursecs;
-        lastsec += cursecs * 1000;
-    }
 }
 
 void sched_next_update()
@@ -674,6 +666,7 @@ bool setuplistenserver(bool dedicated)
 
 void initserver(bool listen, bool dedicated)
 {
+    startup = getnanoseconds();
     struct sigaction terminate_action;
     sigemptyset(&terminate_action.sa_mask);
     terminate_action.sa_handler = shutdown_from_signal;
