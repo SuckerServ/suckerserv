@@ -126,7 +126,7 @@
         {
             case EXT_UPTIME:
             {
-                putint(p, totalsecs); //in seconds
+                putint(p, getuptime()); //in seconds
                 /* hopmod extension */
                 if(req.remaining() && req.get() > 0)
                 {

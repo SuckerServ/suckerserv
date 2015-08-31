@@ -16,6 +16,13 @@ static inline unsigned long long getmilliseconds()
     return getmicroseconds()/1000;
 }
 
+extern unsigned long long int startup;
+
+static inline int getuptime()
+{
+    return (getnanoseconds()-startup)/1000000000ULL;
+}
+
 class timer
 {
 public:
