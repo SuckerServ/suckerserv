@@ -389,7 +389,7 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "intermission", server::interm);
     bind_var(L, T, "intermission_time", server::intermtime);
     bind_var(L, T, "packet_delay", server::packetdelay);
-    bind_ro_var(L, T, "uptime", totalsecs);
+    bind_prop<int>(L, T, "uptime", getuptime, NULL);
     bind_ro_var(L, T, "gamemillis", server::gamemillis);
     bind_ro_var(L, T, "gamelimit", server::gamelimit);
     bind_var(L, T, "maxplayers", maxclients);
