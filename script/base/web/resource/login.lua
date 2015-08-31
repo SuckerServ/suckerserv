@@ -5,7 +5,8 @@ local sessions = {}
 
 local function createUsersTable()
     for _, entry in ipairs(server.web_admins) do
-        if #entry >= 3 then
+        local fields = {string.match(entry, "(%w+) (%w+) (%w+)")}
+        if #fields >= 3 then
             local name = fields[1]
             local password_hash = fields[2]
             local salt = fields[3]
