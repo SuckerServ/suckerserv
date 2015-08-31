@@ -21,6 +21,7 @@ function Client(server){
     this.teamkills = 0;
     this.shots = 0;
     this.misses = 0;
+    this.accuracy = 0;
 }
 
 Client.prototype.kick = function(bantime, reason){
