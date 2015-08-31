@@ -1585,14 +1585,12 @@ namespace server
         }
         if(currentmaster >= 0 || mastermode != MM_OPEN)
         {
+
+            putint(p, N_CURRENTMASTER);
+            putint(p, currentmaster);
             clientinfo *m = currentmaster >= 0 ? getinfo(currentmaster) : NULL;
-            if(m && !m->spy) 
-            {
-                putint(p, N_CURRENTMASTER);
-                putint(p, currentmaster);
-                putint(p, m->privilege);
-                putint(p, mastermode);
-            }
+            putint(p, (m && !m->spy) ? m->privilege : 0);
+            putint(p, mastermode);
         }
         if(gamepaused)
         {
@@ -2543,8 +2541,6 @@ namespace server
                     ci->specmillis = totalmillis;
                 }
                 else ci->state.state = CS_DEAD;
-                
-                if(currentmaster>=0) masterupdate = true; //FIXME send N_CURRENTMASTER packet directly to client
                 ci->state.lasttimeplayed = lastmillis;
 
                 const char *worst = m_teammode ? chooseworstteam(NULL, ci) : NULL;

@@ -592,13 +592,14 @@ void cleanup_masterstate(clientinfo * master)
     
     if(cn == mastermode_owner)
     {
-        mastermode = MM_OPEN;
         mastermode_owner = -1;
         mastermode_mtime = totalmillis;
         if(reset_mm)
         {
-            mastermode = display_open ? MM_OPEN : MM_AUTH;
-            allowedips.setsize(0);
+            if(display_open)
+                set_mastermode(MM_OPEN);
+            else
+                set_mastermode(MM_AUTH);
         }
     }
     
