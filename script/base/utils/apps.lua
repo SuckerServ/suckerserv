@@ -7,7 +7,7 @@ function server.write_server_status(filename, filemode)
     
     local out = assert(io.open(filename, filemode))
     
-    local status_rows = "PLAYERS MAP MODE MASTER HOST PORT DESCRIPTION\n"
+    local status_rows = "PLAYERS MAP MODE MASTER HOST PORT DESCRIPTION UPTIME\n"
     
     local host = server.serverip
     if #host == 0 then 
@@ -26,7 +26,7 @@ function server.write_server_status(filename, filemode)
         mapname = "<NONE>"
     end
     
-    status_rows = status_rows .. string.format("%i/%i %s %s %i %s %i %s", server.playercount, server.maxclients, server.filtertext(mapname), server.gamemode, mm, host, server.serverport, server.filtertext(desc))
+    status_rows = status_rows .. string.format("%i/%i %s %s %i %s %i %s %i", server.playercount, server.maxclients, server.filtertext(mapname), server.gamemode, mm, host, server.serverport, server.filtertext(desc), server.uptime)
     
     out:write(tabulate(status_rows))
     out:write("\n")
