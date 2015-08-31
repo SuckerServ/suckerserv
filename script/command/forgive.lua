@@ -23,24 +23,23 @@ local function teamkill_callback(actor, target)
   else
     table.insert(teamkills[target_id]["teamkilled_by"], actor_id)
   end
-end)
+end
 
 local function connect_callback(cn)
   local cn_id = server.player_id(cn)
   if not teamkills[cn_id] then return end
   teamkills[cn_id]["cn"] = cn
-end)
+end
 
 local function intermission_callback()
   teamkills = {}
-end)
+end
 
 local function text_callback(cn, text)
-  if (string.match(text:lower(), "^np") or string.match(text:lower(), "no problem") then
+  if (string.match(text:lower(), "^np") or string.match(text:lower(), "no problem")) then
     server.player_msg(cn, string.format(server.forgive_analysetext_message))
   end
-end)
-
+end
 
 local function init()
   table.insert(event_handlers, server.event_handler("teamkill", teamkill_callback))
