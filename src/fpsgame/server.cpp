@@ -440,6 +440,7 @@ namespace server
             last_lag = 0;
             spy = false;
             timetrial = 0;
+            no_spawn = 0;
 
             aireinit = 0;
             using_reservedslot = false;
@@ -599,9 +600,8 @@ namespace server
     {
         if(n >= spycn)
         {
-            n -= spycn;
             extern vector<clientinfo *> spies;
-            if(spies.inrange(n)) return spies[n];
+            loopv(spies) if(spies[i]->clientnum == n) return spies[i];
         }
         if(n < MAXCLIENTS) return (clientinfo *)getclientinfo(n);
         n -= MAXCLIENTS;
@@ -678,7 +678,7 @@ namespace server
             if(ci->messages.length() > 0) ci->messages.shrink(0);
             ci->spy = false;
             ci->hide_privilege = false;
-            spies.remove(spycn - ci->clientnum);
+            spies.removeobj(ci);
             ci->clientnum = ci->n;
             sendservinfo(ci);
             sendinitclient(ci);
