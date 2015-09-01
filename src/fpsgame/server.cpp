@@ -442,6 +442,7 @@ namespace server
             last_lag = 0;
             spy = false;
             timetrial = 0;
+            no_spawn = 0;
 
             aireinit = 0;
             using_reservedslot = false;
