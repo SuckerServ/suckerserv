@@ -601,9 +601,8 @@ namespace server
     {
         if(n >= spycn)
         {
-            n -= spycn;
             extern vector<clientinfo *> spies;
-            if(spies.inrange(n)) return spies[n];
+            loopv(spies) if(spies[i]->clientnum == n) return spies[i];
         }
         if(n < MAXCLIENTS) return (clientinfo *)getclientinfo(n);
         n -= MAXCLIENTS;
@@ -680,7 +679,7 @@ namespace server
             if(ci->messages.length() > 0) ci->messages.shrink(0);
             ci->spy = false;
             ci->hide_privilege = false;
-            spies.remove(spycn - ci->clientnum);
+            spies.removeobj(ci);
             ci->clientnum = ci->n;
             sendservinfo(ci);
             sendinitclient(ci);
