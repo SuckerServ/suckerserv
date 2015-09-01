@@ -419,6 +419,7 @@ namespace server
             timetrial = 0;
             last_lag = 0;
             spy = false;
+            no_spawn = 0;
 
             aireinit = 0;
             using_reservedslot = false;
