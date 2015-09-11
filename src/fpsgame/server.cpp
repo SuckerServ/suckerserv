@@ -1789,8 +1789,10 @@ namespace server
                 putint(p, mastermode);
                 hasmaster = true;
             }
-            putint(p, clients[i]->clientnum);
-            putint(p, clients[i]->privilege);
+            if(clients[i]->privilege > PRIV_NONE && !clients[i]->hide_privilege) {
+                putint(p, clients[i]->clientnum);
+                putint(p, clients[i]->privilege);
+            }
         }
         if(hasmaster) putint(p, -1);
         if(gamepaused)
