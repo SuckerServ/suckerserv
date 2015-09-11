@@ -402,6 +402,7 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "botbalance", server::aiman::botbalance);
     bind_prop<const char *>(L, T, "gamemode", server::gamemodename, NULL);
     bind_var(L, T, "display_open", server::display_open);
+    bind_var(L, T, "expose_invis", server::expose_invis_privs);
     bind_var(L, T, "allow_mastermode_veto", server::allow_mm_veto);
     bind_var(L, T, "allow_mastermode_locked", server::allow_mm_locked);
     bind_var(L, T, "allow_mastermode_private", server::allow_mm_private);

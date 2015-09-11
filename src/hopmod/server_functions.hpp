@@ -62,6 +62,8 @@ namespace server
     
     extern bool enable_extinfo;
     
+    extern bool expose_invis_privs;
+    
     extern int spectator_delay;
     
     namespace message{
