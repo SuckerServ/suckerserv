@@ -646,6 +646,7 @@ void cleanup_masterstate(clientinfo * master)
     if(master->state.state==CS_SPECTATOR) aiman::removeai(master);
 }
 
+bool expose_invis_privs = false;
 void send_currentmaster(){
     loopv(clients) {
         packetbuf p(MAXTRANS, ENET_PACKET_FLAG_RELIABLE);
@@ -656,7 +657,7 @@ void send_currentmaster(){
         loopvj(clients)
             if(clients[j]->privilege > PRIV_NONE) if(
               !clients[j]->hide_privilege || 
-              ((clients[i]->privilege > PRIV_NONE && clients[i]->hide_privilege) && clients[j]->hide_privilege)
+              (expose_invis_privs && (clients[i]->privilege > PRIV_NONE && clients[i]->hide_privilege) && clients[j]->hide_privilege)
             ) {
                 // if normal master/admin
                 // or if both client and target have invis privs, and switch is on
