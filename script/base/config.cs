@@ -57,6 +57,8 @@ flood_protect_spectator 10000
 flood_protect_disc_timewindow 30000
 flood_protect_disc_max 3
 
+expose_invis false
+
 global shell_label "server"
 
 global publicserver 1
