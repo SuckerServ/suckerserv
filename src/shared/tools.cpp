@@ -22,23 +22,6 @@ void operator delete(void *p) { if(p) free(p); }
 void operator delete[](void *p) { if(p) free(p); }
 #endif
 
-#ifndef WIN32
-#include <unistd.h>
-#endif
-
-int guessnumcpus()
-{
-    int numcpus = 1;
-#ifdef WIN32
-    SYSTEM_INFO info;
-    GetSystemInfo(&info);
-    numcpus = (int)info.dwNumberOfProcessors;
-#elif defined(_SC_NPROCESSORS_ONLN)
-    numcpus = (int)sysconf(_SC_NPROCESSORS_ONLN);
-#endif
-    return max(numcpus, 1);
-}
-    
 ////////////////////////// rnd numbers ////////////////////////////////////////
 
 #define N (624)             
