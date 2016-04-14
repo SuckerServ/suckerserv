@@ -10,6 +10,10 @@ IF(POSTGRESQL_FOUND)
 	add_library(${LUASQL_POSTGRES_LIBRARY} SHARED luasql.c ls_postgres.c)
 	target_link_libraries(${LUASQL_POSTGRES_LIBRARY} ${LUA_LIBRARY} ${POSTGRESQL_LIBRARIES})
 
+	if(LUA_USE_LUAJIT)
+		SET(CMAKE_EXE_LINKER_FLAGS "-pagezero_size 10000 -image_base 100000000 ${CMAKE_EXE_LINKER_FLAGS}")
+	endif()
+
 	install(TARGETS
 			${LUASQL_POSTGRES_LIBRARY}
 		LIBRARY DESTINATION
@@ -27,6 +31,10 @@ IF(MYSQL_FOUND)
 
         add_library(${LUASQL_MYSQL_LIBRARY} SHARED luasql.c ls_mysql.c)
         target_link_libraries(${LUASQL_MYSQL_LIBRARY} ${LUA_LIBRARY} ${MYSQL_LIBRARIES})
+
+	if(LUA_USE_LUAJIT)
+		SET(CMAKE_EXE_LINKER_FLAGS "-pagezero_size 10000 -image_base 100000000 ${CMAKE_EXE_LINKER_FLAGS}")
+	endif()
 
         install(TARGETS
                         ${LUASQL_MYSQL_LIBRARY}

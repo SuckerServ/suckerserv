@@ -18,6 +18,10 @@ target_link_libraries(luapp ${LUA_LIBRARY} ${FUNGU_STRING_LIBRARY} ${FUNGU_HTTP_
 
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     target_link_libraries(luapp -lrt)
+else()
+    if(LUA_USE_LUAJIT)
+        SET(CMAKE_EXE_LINKER_FLAGS "-pagezero_size 10000 -image_base 100000000 ${CMAKE_EXE_LINKER_FLAGS}")
+    endif()
 endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 install(TARGETS luapp RUNTIME DESTINATION ${INSTALL_RUNTIME_DIR}/utils)

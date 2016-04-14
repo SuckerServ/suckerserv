@@ -190,6 +190,10 @@ add_library(lua_modules STATIC ${LUA_MODULES_SOURCES})
 
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     target_link_libraries(lua_modules -pthread)
+else()
+    if(LUA_USE_LUAJIT)
+        SET(CMAKE_EXE_LINKER_FLAGS "-pagezero_size 10000 -image_base 100000000 ${CMAKE_EXE_LINKER_FLAGS}")
+    endif()
 endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 target_link_libraries(lua_modules 
