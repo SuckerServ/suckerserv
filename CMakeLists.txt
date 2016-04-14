@@ -8,6 +8,9 @@ set(INSTALL_ARCHIVE_DIR ${INSTALL_DIR}/lib)
 set(INSTALL_RUNTIME_DIR ${INSTALL_DIR}/bin)
 set(INSTALL_LUA_PACKAGE_DIR ${INSTALL_DIR}/script/package)
 
+# Warning with CMake 3.0 on OS X
+set(CMAKE_MACOSX_RPATH ON)
+
 set(CMAKE_MODULE_PATH 
         ${CMAKE_MODULE_PATH} 
         ${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules)
@@ -15,4 +18,3 @@ set(CMAKE_MODULE_PATH
 add_definitions(-Wall)
 
 add_subdirectory(src)
-
