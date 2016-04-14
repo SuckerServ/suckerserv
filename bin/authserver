@@ -19,7 +19,7 @@ v_system=$(uname)
 f_starter=$(basename $0)
 d_main=
 
-if echo $v_system | grep -q "BSD"
+if `echo $v_system | grep -q "BSD"` || `echo $v_system | grep -q "Darwin"`
 then
     d_main=$(dirname $(cd $(dirname $0) ; pwd))
 else
@@ -72,9 +72,9 @@ p_start() {
     touch log/autherror.log
     
     ERROR_START=
-    if echo $v_system | grep -q "BSD"
+    if `echo $v_system | grep -q "BSD"` || `echo $v_system | grep -q "Darwin"`
     then
-	ERROR_START=$(stat -f %Sp log/autherror.log)
+	ERROR_START=$(stat -f %z log/autherror.log)
     else
 	ERROR_START=$(stat -c %s log/autherror.log)
     fi
