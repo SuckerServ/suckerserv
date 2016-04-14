@@ -12,6 +12,8 @@ lua::event_environment & event_listeners();
 #include <asio.hpp>
 asio::io_service & get_main_io_service();
 
+#include <cmath>
+
 #include <iostream>
 #include <set>
 #include <sys/types.h>
