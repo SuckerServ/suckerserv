@@ -28,10 +28,22 @@ fi
 
 cd $d_main
 
-if [ ! -d bin ] || [ ! -d log ] || [ ! -d conf ] || [ ! -d script ]
+if [ ! -d bin ] || [ ! -d conf ] || [ ! -d script ]
 then
-    echo "Incomplete Installation! bin/, log/, conf/ or script/ are missing."
-    exit 1    
+    echo "Incomplete Installation! bin/, conf/ or script/ are missing."
+    exit 1
+fi
+
+if [ ! -d log/demo ]
+then
+    echo "log/demo/ directory missing. Creating it."
+    mkdir -p log/demo
+    if [ $? != 0 ]
+    then
+        echo "Failed to create log/demo/ directory. Create it manually before \
+starting the server."
+        exit 1
+    fi
 fi
 
 ################################################################################
