@@ -21,8 +21,11 @@ add_executable(sauer_authserver
 target_link_libraries(sauer_authserver
     sauertools
     lua_modules
-    ${ENET_LIBRARY}
-    -lrt)
+    ${ENET_LIBRARY})
+
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    target_link_libraries(sauer_authserver -lrt)
+endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 install(TARGETS
             sauer_authserver
