@@ -1,5 +1,5 @@
 #include <cassert>
-#include <luajit-2.0/lua.hpp>
+#include <lua.hpp>
 #include "lua/error_handler.hpp"
 
 namespace lua{

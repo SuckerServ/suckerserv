@@ -1,5 +1,5 @@
 #include <cassert>
-#include <luajit-2.0/lua.hpp>
+#include <lua.hpp>
 #include <iostream>
 #include "core_bindings.hpp"
 #include "events.hpp"

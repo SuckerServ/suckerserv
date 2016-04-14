@@ -1,4 +1,4 @@
-#include <luajit-2.0/lua.hpp>
+#include <lua.hpp>
 
 #ifdef WITH_MMDB
 
