@@ -1,6 +1,7 @@
 [submodule "src/asio"]
 	path = src/asio
-	url = https://github.com/chriskohlhoff/asio.git
+	url = https://github.com/morfin60/asio.git
+	branch = morfin60-sslv3-fix
 [submodule "src/libmaxminddb"]
 	path = src/libmaxminddb
 	url = https://github.com/maxmind/libmaxminddb.git
