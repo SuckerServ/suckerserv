@@ -1334,6 +1334,8 @@ class convert2cube
         std::string buf;
 };
 
+extern string homedir;
+
 extern char *makerelpath(const char *dir, const char *file, const char *prefix = NULL, const char *cmd = NULL);
 extern char *path(char *s);
 extern char *path(const char *s, bool copy);
