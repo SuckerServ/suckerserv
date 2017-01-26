@@ -76,6 +76,7 @@ inline int div(int a,int b)
 inline int mod(int a,int b){return a % b;}
 inline int min(int a,int b){return a < b ? a : b;}
 inline int max(int a,int b){return a < b ? b : a;}
+inline int abs(int a){return abs(a);}
 
 FUNGU_VARIADIC_BINARY_INT_FUNCTION(addv,add);
 FUNGU_VARIADIC_BINARY_INT_FUNCTION(subv,sub);
@@ -152,8 +153,8 @@ void register_int_arithmetic_functions(env & environment)
     
     static function<raw_function_type> max_func(mathlib::maxv);
     environment.bind_global_object(&max_func,FUNGU_OBJECT_ID("max"));
-    
-    static function<int (int)> abs_func(abs);
+
+    static function<int (int)> abs_func(mathlib::abs);
     environment.bind_global_object(&abs_func, FUNGU_OBJECT_ID("abs"));
 }
 
