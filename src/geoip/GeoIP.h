@@ -1,7 +1,7 @@
 /* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /* GeoIP.h
  *
- * Copyright (C) 2006 MaxMind LLC
+ * Copyright (C) 2016 MaxMind, Inc.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,7 +33,6 @@ extern "C" {
 #else /* !defined(_WIN32) */
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#define snprintf _snprintf
 #define FILETIME_TO_USEC(ft)                      \
     (((unsigned __int64)ft.dwHighDateTime << 32 | \
       ft.dwLowDateTime) / 10)
@@ -102,6 +101,7 @@ typedef enum {
     GEOIP_CHECK_CACHE = 2,
     GEOIP_INDEX_CACHE = 4,
     GEOIP_MMAP_CACHE = 8,
+    GEOIP_SILENCE = 16,
 } GeoIPOptions;
 
 typedef enum {
@@ -158,8 +158,7 @@ typedef enum {
     GEOIP_CORPORATE_SPEED = 3,
 } GeoIPNetspeedValues;
 
-
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(__MINGW32__)
 #ifdef GEOIP_EXPORTS
 #define GEOIP_API __declspec(dllexport)
 #define GEOIP_DATA __declspec(dllexport)

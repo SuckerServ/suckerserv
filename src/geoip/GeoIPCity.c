@@ -2,7 +2,7 @@
 /*
  * GeoIPCity.c
  *
- * Copyright (C) 2006 MaxMind LLC
+ * Copyright (C) 2016 MaxMind, Inc.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the
@@ -29,13 +29,19 @@
 #else
 #include <windows.h>
 #include <winsock.h>
+
+#if defined(_MSC_VER) && _MSC_VER >= 1400 // VS 2005+ deprecates fileno, lseek and read
+#  define fileno _fileno
+#  define read _read
+#  define lseek _lseek
+#endif
 #endif
 #include <sys/types.h>  /* For uint32_t */
 #ifdef HAVE_STDINT_H
 #include <stdint.h>     /* For uint32_t */
 #endif
 
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(__MINGW32__)
 #include "pread.h"
 #endif
 
@@ -79,17 +85,22 @@ _extract_record(GeoIP * gi, unsigned int seek_record, int *next_record_ptr)
 
     if (gi->cache == NULL) {
         begin_record_buf = record_buf = malloc(
-                               sizeof(char) * FULL_RECORD_LENGTH);
+                               sizeof(unsigned char) * FULL_RECORD_LENGTH);
         bytes_read = pread(fileno(
                                gi->GeoIPDatabase), record_buf,
                            FULL_RECORD_LENGTH, record_pointer);
-        if (bytes_read == 0) {
+        if (bytes_read <= 0) {
             /* eof or other error */
             free(begin_record_buf);
             free(record);
             return NULL;
         }
     }else {
+        if (gi->size <= record_pointer) {
+            /* such record does not exists in the cache */
+            free(record);
+            return NULL;
+        }
         record_buf = gi->cache + (long)record_pointer;
     }
 
@@ -140,14 +151,14 @@ _extract_record(GeoIP * gi, unsigned int seek_record, int *next_record_ptr)
     for (j = 0; j < 3; ++j) {
         latitude += (record_buf[j] << (j * 8));
     }
-    record->latitude = latitude / 10000 - 180;
+    record->latitude = (float)(latitude / 10000 - 180);
     record_buf += 3;
 
     /* get longitude */
     for (j = 0; j < 3; ++j) {
         longitude += (record_buf[j] << (j * 8));
     }
-    record->longitude = longitude / 10000 - 180;
+    record->longitude = (float)(longitude / 10000 - 180);
 
     /*
      * get area code and metro code for post April 2002 databases and for US
@@ -164,7 +175,7 @@ _extract_record(GeoIP * gi, unsigned int seek_record, int *next_record_ptr)
         }
     }
 
-    if (gi->cache == NULL) {
+    if (begin_record_buf != NULL) {
         free(begin_record_buf);
     }
 
@@ -308,8 +319,7 @@ GeoIP_record_id_by_addr(GeoIP * gi, const char *addr)
         return 0;
     }
     ipnum = GeoIP_addr_to_num(addr);
-    GeoIPLookup gl;
-    return _GeoIP_seek_record_gl(gi, ipnum, &gl);
+    return _GeoIP_seek_record(gi, ipnum);
 }
 
 int
@@ -327,8 +337,7 @@ GeoIP_record_id_by_addr_v6(GeoIP * gi, const char *addr)
         return 0;
     }
     ipnum = _GeoIP_addr_to_num_v6(addr);
-    GeoIPLookup gl;
-    return _GeoIP_seek_record_v6_gl(gi, ipnum, &gl);
+    return _GeoIP_seek_record_v6(gi, ipnum);
 }
 
 int
