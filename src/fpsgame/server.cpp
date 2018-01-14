@@ -3270,6 +3270,7 @@ namespace server
             {
                 getstring(text, p);
                 filtertext(text, text, false, false);
+                fixmapname(text);
                 int reqmode = getint(p);
                 if(type!=N_MAPVOTE && !mapreload) break;
                 if(!ci->local && !m_mp(reqmode)) reqmode = 0;

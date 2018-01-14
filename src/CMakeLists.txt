@@ -203,6 +203,7 @@ target_link_libraries(lua_modules
 
 set(GAME_SERVER_SOURCES
     engine/server.cpp
+    engine/worldio.cpp
     fpsgame/server.cpp
     hopmod/netbans.cpp
     hopmod/startup.cpp
