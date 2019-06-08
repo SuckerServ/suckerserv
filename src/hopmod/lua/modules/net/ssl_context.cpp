@@ -36,8 +36,7 @@ int ssl_context::create_object(lua_State * L)
     try
     {
         lua::create_object<ssl_context>(L, 
-            boost::shared_ptr<ssl::context>(new ssl::context(get_main_io_service(L), 
-                static_cast<ssl::context_base::method>(method))));
+            boost::shared_ptr<ssl::context>(new ssl::context(static_cast<ssl::context_base::method>(method))));
     }
     catch(const boost::system::system_error & se)
     {
