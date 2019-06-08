@@ -260,7 +260,7 @@ static int tigersum(lua_State * L)
 class hmac
 {
 public:
-    typedef HMAC_CTX target_type;
+    typedef HMAC_CTX * target_type;
     static const char * CLASS_NAME;
     static int register_class(lua_State * L);
     static int create_object(lua_State * L);
@@ -274,7 +274,10 @@ const char * hmac::CLASS_NAME = "hmac";
 
 int hmac::__gc(lua_State * L)
 {
-    HMAC_CTX_cleanup(lua::to<hmac>(L, 1));
+    target_type * self = lua::to<hmac>(L, 1);
+
+    HMAC_CTX_reset(*self);
+    HMAC_CTX_free(*self);
     return 0;
 }
 
@@ -304,9 +307,10 @@ int hmac::create_object(lua_State * L)
     }
     
     target_type * self = lua::create_object<hmac>(L);
-    
-    HMAC_CTX_init(self);
-    HMAC_Init(self, key, static_cast<int>(key_len), hash_function);
+    *self = HMAC_CTX_new();
+
+    HMAC_CTX_reset(*self);
+    HMAC_Init_ex(*self, key, static_cast<int>(key_len), hash_function, NULL);
     
     return 1;
 }
@@ -316,7 +320,7 @@ int hmac::update(lua_State * L)
     target_type * self = lua::to<hmac>(L, 1);
     std::size_t data_len;
     const char * data = luaL_checklstring(L, 2, &data_len);
-    HMAC_Update(self, reinterpret_cast<const unsigned char *>(data), data_len);
+    HMAC_Update(*self, reinterpret_cast<const unsigned char *>(data), data_len);
     return 0;
 }
 
@@ -327,7 +331,7 @@ int hmac::digest(lua_State * L)
     unsigned char * md = new unsigned char[EVP_MAX_MD_SIZE];
     unsigned int md_len = EVP_MAX_MD_SIZE;
     
-    HMAC_Final(self, md, &md_len);
+    HMAC_Final(*self, md, &md_len);
     
     std::size_t output_len = md_len * 2 + 1;
     char * output = new char[output_len];
