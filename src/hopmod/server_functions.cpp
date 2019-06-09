@@ -646,22 +646,28 @@ void cleanup_masterstate(clientinfo * master)
     if(master->state.state==CS_SPECTATOR) aiman::removeai(master);
 }
 
+bool expose_invis_privs = false;
 void send_currentmaster(){
-    
-    packetbuf p(MAXTRANS, ENET_PACKET_FLAG_RELIABLE);
-    
-    putint(p, N_CURRENTMASTER);
-    putint(p, mastermode);
-    
-    loopv(clients) if(clients[i]->privilege >= PRIV_MASTER && !clients[i]->hide_privilege)
-    {
-        putint(p, clients[i]->clientnum);
-        putint(p, clients[i]->privilege);
+    loopv(clients) {
+        packetbuf p(MAXTRANS, ENET_PACKET_FLAG_RELIABLE);
+        
+        putint(p, N_CURRENTMASTER);
+        putint(p, mastermode);
+        
+        loopvj(clients)
+            if(clients[j]->privilege > PRIV_NONE) if(
+              !clients[j]->hide_privilege || 
+              (expose_invis_privs && (clients[i]->privilege > PRIV_NONE && clients[i]->hide_privilege) && clients[j]->hide_privilege)
+            ) {
+                // if normal master/admin
+                // or if both client and target have invis privs, and switch is on
+                putint(p, clients[j]->clientnum);
+                putint(p, clients[j]->privilege);
+            }
+        
+        putint(p, -1);
+        sendpacket(i, 1, p.finalize());
     }
-    
-    putint(p, -1);
-    
-    sendpacket(-1, 1, p.finalize());
 }
 
 void unsetmaster()
