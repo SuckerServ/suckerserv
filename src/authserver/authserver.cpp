@@ -314,7 +314,7 @@ void reqauth(client & c, uint id, char * name, char * domain)
     authreq &a = c.authreqs.add();
     a.reqtime = servtime;
     a.id = id;
-    uint seed[3] = { starttime, servtime, randomMT() };
+    uint seed[3] = { (uint)starttime, servtime, randomMT() };
     a.authchal = userIt->second->create_challenge(seed, sizeof(seed));
     
     outputf(c, "chalauth %u %s\n", id, a.authchal->get_challenge());

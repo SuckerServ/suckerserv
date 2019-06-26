@@ -1,10 +1,10 @@
 
 #include <fungu/string.hpp>
 #include <fungu/stringutils.hpp>
-#include <assert.h>
-#include <math.h>
+#include <cassert>
+#include <cmath>
 #include <string>
-#include <string.h>
+#include <cstring>
 
 namespace fungu{
 
@@ -23,6 +23,9 @@ const_string::const_string(const_iterator firstc, const_iterator lastc)
  :m_firstc(firstc),m_lastc(lastc)
 {
     assert( firstc <= lastc || firstc-1==lastc /* empty string condition */);
+    m_copy = std::string(m_firstc, m_lastc+1);
+    m_firstc = &(*m_copy.begin());
+    m_lastc = &(*m_copy.rbegin());
 }
 
 const_string::const_string(const std::string & src)
@@ -46,8 +49,14 @@ const_string::const_string(const const_string & src)
   m_firstc(src.m_firstc),
   m_lastc(src.m_lastc)
 {
-    m_firstc = addr(m_copy,0) + (src.m_firstc - addr(src.m_copy,0));
-    m_lastc = addr(m_copy,0) + (src.m_lastc - addr(src.m_copy,0));
+    if (src.m_copy.empty() && src.length() > 0) {
+        m_copy = std::string(m_firstc, m_lastc+1);
+        m_firstc = &(*m_copy.begin());
+        m_lastc = &(*m_copy.rbegin());
+    } else {
+        m_firstc = addr(m_copy,0) + (src.m_firstc - addr(src.m_copy,0));
+        m_lastc = addr(m_copy,0) + (src.m_lastc - addr(src.m_copy,0));
+    }
 }
 
 const_string::const_string(const std::pair<const char *, const char *> & src)

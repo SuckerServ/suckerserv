@@ -12,5 +12,10 @@ set(CMAKE_MODULE_PATH
         ${CMAKE_MODULE_PATH} 
         ${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules)
 
+
+add_definitions(-Wall -Wextra -Wno-unused-parameter -O0)
+
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+
 add_subdirectory(src)
 

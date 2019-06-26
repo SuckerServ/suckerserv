@@ -59,10 +59,12 @@ bool callargs::empty()const
     return !size();
 }
 
+std::vector<any> callargs_serializer::dummyvector;
+callargs callargs_serializer::dummycallargs(callargs_serializer::dummyvector);
+
 callargs_serializer::callargs_serializer()
- :m_argv(*(callargs *)NULL), m_frame(NULL)
+ :m_argv(dummycallargs), m_frame(NULL)
 {
-    
 }
 
 callargs_serializer::callargs_serializer(callargs & argv,env_frame * frame)

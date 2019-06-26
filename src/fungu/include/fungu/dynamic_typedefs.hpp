@@ -9,6 +9,7 @@
 #define FUNGU_DYNAMIC_TYPEDEFS_HPP
 
 #include <boost/type_traits.hpp>
+#include <boost/mpl/if.hpp>
 
 namespace fungu{
 

@@ -5,7 +5,7 @@
  *
  *   Distributed under a BSD style license (see accompanying file LICENSE.txt)
  */
-#ifndef FUNGU_SCRIPT_PROPRETY_HPP
+#ifndef FUNGU_SCRIPT_PROPERTY_HPP
 #define FUNGU_SCRIPT_PROPERTY_HPP
 
 #include "env_object.hpp"

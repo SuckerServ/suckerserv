@@ -6,8 +6,8 @@ extern "C"{
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <cstring>
 }
+#include <cstring>
 #include <string> // Find out why placement new depends on a stdlib header
 
 class directory_iterator

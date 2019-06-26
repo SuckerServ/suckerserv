@@ -80,6 +80,9 @@ public:
     code_block deserialize(const serialized_argument_type &, type_tag<code_block>);
     return_type get_void_value();
     void clear();
+
+    static callargs dummycallargs;
+    static std::vector<any> dummyvector;
 private:
     callargs & m_argv; 
     env_frame * m_frame;

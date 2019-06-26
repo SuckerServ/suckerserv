@@ -31,12 +31,12 @@
 #include <list>
 #include <vector>
 #include <limits>
-#include <time.h>
-#include <stdio.h>
-#include <stdlib.h> //abs, rand, srand
-#include <assert.h>
-#include <math.h>
-#include <string.h>
+#include <ctime>
+#include <cstdio>
+#include <cstdlib> //abs, rand, srand
+#include <cassert>
+#include <cmath>
+#include <cstring>
 
 #include "corelib/anonymous_function.cpp"
 #include "corelib/controlflow.cpp"

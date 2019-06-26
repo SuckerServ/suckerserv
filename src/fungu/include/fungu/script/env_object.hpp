@@ -17,7 +17,7 @@ namespace fungu{
 namespace script{
 
 class env_frame;
-class any;
+struct any;
 class callargs;
 
 /**

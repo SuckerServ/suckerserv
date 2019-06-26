@@ -24,7 +24,7 @@ namespace fungu{
 namespace script{
 
 namespace any_detail{
-class empty;
+struct empty;
 }
 
 namespace lexical_cast_detail{

@@ -25,6 +25,7 @@ static int __gc(lua_State * L)
     luaL_checktype(L, 1, LUA_TUSERDATA);
     env_object ** hold_ptr = reinterpret_cast<env_object **>(lua_touserdata(L, 1));
     intrusive_ptr_release(*hold_ptr);
+    return 0;
 }
 
 } //namespace detail

@@ -9,13 +9,13 @@
 #define FUNGU_SCRIPT_SCRIPT_FWD_HPP
 
 #if FUNGU_WITH_LUA
-class lua_State;
+struct lua_State;
 #endif
 
 namespace fungu{
 namespace script{
 
-class any;
+struct any;
 
 class env;
 class env_frame;
