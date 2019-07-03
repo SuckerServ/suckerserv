@@ -722,6 +722,8 @@ namespace game
     extern const char *teamcolorname(fpsent *d, const char *alt = "you");
     extern const char *teamcolor(const char *name, bool sameteam, const char *alt = NULL);
     extern const char *teamcolor(const char *name, const char *team, const char *alt = NULL);
+    extern void teamsound(bool sameteam, int n, const vec *loc = NULL);
+    extern void teamsound(fpsent *d, int n, const vec *loc = NULL);
     extern fpsent *pointatplayer();
     extern fpsent *hudplayer();
     extern fpsent *followingplayer();
