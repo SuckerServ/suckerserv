@@ -230,6 +230,10 @@ inline char *newstring(const char *s)           { size_t l = strlen(s); char *d 
 #define loopvk(v)   for(int k = 0; k<(v).length(); k++)
 #define loopvrev(v) for(int i = (v).length()-1; i>=0; i--)
 
+template<class T> inline void memclear(T *p, size_t n) { memset((void *)p, 0, n * sizeof(T)); }
+template<class T> inline void memclear(T &p) { memset((void *)&p, 0, sizeof(T)); }
+template<class T, size_t N> inline void memclear(T (&p)[N]) { memset((void *)p, 0, N * sizeof(T)); }
+
 template <class T>
 struct databuf
 {
