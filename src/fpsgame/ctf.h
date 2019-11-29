@@ -951,9 +951,7 @@ struct ctfclientmode : clientmode
             {
                 if(!tookflag && d->flagpickup&(1<<f.id)) continue;
                 if((lookupmaterial(o)&MATF_CLIP) != MAT_GAMECLIP && (lookupmaterial(loc)&MATF_CLIP) != MAT_GAMECLIP)
-                {
                     addmsg(N_TAKEFLAG, "rcii", d, i, f.version);
-                }
                 d->flagpickup |= 1<<f.id;
             }
             else d->flagpickup &= ~(1<<f.id);
