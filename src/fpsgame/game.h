@@ -818,6 +818,7 @@ namespace game
     extern void getbestteams(vector<const char *> &best);
     extern void clearteaminfo();
     extern void setteaminfo(const char *team, int frags);
+    extern int statuscolor(fpsent *d, int color);
 
     // render
     struct playermodelinfo
