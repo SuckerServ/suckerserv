@@ -139,10 +139,8 @@ static inline int bitscan(uint mask)
 #pragma warning (disable: 4996) // 'strncpy' was declared deprecated
 #endif
 
-#ifndef __MINGW32__
 #define strcasecmp _stricmp
 #define strncasecmp _strnicmp
-#endif
 #define PATHDIV '\\'
 
 #else
