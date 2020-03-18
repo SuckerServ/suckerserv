@@ -694,6 +694,7 @@ namespace game
         virtual void senditems(packetbuf &p) {}
         virtual const char *prefixnextmap() { return ""; }
         virtual void removeplayer(fpsent *d) {}
+        virtual void died(fpsent *victim, fpsent *actor) {}
         virtual void gameover() {}
         virtual bool hidefrags() { return false; }
         virtual int getteamscore(const char *team) { return 0; }
