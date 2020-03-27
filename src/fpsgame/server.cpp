@@ -2049,6 +2049,7 @@ namespace server
         loopv(votes) if(!best || votes[i].count > best->count || (votes[i].count == best->count && rnd(2))) best = &votes[i];
         if(force || (best && best->count > maxvotes/2))
         {
+            sendpackets(true);
             if(demorecord) enddemorecord();
             if(best && (best->count > (force ? 1 : maxvotes/2)))
             {
@@ -2082,6 +2083,7 @@ namespace server
         if(!ci->mapvote[0]) return;
         if(ci->local || mapreload || (ci->privilege && mastermode>=MM_VETO))
         {
+            sendpackets(true);
             if(demorecord) enddemorecord();
             if((!ci->local || hasnonlocalclients()) && !mapreload && !ci->spy)
             {
