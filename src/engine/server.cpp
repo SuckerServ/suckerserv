@@ -51,22 +51,6 @@ void conoutfv(int type, const char *fmt, va_list args)
     filtertext(sp, sf);
     puts(sp);
 }
-
-void conoutf(const char *fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    conoutfv(CON_INFO, fmt, args);
-    va_end(args);
-}
-
-void conoutf(int type, const char *fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    conoutfv(type, fmt, args);
-    va_end(args);
-}
 #endif
 
 enum { ST_EMPTY, ST_LOCAL, ST_TCPIP };
