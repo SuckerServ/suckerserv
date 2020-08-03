@@ -399,7 +399,7 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "next_mode", server::next_gamemode);
     bind_var(L, T, "next_map", server::next_mapname);
     bind_var(L, T, "next_gametime", server::next_gametime);
-    bind_var(L, T, "reassignteams", server::reassignteams);
+    bind_var(L, T, "persistteams", server::persistteams);
     bind_prop<int>(L, T, "playercount", server::getplayercount, NULL);
     bind_prop<int>(L, T, "speccount", server::getspeccount, NULL);
     bind_prop<int>(L, T, "botcount", server::getbotcount, NULL);

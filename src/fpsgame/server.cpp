@@ -529,7 +529,7 @@ namespace server
     int gamemillis = 0, gamelimit = 0, nextexceeded = 0, next_timeupdate = 0, gamespeed = 100;
     bool gamepaused = false, shouldstep = true;
     int pausegame_owner = -1;
-    bool reassignteams = true;
+    bool persistteams = false;
     
     bool display_open = false;
     bool allow_mm_veto = false;
@@ -1977,14 +1977,7 @@ namespace server
         sendf(-1, 1, "risii", N_MAPCHANGE, smapname, gamemode, 1);
 
         clearteaminfo();
-        if(m_teammode)
-        {
-            if(reassignteams) autoteam();
-            else
-            {
-                loopv(clients) addteaminfo(clients[i]->team);
-            }
-        }
+        if(m_teammode && !persistteams) autoteam();
 
         if(m_capture) smode = &capturemode;
         else if(m_ctf) smode = &ctfmode;
