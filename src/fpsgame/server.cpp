@@ -1960,7 +1960,7 @@ namespace server
         mapreload = false;
         gamemode = mode;
         gamemillis = 0;
-        gamelimit = (mins == -1 ? (m_overtime ? 15 : 10) : mins) * 60000;
+        gamelimit = (mins == -1 ? (m_extratime ? 15 : 10) : mins) * 60000;
         interm = 0;
         nextexceeded = 0;
         copystring(smapname, s);
