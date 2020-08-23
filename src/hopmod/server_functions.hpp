@@ -55,6 +55,8 @@ namespace server
     extern bool reset_mm;
     extern bool allow_item[11];
 
+    extern bool autorecorddemo;
+
     extern bool restrictpausegame;
     extern bool restrictgamespeed;
 

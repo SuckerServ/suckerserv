@@ -558,6 +558,8 @@ namespace server
     string adminpass = "";
     string slotpass = "";
     stream *mapdata = NULL;
+
+    bool autorecorddemo = false;
     
     bool restrictpausegame = false;
     bool restrictgamespeed = false;
@@ -2001,7 +2003,7 @@ namespace server
         }
         else if(demonextmatch)
         {
-            demonextmatch = false;
+            demonextmatch = autorecorddemo!=0;
             setupdemorecord();
         }
         

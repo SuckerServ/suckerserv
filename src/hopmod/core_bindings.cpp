@@ -425,6 +425,8 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "extinfo_show_ip", server::extinfoip);
     bind_var(L, T, "regen_blue_armour", server::regenbluearmour);
 
+    bind_var(L, T, "auto_record_demo", server::autorecorddemo);
+
     bind_var(L, T, "restrict_pausegame", server::restrictpausegame);
     bind_var(L, T, "restrict_gamespeed", server::restrictgamespeed);
 
