@@ -205,14 +205,13 @@ namespace server
     {
         uint ip;
         string name;
-        int maxhealth, frags, flags, deaths, suicides, teamkills, shotdamage, explosivedamage, damage, hits, misses, shots;
+        int frags, flags, deaths, suicides, teamkills, shotdamage, explosivedamage, damage, hits, misses, shots;
         int timeplayed;
         float effectiveness;
         int disconnecttime;
         
         void save(gamestate &gs)
         {
-            maxhealth = gs.maxhealth;
             frags = gs.frags;
             flags = gs.flags;
             deaths = gs.deaths;
@@ -231,8 +230,6 @@ namespace server
 
         void restore(gamestate &gs)
         {
-            if(gs.health==gs.maxhealth) gs.health = maxhealth;
-            gs.maxhealth = maxhealth;
             gs.frags = frags;
             gs.flags = flags;
             gs.deaths = deaths;
