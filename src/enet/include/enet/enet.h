@@ -315,9 +315,7 @@ typedef struct _ENetPeer
    ENetList      sentUnreliableCommands;
    ENetList      outgoingCommands;
    ENetList      dispatchedCommands;
-   enet_uint16   flags;
-   enet_uint8    roundTripTimeRemainder;
-   enet_uint8    roundTripTimeVarianceRemainder;
+   enet_uint32   flags;
    enet_uint16   incomingUnsequencedGroup;
    enet_uint16   outgoingUnsequencedGroup;
    enet_uint32   unsequencedWindow [ENET_PEER_UNSEQUENCED_WINDOW_SIZE / 32]; 
