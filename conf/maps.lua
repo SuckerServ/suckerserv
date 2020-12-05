@@ -8,7 +8,8 @@ server.ffa_maps = {
 "simplicity", "pitch_black", "duel7", "gothic-df", "suburb", "roughinery", "stemple", "tejen", "pgdm", "deathtek",
 "hades", "corruption", "paradigm", "lostinspace", "wdcd", "sauerstruck", "neonpanic", "phosgene",
 "oddworld", "guacamole", "wake5", "frostbyte", "thor", "ksauer1", "kmap5", "thetowers", "darkdeath",
-"gubo", "oldschool", "teahupoo", "force", "rm1", "asenatra", "pariah"
+"gubo", "oldschool", "teahupoo", "force", "rm1", "asenatra", "pariah", "access", "albatross", "exist", "stronhold",
+"toxicity"
 }
 
 server.small_ffa_maps = {
@@ -58,7 +59,7 @@ server.capture_maps = {
 "corruption", "asteroids", "ogrosupply", "reissen", "akroseum", "turbulence", "frostbyte",
 "c_egypt", "caribbean", "dust2", "asenatra", "campo", "dirtndust", "evilness", "gothic-df", "damnation", "arabic", "spcr",
 "subterra", "infamy", "capture_night", "river_c", "serenity", "xenon", "nmp9", "ph-capture",
-"killcore3", "twinforts", "duomo", "donya", "asgard", "eternal_valley", "mill", "nucleus", "laucin"
+"killcore3", "twinforts", "duomo", "donya", "asgard", "eternal_valley", "mill", "nucleus", "laucin", "stronhold"
 }
 
 server.small_capture_maps = {
@@ -83,7 +84,7 @@ server.ctf_maps = {
 "abbey", "redemption", "damnation", "forge", "campo", "nitro", "infamy", "catch22", "subterra",
 "forgotten", "bad_moon", "snapper_rocks", "haste", "spcr", "asgard", "arbana", "hidden", "mercury",
 "kopenhagen", "tortuga", "mbt4", "core_refuge", "core_transfer", "desecration", "recovery", "wdcd",
-"suburb", "xenon", "sacrifice", "eternal_valley", "mill", "nucleus", "laucin"
+"suburb", "xenon", "sacrifice", "eternal_valley", "mill", "nucleus", "laucin", "stronhold"
 }
 
 server.small_ctf_maps = {
