@@ -14,7 +14,7 @@ server.ffa_maps = {
 "conflict", "purgatory", "souls", "clash", "hator", "haze", "ghetto", "nessus", "infernal", "horus", "janela", "helligsted",
 "casa", "barracks", "dispute", "ztn", "kastro", "unworld", "unworld2", "hillfort", "idyll3", "frag2", "ognjen", "suisei",
 "crypta", "maple", "fubuki", "awoken", "dopamine", "saffier", "lost_world", "mood", "slingshot", "zamak", "church51",
-"imhotep", "catacombs", "nmp10", "skycastle-r"
+"imhotep", "catacombs", "nmp10", "skycastle-r", "cavefire", "ctgs12"
 }
 
 server.small_ffa_maps = {
