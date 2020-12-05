@@ -11,7 +11,8 @@ server.ffa_maps = {
 "gubo", "oldschool", "teahupoo", "force", "rm1", "asenatra", "pariah", "access", "albatross", "exist", "stronhold",
 "toxicity", "frag-lab", "aod", "sauerowalk", "anubis", "lost_soul", "gorge", "headroom", "hdm3", "waltz", "colony",
 "insipid", "zavial", "phrantic", "hektik", "ferguson", "exo", "abyss", "fallen", "memoria", "ventania", "zdm2", "turmoil",
-"conflict", "purgatory", "souls", "clash", "hator", "haze", "ghetto", "nessus", "infernal"
+"conflict", "purgatory", "souls", "clash", "hator", "haze", "ghetto", "nessus", "infernal", "horus", "janela", "helligsted",
+"casa", "barracks", "dispute", "ztn"
 }
 
 server.small_ffa_maps = {
