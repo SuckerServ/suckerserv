@@ -90,7 +90,7 @@ server.ctf_maps = {
 "kopenhagen", "tortuga", "mbt4", "core_refuge", "core_transfer", "desecration", "recovery", "wdcd",
 "suburb", "xenon", "sacrifice", "eternal_valley", "mill", "nucleus", "laucin", "stronhold", "enigma", "luna",
 "breakout", "mc-lab", "regal", "fragnostic", "eris", "fire_keep", "tatooine", "new_energy", "tectonic", "disruption",
-"bklyn", "earthsea", "river_keep"
+"bklyn", "earthsea", "river_keep", "ow"
 }
 
 server.small_ctf_maps = {
