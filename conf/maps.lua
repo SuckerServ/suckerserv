@@ -79,7 +79,7 @@ server.big_capture_maps = {
 server.ctf_maps = {
 "hallo", "flagstone", "tempest", "siberia", "capture_night", "reissen", "tejen", "shipwreck",
 "authentic", "urban_c", "bt_falls", "valhalla", "garden", "mbt1", "autumn", "akroseum", "face-capture",
-"dust2", "mach2", "evilness", "turbulence", "l_ctf", "twinforts", "berlin_wall", "mbt12", "europium",
+"dust2", "love", "mach2", "evilness", "turbulence", "l_ctf", "twinforts", "berlin_wall", "mbt12", "europium",
 "abbey", "redemption", "damnation", "forge", "campo", "nitro", "infamy", "catch22", "subterra",
 "forgotten", "bad_moon", "snapper_rocks", "haste", "spcr", "asgard", "arbana", "hidden", "mercury",
 "kopenhagen", "tortuga", "mbt4", "core_refuge", "core_transfer", "desecration", "recovery", "wdcd",
