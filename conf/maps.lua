@@ -96,7 +96,7 @@ server.ctf_maps = {
 "breakout", "mc-lab", "regal", "fragnostic", "eris", "fire_keep", "tatooine", "new_energy", "tectonic", "disruption",
 "bklyn", "earthsea", "river_keep", "ow", "stadium", "fortress", "destiny", "warlock", "tubes", "shellshock2", "daemex",
 "kiryu", "unworld3", "meltdown2", "earthstation", "risk", "pul1ctf", "surge", "overdrive", "triforts", "ctf_suite",
-"idris", "disc", "metro", "harbor", "rust", "aastha"
+"idris", "disc", "metro", "harbor", "rust", "aastha", "divine"
 }
 
 server.small_ctf_maps = {
