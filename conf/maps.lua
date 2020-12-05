@@ -13,7 +13,7 @@ server.ffa_maps = {
 "insipid", "zavial", "phrantic", "hektik", "ferguson", "exo", "abyss", "fallen", "memoria", "ventania", "zdm2", "turmoil",
 "conflict", "purgatory", "souls", "clash", "hator", "haze", "ghetto", "nessus", "infernal", "horus", "janela", "helligsted",
 "casa", "barracks", "dispute", "ztn", "kastro", "unworld", "unworld2", "hillfort", "idyll3", "frag2", "ognjen", "suisei",
-"crypta", "maple"
+"crypta", "maple", "fubuki"
 }
 
 server.small_ffa_maps = {
