@@ -2,14 +2,15 @@ server.ffa_maps = {
 "complex", "douze", "ot", "academy", "metl2", "metl3", "justice", "turbine", "hashi", "mbt2",
 "fanatic_quake", "dock", "renegade", "antel", "curvy_castle", "fdm6", "spcr2", "nmp8", "legacy", "carbide", "tartech", "aard3c", "asthma", "cartel", "skrdm1", "duel5", "bvdm_01",
 "outpost", "park", "tumwalk", "industry", "injustice", "mbt10", "refuge", "curvedm", "kalking1", "hog2",
-"kffa", "fragplaza", "collusion", "duel8", "akimiski", "averas", "alithia", "island", "sandstorm2", "rm5", "depot", "masdm", "orbe", "torment",
+"kffa", "fragplaza", "collusion", "duel8", "akimiski", "averas", "alithia", "island", "sandstorm", "rm5", "depot", "masdm", "orbe", "torment",
 "legazzo", "fury", "mbt9", "shadowed", "dirtndust", "aqueducts", "killfactory", "akaritori",
 "konkuri-to", "moonlite", "castle_trap", "orion", "katrez_d", "ogrosupply", "elegy", "shiva", "arbana",
 "simplicity", "pitch_black", "duel7", "gothic-df", "suburb", "roughinery", "stemple", "tejen", "pgdm", "deathtek",
 "hades", "corruption", "paradigm", "lostinspace", "wdcd", "sauerstruck", "neonpanic", "phosgene",
 "oddworld", "guacamole", "wake5", "frostbyte", "thor", "ksauer1", "kmap5", "thetowers", "darkdeath",
 "gubo", "oldschool", "teahupoo", "force", "rm1", "asenatra", "pariah", "access", "albatross", "exist", "stronhold",
-"toxicity"
+"toxicity", "frag-lab", "aod", "sauerowalk", "anubis", "lost_soul", "gorge", "headroom", "hdm3", "waltz", "colony",
+"insipid", "zavial", "phrantic", "hektik", "ferguson", "exo", "abyss", "fallen", "memoria", "ventania", "zdm2"
 }
 
 server.small_ffa_maps = {
@@ -59,7 +60,8 @@ server.capture_maps = {
 "corruption", "asteroids", "ogrosupply", "reissen", "akroseum", "turbulence", "frostbyte",
 "c_egypt", "caribbean", "dust2", "asenatra", "campo", "dirtndust", "evilness", "gothic-df", "damnation", "arabic", "spcr",
 "subterra", "infamy", "capture_night", "river_c", "serenity", "xenon", "nmp9", "ph-capture",
-"killcore3", "twinforts", "duomo", "donya", "asgard", "eternal_valley", "mill", "nucleus", "laucin", "stronhold"
+"killcore3", "twinforts", "duomo", "donya", "asgard", "eternal_valley", "mill", "nucleus", "laucin", "stronhold", "luna", "aod",
+"mc-lab", "fragnostic", "eris", "fallen"
 }
 
 server.small_capture_maps = {
@@ -84,7 +86,8 @@ server.ctf_maps = {
 "abbey", "redemption", "damnation", "forge", "campo", "nitro", "infamy", "catch22", "subterra",
 "forgotten", "bad_moon", "snapper_rocks", "haste", "spcr", "asgard", "arbana", "hidden", "mercury",
 "kopenhagen", "tortuga", "mbt4", "core_refuge", "core_transfer", "desecration", "recovery", "wdcd",
-"suburb", "xenon", "sacrifice", "eternal_valley", "mill", "nucleus", "laucin", "stronhold"
+"suburb", "xenon", "sacrifice", "eternal_valley", "mill", "nucleus", "laucin", "stronhold", "enigma", "luna",
+"breakout", "mc-lab", "regal", "fragnostic", "eris", "fire_keep", "tatooine"
 }
 
 server.small_ctf_maps = {
