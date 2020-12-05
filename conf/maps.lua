@@ -65,7 +65,7 @@ server.capture_maps = {
 "subterra", "infamy", "capture_night", "river_c", "serenity", "xenon", "nmp9", "ph-capture",
 "killcore3", "twinforts", "duomo", "donya", "asgard", "eternal_valley", "mill", "nucleus", "laucin", "stronhold", "luna", "aod",
 "mc-lab", "fragnostic", "eris", "fallen", "genesis", "new_energy", "disruption", "bklyn", "river_keep", "waltz", "gorge", "anubis",
-"ruby", "ow", "nessus", "stadium", "infernal", "destiny", "meltdown2", "risk", "pul1ctf", "surge", "overdrive"
+"ruby", "ow", "nessus", "stadium", "infernal", "destiny", "meltdown2", "risk", "pul1ctf", "surge", "overdrive", "triforts"
 }
 
 server.small_capture_maps = {
@@ -93,7 +93,7 @@ server.ctf_maps = {
 "suburb", "xenon", "sacrifice", "eternal_valley", "mill", "nucleus", "laucin", "stronhold", "enigma", "luna",
 "breakout", "mc-lab", "regal", "fragnostic", "eris", "fire_keep", "tatooine", "new_energy", "tectonic", "disruption",
 "bklyn", "earthsea", "river_keep", "ow", "stadium", "fortress", "destiny", "warlock", "tubes", "shellshock2", "daemex",
-"kiryu", "unworld3", "meltdown2", "earthstation", "risk", "pul1ctf", "surge", "overdrive"
+"kiryu", "unworld3", "meltdown2", "earthstation", "risk", "pul1ctf", "surge", "overdrive", "triforts"
 }
 
 server.small_ctf_maps = {
