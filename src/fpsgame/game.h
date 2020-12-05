@@ -367,6 +367,7 @@ static const struct guninfo { int sound, attackdelay, damage, spread, projspeed,
 
 namespace server {
     extern int hide_and_seek; //MOD
+    extern bool regenbluearmour;
 }
 
 // inherited by fpsent and server clients
@@ -468,8 +469,7 @@ struct fpsstate
         }
         else if(m_regencapture)
         {
-            extern int regenbluearmour;
-            if(regenbluearmour)
+            if(server::regenbluearmour)
             {
                 armourtype = A_BLUE;
                 armour = 25;

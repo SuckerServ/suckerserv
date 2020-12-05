@@ -64,6 +64,8 @@ namespace server
     extern bool enable_extinfo;
     
     extern int spectator_delay;
+
+    extern bool regenbluearmour;
     
     namespace message{
 

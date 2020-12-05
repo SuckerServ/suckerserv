@@ -30,8 +30,6 @@ namespace game
     const char *gameident() { return "fps"; }
 }
 
-VAR(regenbluearmour, 0, 1, 1);
-
 extern ENetAddress masteraddress;
 
 
@@ -565,6 +563,7 @@ namespace server
     bool restrictgamespeed = false;
     
     int hide_and_seek = 0; //MOD
+    bool regenbluearmour = true;
     
     vector<uint> allowedips;
     
