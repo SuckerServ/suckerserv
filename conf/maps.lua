@@ -64,7 +64,7 @@ server.capture_maps = {
 "subterra", "infamy", "capture_night", "river_c", "serenity", "xenon", "nmp9", "ph-capture",
 "killcore3", "twinforts", "duomo", "donya", "asgard", "eternal_valley", "mill", "nucleus", "laucin", "stronhold", "luna", "aod",
 "mc-lab", "fragnostic", "eris", "fallen", "genesis", "new_energy", "disruption", "bklyn", "river_keep", "waltz", "gorge", "anubis",
-"ruby", "ow", "nessus", "stadium", "infernal"
+"ruby", "ow", "nessus", "stadium", "infernal", "destiny"
 }
 
 server.small_capture_maps = {
@@ -91,7 +91,7 @@ server.ctf_maps = {
 "kopenhagen", "tortuga", "mbt4", "core_refuge", "core_transfer", "desecration", "recovery", "wdcd",
 "suburb", "xenon", "sacrifice", "eternal_valley", "mill", "nucleus", "laucin", "stronhold", "enigma", "luna",
 "breakout", "mc-lab", "regal", "fragnostic", "eris", "fire_keep", "tatooine", "new_energy", "tectonic", "disruption",
-"bklyn", "earthsea", "river_keep", "ow", "stadium", "fortress"
+"bklyn", "earthsea", "river_keep", "ow", "stadium", "fortress", "destiny"
 }
 
 server.small_ctf_maps = {
