@@ -56,8 +56,20 @@ server.intermission_time = 30000
 -- Toggles whether teamkilling the flag runner in CTF modes should disallow the teamkiller from stealing the flag
 server.ctf_teamkill_penalty = true
 
---Show client IP in extinfo answers
+-- Show client IP in extinfo answers
 server.extinfo_show_ip = true
+
+-- Enable server-side demo recording automatically for every match
+server.auto_record_demo = false
+
+-- Enable teams persistency across matches and avoid autobalancing
+server.persistteams = false
+
+-- Enables overtime for matches so that the match will keep going so long as scores are tied
+server.overtime = false
+
+-- Enable blue armour in regen capture
+server.regen_blue_armour = true
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Authkey configuration for Name protection & Admin
