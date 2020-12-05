@@ -11,7 +11,7 @@ server.ffa_maps = {
 "gubo", "oldschool", "teahupoo", "force", "rm1", "asenatra", "pariah", "access", "albatross", "exist", "stronhold",
 "toxicity", "frag-lab", "aod", "sauerowalk", "anubis", "lost_soul", "gorge", "headroom", "hdm3", "waltz", "colony",
 "insipid", "zavial", "phrantic", "hektik", "ferguson", "exo", "abyss", "fallen", "memoria", "ventania", "zdm2", "turmoil",
-"conflict", "purgatory", "souls", "clash", "hator", "haze", "ghetto", "nessus"
+"conflict", "purgatory", "souls", "clash", "hator", "haze", "ghetto", "nessus", "infernal"
 }
 
 server.small_ffa_maps = {
@@ -63,7 +63,7 @@ server.capture_maps = {
 "subterra", "infamy", "capture_night", "river_c", "serenity", "xenon", "nmp9", "ph-capture",
 "killcore3", "twinforts", "duomo", "donya", "asgard", "eternal_valley", "mill", "nucleus", "laucin", "stronhold", "luna", "aod",
 "mc-lab", "fragnostic", "eris", "fallen", "genesis", "new_energy", "disruption", "bklyn", "river_keep", "waltz", "gorge", "anubis",
-"ruby", "ow", "nessus", "stadium"
+"ruby", "ow", "nessus", "stadium", "infernal"
 }
 
 server.small_capture_maps = {
@@ -90,7 +90,7 @@ server.ctf_maps = {
 "kopenhagen", "tortuga", "mbt4", "core_refuge", "core_transfer", "desecration", "recovery", "wdcd",
 "suburb", "xenon", "sacrifice", "eternal_valley", "mill", "nucleus", "laucin", "stronhold", "enigma", "luna",
 "breakout", "mc-lab", "regal", "fragnostic", "eris", "fire_keep", "tatooine", "new_energy", "tectonic", "disruption",
-"bklyn", "earthsea", "river_keep", "ow", "stadium"
+"bklyn", "earthsea", "river_keep", "ow", "stadium", "fortress"
 }
 
 server.small_ctf_maps = {
