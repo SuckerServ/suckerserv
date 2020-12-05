@@ -56,6 +56,7 @@ namespace server
     extern bool allow_item[11];
 
     extern bool autorecorddemo;
+    extern bool demonextmatch;
 
     extern bool restrictpausegame;
     extern bool restrictgamespeed;
@@ -238,7 +239,9 @@ namespace server
     bool send_item(int item_code, int recipient);
     
     void try_respawn(clientinfo * ci, clientinfo * cq);
-    
+
+    bool get_autorecorddemo();
+    void set_autorecorddemo(bool val);
 } //namespace server
 
 #endif

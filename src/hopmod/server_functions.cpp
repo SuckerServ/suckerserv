@@ -1281,3 +1281,14 @@ int player_dodamage(lua_State * L)
 
     return 1;
 }
+
+bool get_autorecorddemo()
+{
+	return autorecorddemo;
+}
+
+void set_autorecorddemo(bool val)
+{
+	autorecorddemo = val;
+	demonextmatch = autorecorddemo != 0
+}
