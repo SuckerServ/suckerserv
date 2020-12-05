@@ -166,6 +166,12 @@ var GamemodeInfo = {
         "items"     : false,
         "instagib"  : true
     },
+
+    "effic protect" : {
+        "teams"     : true,
+        "items"     : false,
+        "instagib"  : false
+    },
     
     "hold" : {
         "teams"     : true,
@@ -177,6 +183,12 @@ var GamemodeInfo = {
         "teams"     : true,
         "items"     : false,
         "instagib"  : true
+    },
+
+    "effic hold" : {
+        "teams"     : true,
+        "items"     : false,
+        "instagib"  : false
     },
 
     "insta collect" : {
