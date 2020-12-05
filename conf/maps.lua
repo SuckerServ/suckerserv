@@ -12,7 +12,7 @@ server.ffa_maps = {
 "toxicity", "frag-lab", "aod", "sauerowalk", "anubis", "lost_soul", "gorge", "headroom", "hdm3", "waltz", "colony",
 "insipid", "zavial", "phrantic", "hektik", "ferguson", "exo", "abyss", "fallen", "memoria", "ventania", "zdm2", "turmoil",
 "conflict", "purgatory", "souls", "clash", "hator", "haze", "ghetto", "nessus", "infernal", "horus", "janela", "helligsted",
-"casa", "barracks", "dispute", "ztn"
+"casa", "barracks", "dispute", "ztn", "kastro"
 }
 
 server.small_ffa_maps = {
