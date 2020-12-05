@@ -54,7 +54,7 @@ server.big_instagib_maps = {
 
 server.capture_maps = {
 "urban_c", "nevil_c", "fb_capture", "collusion", "c_valley", "lostinspace", "fc3", "face-capture",
-"nmp4", "nmp8", "hallo", "tempest", "monastery", "alithia", "hades", "fc4", "relic", "fc5", "paradigm",
+"nmp4", "nmp8", "hallo", "croma", "tempest", "monastery", "alithia", "hades", "fc4", "relic", "fc5", "paradigm",
 "corruption", "asteroids", "ogrosupply", "reissen", "akroseum", "turbulence", "frostbyte",
 "c_egypt", "caribbean", "dust2", "campo", "dirtndust", "evilness", "damnation", "arabic", "spcr",
 "subterra", "infamy", "capture_night", "river_c", "serenity", "xenon", "nmp9", "ph-capture",
