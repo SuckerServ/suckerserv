@@ -58,7 +58,7 @@ server.capture_maps = {
 "corruption", "asteroids", "ogrosupply", "reissen", "akroseum", "turbulence", "frostbyte",
 "c_egypt", "caribbean", "dust2", "campo", "dirtndust", "evilness", "damnation", "arabic", "spcr",
 "subterra", "infamy", "capture_night", "river_c", "serenity", "xenon", "nmp9", "ph-capture",
-"killcore3", "twinforts", "duomo", "donya", "asgard", "eternal_valley", "mill", "nucleus"
+"killcore3", "twinforts", "duomo", "donya", "asgard", "eternal_valley", "mill", "nucleus", "laucin"
 }
 
 server.small_capture_maps = {
@@ -83,7 +83,7 @@ server.ctf_maps = {
 "abbey", "redemption", "damnation", "forge", "campo", "nitro", "infamy", "catch22", "subterra",
 "forgotten", "bad_moon", "snapper_rocks", "haste", "spcr", "asgard", "arbana", "hidden", "mercury",
 "kopenhagen", "tortuga", "mbt4", "core_refuge", "core_transfer", "desecration", "recovery", "wdcd",
-"suburb", "xenon", "sacrifice", "eternal_valley", "mill", "nucleus"
+"suburb", "xenon", "sacrifice", "eternal_valley", "mill", "nucleus", "laucin"
 }
 
 server.small_ctf_maps = {
