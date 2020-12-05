@@ -14,7 +14,7 @@ server.ffa_maps = {
 "conflict", "purgatory", "souls", "clash", "hator", "haze", "ghetto", "nessus", "infernal", "horus", "janela", "helligsted",
 "casa", "barracks", "dispute", "ztn", "kastro", "unworld", "unworld2", "hillfort", "idyll3", "frag2", "ognjen", "suisei",
 "crypta", "maple", "fubuki", "awoken", "dopamine", "saffier", "lost_world", "mood", "slingshot", "zamak", "church51",
-"imhotep", "catacombs", "nmp10"
+"imhotep", "catacombs", "nmp10", "skycastle-r"
 }
 
 server.small_ffa_maps = {
@@ -67,7 +67,7 @@ server.capture_maps = {
 "killcore3", "twinforts", "duomo", "donya", "asgard", "eternal_valley", "mill", "nucleus", "laucin", "stronhold", "luna", "aod",
 "mc-lab", "fragnostic", "eris", "fallen", "genesis", "new_energy", "disruption", "bklyn", "river_keep", "waltz", "gorge", "anubis",
 "ruby", "ow", "nessus", "stadium", "infernal", "destiny", "meltdown2", "risk", "pul1ctf", "surge", "overdrive", "triforts",
-"disc", "metro", "harbor", "rust", "zamak", "aastha", "imhotep"
+"disc", "metro", "harbor", "rust", "zamak", "aastha", "imhotep", "skycastle-r"
 }
 
 server.small_capture_maps = {
@@ -96,7 +96,7 @@ server.ctf_maps = {
 "breakout", "mc-lab", "regal", "fragnostic", "eris", "fire_keep", "tatooine", "new_energy", "tectonic", "disruption",
 "bklyn", "earthsea", "river_keep", "ow", "stadium", "fortress", "destiny", "warlock", "tubes", "shellshock2", "daemex",
 "kiryu", "unworld3", "meltdown2", "earthstation", "risk", "pul1ctf", "surge", "overdrive", "triforts", "ctf_suite",
-"idris", "disc", "metro", "harbor", "rust", "aastha", "divine"
+"idris", "disc", "metro", "harbor", "rust", "aastha", "divine", "duomo", "donya"
 }
 
 server.small_ctf_maps = {
