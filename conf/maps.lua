@@ -54,7 +54,7 @@ server.big_instagib_maps = {
 
 server.capture_maps = {
 "urban_c", "nevil_c", "fb_capture", "collusion", "c_valley", "lostinspace", "fc3", "face-capture",
-"nmp4", "nmp8", "hallo", "croma", "tempest", "monastery", "alithia", "hades", "fc4", "relic", "fc5", "paradigm",
+"nmp4", "nmp8", "hallo", "croma", "tempest", "monastery", "alithia", "ruebli", "hades", "fc4", "relic", "fc5", "paradigm",
 "corruption", "asteroids", "ogrosupply", "reissen", "akroseum", "turbulence", "frostbyte",
 "c_egypt", "caribbean", "dust2", "campo", "dirtndust", "evilness", "damnation", "arabic", "spcr",
 "subterra", "infamy", "capture_night", "river_c", "serenity", "xenon", "nmp9", "ph-capture",
@@ -78,7 +78,7 @@ server.big_capture_maps = {
 
 server.ctf_maps = {
 "hallo", "flagstone", "tempest", "siberia", "capture_night", "reissen", "tejen", "shipwreck",
-"authentic", "urban_c", "bt_falls", "valhalla", "garden", "mbt1", "autumn", "akroseum", "face-capture",
+"authentic", "urban_c", "bt_falls", "valhalla", "garden", "mbt1", "autumn", "ruebli", "akroseum", "face-capture",
 "dust2", "ra", "mach2", "evilness", "turbulence", "l_ctf", "twinforts", "berlin_wall", "mbt12", "europium",
 "abbey", "redemption", "damnation", "forge", "campo", "nitro", "infamy", "catch22", "subterra",
 "forgotten", "bad_moon", "snapper_rocks", "haste", "spcr", "asgard", "arbana", "hidden", "mercury",
