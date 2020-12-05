@@ -982,9 +982,6 @@ int lua_gamemodeinfo(lua_State * L)
     lua_pushboolean(L, m_check(gamemode_argument, M_TEAM));
     lua_setfield(L, -2, "teams");
     
-    lua_pushboolean(L, m_check(gamemode_argument, M_OVERTIME));
-    lua_setfield(L, -2, "overtime");
-    
     lua_pushboolean(L, m_checknot(gamemode_argument, M_DEMO|M_EDIT|M_LOCAL));
     lua_setfield(L, -2, "timed");
     

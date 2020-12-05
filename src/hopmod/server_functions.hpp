@@ -69,6 +69,7 @@ namespace server
     extern int spectator_delay;
 
     extern bool regenbluearmour;
+    extern bool overtime;
     
     namespace message{
 

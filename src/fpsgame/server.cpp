@@ -563,6 +563,7 @@ namespace server
     
     int hide_and_seek = 0; //MOD
     bool regenbluearmour = true;
+    bool overtime = false;
     
     vector<uint> allowedips;
     
@@ -2164,8 +2165,6 @@ namespace server
             checkvotes();
         }
     }
-
-    VAR(overtime, 0, 0, 1);
 
     bool checkovertime()
     {
