@@ -2,13 +2,13 @@ server.ffa_maps = {
 "complex", "douze", "ot", "academy", "metl2", "metl3", "justice", "turbine", "hashi", "mbt2",
 "fanatic_quake", "dock", "renegade", "antel", "curvy_castle", "fdm6", "spcr2", "nmp8", "legacy", "carbide", "tartech", "aard3c", "asthma", "cartel", "skrdm1", "duel5", "bvdm_01",
 "outpost", "park", "tumwalk", "industry", "injustice", "mbt10", "refuge", "curvedm", "kalking1", "hog2",
-"kffa", "fragplaza", "collusion", "duel8", "alithia", "island", "sandstorm2", "rm5", "depot", "masdm", "orbe", "torment",
+"kffa", "fragplaza", "collusion", "duel8", "akimiski", "averas", "alithia", "island", "sandstorm2", "rm5", "depot", "masdm", "orbe", "torment",
 "legazzo", "fury", "mbt9", "shadowed", "dirtndust", "aqueducts", "killfactory", "akaritori",
 "konkuri-to", "moonlite", "castle_trap", "orion", "katrez_d", "ogrosupply", "elegy", "shiva", "arbana",
-"simplicity", "pitch_black", "duel7", "suburb", "roughinery", "stemple", "tejen", "pgdm", "deathtek",
+"simplicity", "pitch_black", "duel7", "gothic-df", "suburb", "roughinery", "stemple", "tejen", "pgdm", "deathtek",
 "hades", "corruption", "paradigm", "lostinspace", "wdcd", "sauerstruck", "neonpanic", "phosgene",
 "oddworld", "guacamole", "wake5", "frostbyte", "thor", "ksauer1", "kmap5", "thetowers", "darkdeath",
-"gubo", "teahupoo", "force", "rm1"
+"gubo", "oldschool", "teahupoo", "force", "rm1", "asenatra", "pariah"
 }
 
 server.small_ffa_maps = {
@@ -21,7 +21,7 @@ server.small_ffa_maps = {
 server.big_ffa_maps = {
 "depot", "fanatic_quake", "dock", "duel8", "alithia", "nmp8", "industry", "alloy", "ruine", "killfactory",
 "pitch_black", "wake5", "park", "skrdm1", "refuge", "curvedm", "kalking1", "fragplaza", "pgdm",
-"neondevastation", "memento", "neonpanic", "elegy", "shiva", "arbana", "shindou", "DM_BS1", "shinmei1",
+"neondevastation", "memento", "neonpanic", "elegy", "shiva", "arbana", "shindou", "stahlbox", "DM_BS1", "shinmei1",
 "osiris", "injustice", "akaritori", "aqueducts", "konkuri-to", "moonlite", "darkdeath",
 "castle_trap", "orion", "thetowers", "hades", "paradigm", "wdcd", "stemple", "corruption",
 "lostinspace", "shadowed", "dirtndust", "ruby", "deathtek", "orbe", "suburb", "masdm"
@@ -54,15 +54,15 @@ server.big_instagib_maps = {
 
 server.capture_maps = {
 "urban_c", "nevil_c", "fb_capture", "collusion", "c_valley", "lostinspace", "fc3", "face-capture",
-"nmp4", "nmp8", "hallo", "croma", "tempest", "monastery", "alithia", "ruebli", "hades", "fc4", "relic", "fc5", "paradigm",
+"nmp4", "hallo", "croma", "tempest", "monastery", "averas", "collide", "alithia", "ruebli", "pariah", "fusion", "hades", "fc4", "relic", "akimiski", "fc5", "paradigm",
 "corruption", "asteroids", "ogrosupply", "reissen", "akroseum", "turbulence", "frostbyte",
-"c_egypt", "caribbean", "dust2", "campo", "dirtndust", "evilness", "damnation", "arabic", "spcr",
+"c_egypt", "caribbean", "dust2", "asenatra", "campo", "dirtndust", "evilness", "gothic-df", "damnation", "arabic", "spcr",
 "subterra", "infamy", "capture_night", "river_c", "serenity", "xenon", "nmp9", "ph-capture",
 "killcore3", "twinforts", "duomo", "donya", "asgard", "eternal_valley", "mill", "nucleus", "laucin"
 }
 
 server.small_capture_maps = {
-"nmp9", "fc3", "face-capture", "nmp8", "hades", "paradigm", "corruption", "asteroids", "reissen",
+"nmp9", "fc3", "face-capture", "hades", "paradigm", "corruption", "asteroids", "reissen",
 "akroseum", "frostbyte", "caribbean", "dust2", "campo", "dirtndust", "killcore3", "damnation",
 "arabic", "tejen", "capture_night", "alithia", "subterra", "mill"
 }
@@ -78,8 +78,8 @@ server.big_capture_maps = {
 
 server.ctf_maps = {
 "hallo", "flagstone", "tempest", "siberia", "capture_night", "reissen", "tejen", "shipwreck",
-"authentic", "urban_c", "bt_falls", "valhalla", "garden", "mbt1", "autumn", "ruebli", "akroseum", "face-capture",
-"dust2", "ra", "mach2", "evilness", "turbulence", "l_ctf", "twinforts", "berlin_wall", "mbt12", "europium",
+"authentic", "urban_c", "bt_falls", "valhalla", "garden", "mbt1", "autumn", "ruebli", "pandora", "akroseum", "fusion", "face-capture",
+"collide", "dust2", "ra", "mach2", "evilness", "turbulence", "l_ctf", "twinforts", "akimiski", "berlin_wall", "mbt12", "europium",
 "abbey", "redemption", "damnation", "forge", "campo", "nitro", "infamy", "catch22", "subterra",
 "forgotten", "bad_moon", "snapper_rocks", "haste", "spcr", "asgard", "arbana", "hidden", "mercury",
 "kopenhagen", "tortuga", "mbt4", "core_refuge", "core_transfer", "desecration", "recovery", "wdcd",
