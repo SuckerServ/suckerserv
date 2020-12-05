@@ -2,7 +2,7 @@ server.ffa_maps = {
 "complex", "douze", "ot", "academy", "metl2", "metl3", "justice", "turbine", "hashi", "mbt2",
 "fanatic_quake", "dock", "renegade", "antel", "curvy_castle", "nmp8", "legacy", "tartech", "aard3c", "cartel", "skrdm1", "bvdm_01",
 "outpost", "park", "tumwalk", "industry", "injustice", "mbt10", "refuge", "curvedm", "kalking1", "hog2",
-"kffa", "fragplaza", "collusion", "duel8", "alithia", "island", "rm5", "depot", "masdm", "orbe", "torment",
+"kffa", "fragplaza", "collusion", "duel8", "alithia", "island", "sandstorm2", "rm5", "depot", "masdm", "orbe", "torment",
 "legazzo", "fury", "mbt9", "shadowed", "dirtndust", "aqueducts", "killfactory", "akaritori",
 "konkuri-to", "moonlite", "castle_trap", "orion", "katrez_d", "ogrosupply", "elegy", "shiva", "arbana",
 "simplicity", "pitch_black", "duel7", "suburb", "roughinery", "stemple", "tejen", "pgdm", "deathtek",
