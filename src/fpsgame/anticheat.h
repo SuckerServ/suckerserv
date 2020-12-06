@@ -160,7 +160,7 @@ class anticheat
     void damage() { lastdamage = totalmillis; }
     void jumppad(int n) { lastjumppad = totalmillis; jumppads++; }
     void teleport(int n) { if (speedhack2_strangedist_c) { speedhack2_strangedist_c--; speedhack2_strangedist -= speedhack2_lastdist; } lastteleport = totalmillis; }
-    void spawn() { reset_invisible(); reset_speedhack_dist(); reset_last_action(); reset_jumphack(); fix_items(); lastspawn = totalmillis; spawns++; }
+    void spawn() { reset_invisible(); reset_speedhack_dist(); reset_last_action(); reset_jumphack(); lastspawn = totalmillis; spawns++; }
     void ping() { check_ping(); }
     
     /*
@@ -624,25 +624,6 @@ class anticheat
     bool is_item_mode()
     {
         return !m_insta && !m_efficiency;
-    }
-    
-    /*
-     * FFA Item Bugfix
-     */
-    
-    void fix_items()
-    {
-        if (clientnum < 0 || clientnum >= 128 || !getinfo(clientnum)) return;
-        
-        bool item_mode = is_item_mode();
-        
-        loopv(sents)
-        { 
-            if (!sents[i].spawned || !item_mode) 
-            { 
-                sendf(clientnum, 1, "ri3", N_ITEMACC, i, -1); 
-            } 
-        } 
     }
     
     /*
