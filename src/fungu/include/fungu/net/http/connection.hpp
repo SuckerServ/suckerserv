@@ -103,10 +103,10 @@ public:
     port_type remote_port()const;
     std::string remote_ip_string()const;
     unsigned long remote_ip_v4_ulong()const;
-    
-    asio::io_service & io_service()
+
+    asio::ip::tcp::socket::executor_type executor()
     {
-        return m_socket.get_io_service();
+        return m_socket.get_executor();
     }
     
     bool has_connection_error()const
@@ -166,7 +166,7 @@ private:
         if(error_code)
         {
             m_read_error = error_code;
-            m_socket.get_io_service().post(std::bind(finishedHandler, error(error::NETWORK, error_code.message())));
+            post(m_socket.get_executor(), std::bind(finishedHandler, error(error::NETWORK, error_code.message())));
             return;
         }
         
@@ -186,7 +186,7 @@ private:
         std::size_t remaining = contentLength - completed;
         if(!remaining)
         {
-            m_socket.get_io_service().post(std::bind(finishedHandler, error()));
+            post(m_socket.get_executor(), std::bind(finishedHandler, error()));
             return;
         }
 
@@ -345,8 +345,8 @@ namespace server{
 class client_connection:public asio::ip::tcp::socket, public connection
 {
 public:
-    client_connection(asio::io_service & service)
-     :asio::ip::tcp::socket(service), connection(*static_cast<asio::ip::tcp::socket *>(this)){}
+    client_connection(asio::ip::tcp::socket::executor_type executor)
+     :asio::ip::tcp::socket(executor), connection(*static_cast<asio::ip::tcp::socket *>(this)){}
 };
 } //namespace server
 

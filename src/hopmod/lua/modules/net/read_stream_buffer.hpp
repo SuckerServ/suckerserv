@@ -25,7 +25,7 @@ public:
         
         if(read_size < m_buffer.size())
         {
-            stream.get_io_service().post(std::bind(&read_stream_buffer<StreamBufferClass, PodType>::template read_complete<ReadHandler>, 
+            post(stream.get_executor(), std::bind(&read_stream_buffer<StreamBufferClass, PodType>::template read_complete<ReadHandler>,
                this, read_size, read_size, std::error_code(), 0, handler));
             return;
         }
@@ -56,7 +56,7 @@ private:
     {
         if(m_read_lock)
         {
-            object.get_io_service().post(std::bind(handler, asio::error::already_started, static_cast<const char *>(NULL), 0));
+            post(object.get_executor(), std::bind(handler, asio::error::already_started, static_cast<const char *>(NULL), 0));
             return false;
         }
         m_read_lock = true;
