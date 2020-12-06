@@ -1287,5 +1287,5 @@ bool get_autorecorddemo()
 void set_autorecorddemo(bool val)
 {
 	autorecorddemo = val;
-	demonextmatch = autorecorddemo != 0
+	demonextmatch = autorecorddemo != 0;
 }
