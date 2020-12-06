@@ -105,10 +105,10 @@ cheater_spam = "%{red}>>> %{white}Don't %{blue}spam %{white}with the #cheater co
 cheater_thanks = "%{red}>>> %{white}Thank you for your report, hopefully an admin will check this out very soon.",
 cheater_admin = "%{red}>>> %{blue}%{actor} %{white}reported %{orange}%{victim} %{white}as %{red}cheating.",
 
-player_list = "%{red}>>> %{blue}Name %{white}%{name} %{blue}City %{white}%{city} %{blue}Country %{white}%{country} %{blue}Frags %{white}%{frags} %{blue}Deaths %{white}%{deaths} %{blue}Accuracy %{white}%{acc}%%",
+player_list = "%{red}>>> %{blue}Name %{white}%{name} %{blue}City %{white}%{city} %{blue}Country %{white}%{country} %{blue}Frags %{white}%{frags} %{blue}Deaths %{white}%{deaths} %{blue}Accuracy %{white}%{acc}%",
 
 stats_current = "Current game stats for %{name}:",
-stats_player = "%{red}>>> %{blue}Score %{white}%{score} %{blue}Frags %{white}%{frags} %{blue}Deaths %{white}%{deaths} %{blue}Accuracy %{white}%{acc}%%",
+stats_player = "%{red}>>> %{blue}Score %{white}%{score} %{blue}Frags %{white}%{frags} %{blue}Deaths %{white}%{deaths} %{blue}Accuracy %{white}%{acc}%",
 stats_teamkills = "%{red}>>> %{blue}Teamkills%{white}: %{tk}",
 
 help_command = "#%{command_name} %{help_parameters}: %{help}",
