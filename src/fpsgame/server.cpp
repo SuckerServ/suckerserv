@@ -590,9 +590,8 @@ namespace server
 
     bool demonextmatch = false;
     stream *demotmp = NULL, *demorecord = NULL, *demoplayback = NULL;
-    int nextplayback = 0;
     int demo_id = 0;
-    int nextplayback = 0, demomillis, demoffset = 0;
+    int nextplayback = 0, demoffset = 0;
     
     timer::time_diff_t timer_alarm_threshold = 1000000;
     
