@@ -5,7 +5,8 @@
 
 ]]
 
-local limit, usage = server.warning_limit, "warning (<cn>|\"<name>\") <text>"
+local limit = server.warning_limit and server.warning_limit or 1
+local usage = "warning (<cn>|\"<name>\") <text>"
 local bantime = round(server.warning_bantime or 1800000 / 1000,0)
 
 return function(cn, tcn, ...)
