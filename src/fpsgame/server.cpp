@@ -1350,18 +1350,6 @@ namespace server
         }
     }
 
-    ICOMMAND(seekdemo, "sN$", (char *t, int *numargs, ident *id),
-    {
-        if(*numargs > 0) seekdemo(t);
-        else
-        {
-            int secs = gamemillis/1000;
-            defformatstring(str, "%d:%02d.%03d", secs/60, secs%60, gamemillis%1000);
-            if(*numargs < 0) result(str);
-            else printsvar(id, str);
-        }
-    });
-
     void stopdemo()
     {
         if(m_demo) enddemoplayback();
