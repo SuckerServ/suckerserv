@@ -8,13 +8,13 @@ server.ffa_maps = {
 "simplicity", "pitch_black", "duel7", "gothic-df", "suburb", "roughinery", "stemple", "tejen", "pgdm", "deathtek",
 "hades", "corruption", "paradigm", "lostinspace", "wdcd", "sauerstruck", "neonpanic", "phosgene",
 "oddworld", "guacamole", "wake5", "frostbyte", "thor", "ksauer1", "kmap5", "thetowers", "darkdeath",
-"gubo", "oldschool", "teahupoo", "force", "rm1", "asenatra", "pariah", "access", "albatross", "exist", "stronhold",
+"gubo", "oldschool", "teahupoo", "force", "rm1", "asenatra", "pariah", "access", "albatross", "exist", "stronghold",
 "toxicity", "frag-lab", "aod", "sauerowalk", "anubis", "lost_soul", "gorge", "headroom", "hdm3", "waltz", "colony",
 "insipid", "zavial", "phrantic", "hektik", "ferguson", "exo", "abyss", "fallen", "memoria", "ventania", "zdm2", "turmoil",
 "conflict", "purgatory", "souls", "clash", "hator", "haze", "ghetto", "nessus", "infernal", "horus", "janela", "helligsted",
-"casa", "barracks", "dispute", "ztn", "kastro", "unworld", "unworld2", "hillfort", "idyll3", "frag2", "ognjen", "suisei",
+"casa", "crypta", "dispute", "ztn", "kastro", "unworld", "unworld2", "hillfort", "idyll3", "frag2", "ognjen", "suisei",
 "crypta", "maple", "fubuki", "awoken", "dopamine", "saffier", "lost_world", "mood", "slingshot", "zamak", "church51",
-"imhotep", "catacombs", "nmp10", "skycastle-r", "cavefire", "ctgs12", "c_lone"
+"imhotep", "catacombs", "nmp10", "skycastle-r", "cavefire", "c_lone"
 }
 
 server.small_ffa_maps = {
@@ -64,7 +64,7 @@ server.capture_maps = {
 "corruption", "asteroids", "ogrosupply", "reissen", "akroseum", "turbulence", "frostbyte",
 "c_egypt", "caribbean", "dust2", "asenatra", "campo", "dirtndust", "evilness", "gothic-df", "damnation", "arabic", "spcr",
 "subterra", "infamy", "capture_night", "river_c", "serenity", "xenon", "nmp9", "ph-capture",
-"killcore3", "twinforts", "duomo", "donya", "asgard", "eternal_valley", "mill", "nucleus", "laucin", "stronhold", "luna", "aod",
+"killcore3", "twinforts", "duomo", "donya", "asgard", "eternal_valley", "mill", "nucleus", "laucin", "stronghold", "luna", "aod",
 "mc-lab", "fragnostic", "eris", "fallen", "genesis", "new_energy", "disruption", "bklyn", "river_keep", "waltz", "gorge", "anubis",
 "ruby", "ow", "nessus", "stadium", "infernal", "destiny", "meltdown2", "risk", "pul1ctf", "surge", "overdrive", "triforts",
 "disc", "metro", "harbor", "rust", "zamak", "aastha", "imhotep", "skycastle-r", "c_lone"
@@ -92,7 +92,7 @@ server.ctf_maps = {
 "abbey", "redemption", "damnation", "forge", "campo", "nitro", "infamy", "catch22", "subterra",
 "forgotten", "bad_moon", "snapper_rocks", "haste", "spcr", "asgard", "arbana", "hidden", "mercury",
 "kopenhagen", "tortuga", "mbt4", "core_refuge", "core_transfer", "desecration", "recovery", "wdcd",
-"suburb", "xenon", "sacrifice", "eternal_valley", "mill", "nucleus", "laucin", "stronhold", "enigma", "luna",
+"suburb", "xenon", "sacrifice", "eternal_valley", "mill", "nucleus", "laucin", "stronghold", "enigma", "luna",
 "breakout", "mc-lab", "regal", "fragnostic", "eris", "fire_keep", "tatooine", "new_energy", "tectonic", "disruption",
 "bklyn", "earthsea", "river_keep", "ow", "stadium", "fortress", "destiny", "warlock", "tubes", "shellshock2", "daemex",
 "kiryu", "unworld3", "meltdown2", "earthstation", "risk", "pul1ctf", "surge", "overdrive", "triforts", "ctf_suite",
