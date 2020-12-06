@@ -57,10 +57,26 @@ function server.player_lang(cn)
 end
 
 function server.parse_message(cn, text, vars)
+  local defmsgs = messages[messages.languages["default"]]
+  local msgs = defmsgs
+  if messages[server.player_lang(cn)] ~= nil then
+    msgs = messages[server.player_lang(cn)]
+  end
+
 	if type(text) == "table" then
-		text = messages[server.player_lang(cn)][text[1]][text[2]] or messages[messages.languages["default"]][text[1]][text[2]] or text[1]
+    if msgs[text[1]] ~= nil and msgs[text[1]][text[2]] ~= nil then
+      text = msgs[text[1]][text[2]]
+    elseif defmsgs[text[1]] ~= nil and defmsgs[text[1]][text[2]] ~= nil then
+      text = defmsgs[text[1]][text[2]]
+    else
+      text = text[1] + " " + text[2]
+    end
 	else
-		text = messages[server.player_lang(cn)][text] or messages[messages.languages["default"]][text] or text
+    if msgs[text] ~= nil then
+      text = msgs[text]
+    elseif defmsgs[text] ~= nil then
+      text = defmsgs[text]
+    end
 	end
 
 	if server.enable_timezone == 1 then
