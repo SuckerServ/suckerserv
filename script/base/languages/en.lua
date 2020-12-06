@@ -90,7 +90,7 @@ killingspree_multiple = {
 	[3] = "%{yellow}You scored a %{orange}TRIPLE KILL!!",
 	multiple = "%{yellow}You scored %{orange}%{nb} MULTIPLE KILLS!!"
 },
-killingspree_firstkill = "%{blue}%%{name} %{white}made the %{orange}FIRST KILL%{white}!",
+killingspree_firstkill = "%{blue}%{name} %{white}made the %{orange}FIRST KILL%{white}!",
 killingspree_stopped = "%{yellow}%{victim}%{white} was stopped by %{orange}%{actor}!!",
 
 remoteadmin = "%{red}>>> %{white}Remote Admin (%{admin}): %{blue}%{msg}",
