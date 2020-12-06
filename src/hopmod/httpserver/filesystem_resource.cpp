@@ -6,26 +6,27 @@ using namespace fungu;
 #include <sys/stat.h> 
 #include <unistd.h>
 #include <iostream>
+#include <string>
 
 static const std::size_t SEND_BUFFER_SIZE = 65535;
-static std::map<const_string, const_string> content_types;
+static std::map<std::string, std::string> content_types;
 
 void setup_ext_to_ct_map()
 {
-    content_types[const_string::literal("gif")] = const_string::literal("image/gif");
-    content_types[const_string::literal("jpg")] = const_string::literal("image/jpeg");
-    content_types[const_string::literal("png")] = const_string::literal("image/png");
-    
-    content_types[const_string::literal("txt")]  = const_string::literal("text/plain");
-    content_types[const_string::literal("html")] = const_string::literal("text/html");
-    content_types[const_string::literal("htm")] = const_string::literal("text/html");
-    content_types[const_string::literal("css")]  = const_string::literal("text/css");
-    content_types[const_string::literal("js")]   = const_string::literal("text/javascript");
+    content_types["gif"] = "image/gif";
+    content_types["jpg"] = "image/jpeg";
+    content_types["png"] = "image/png";
+
+    content_types["txt"]  = "text/plain";
+    content_types["html"] = "text/html";
+    content_types["htm"]  = "text/html";
+    content_types["css"]  = "text/css";
+    content_types["js"]   = "text/javascript";
 }
 
 static const char * get_content_type_from_extension(const char * ext)
 {
-    std::map<const_string, const_string>::const_iterator it = content_types.find(const_string(ext, ext+strlen(ext)-1));
+    std::map<std::string, std::string>::const_iterator it = content_types.find(ext);
     if(it == content_types.end()) return "application/octet-stream";
     else return it->second.c_str();
 }
