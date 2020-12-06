@@ -42,8 +42,6 @@ local function run(cn, pw)
           end
         end
         
-        set_invmaster(cn, user_id)
-
         trigger_event(cn, user_id)
       end)
     end
