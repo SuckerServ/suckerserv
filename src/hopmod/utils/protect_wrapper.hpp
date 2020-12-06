@@ -1,6 +1,8 @@
 #ifndef HOPMOD_UTILS_PROTECT_WRAPPER_HPP
 #define HOPMOD_UTILS_PROTECT_WRAPPER_HPP
 
+#include <functional>
+
 template<typename T>
 struct protect_wrapper : T
 {

@@ -12,6 +12,7 @@
 #include <asio.hpp>
 #include <queue>
 #include <cstdio>
+#include <functional>
 
 namespace fungu{
 namespace http{

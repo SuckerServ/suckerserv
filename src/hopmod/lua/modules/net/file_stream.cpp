@@ -7,6 +7,7 @@
 #include "../../pcall.hpp"
 #include "../../error_handler.hpp"
 #include <asio.hpp>
+#include <functional>
 using namespace asio;
 
 namespace lua{
