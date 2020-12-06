@@ -8,7 +8,7 @@
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 -- A server name for players to identify your server.
-server.servername = "SuckerServ-master"
+server.servername = "SuckerServ-v6"
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Default connection information:
@@ -288,8 +288,8 @@ server.disable_commands({
 
 --server.module("stats")                                 -- Record game statistics to a database (it is needed for the stats and names commands)
 
---server.module("display/ownage")                        -- Display player achievement messages
---server.module("display/awards")                        -- Show End Stats Game of ended map during the intermission
+server.module("display/ownage")                        -- Display player achievement messages
+server.module("display/awards")                        -- Show End Stats Game of ended map during the intermission
 
 --server.module("detect/camping")                        -- Name and shame players who are found to be camping
 --server.module("detect/camping_penalty")                -- Players who are camping go in specs for 10 seconds (penality)
@@ -307,7 +307,7 @@ server.disable_commands({
 
 --server.module("recordgames")                           -- Auto record demos of every game
 
---server.module("limit/inactivity")                      -- Move inactive (dead or not moving) players to spectators
+server.module("limit/inactivity")                      -- Move inactive (dead or not moving) players to spectators
 --server.module("limit/spectating")                      -- Disconnect spectators at "intermission", after min. 30 minutes, when server is full and they haven't been active in chat for 5 minutes
 --server.module("limit/ping")                            -- Move lagging players to spectators after 2 warnings
 
@@ -317,12 +317,12 @@ server.disable_commands({
 
 --server.module("jabber/lua_jabber_bot")                 -- A ugly and unstable Jabber Bot
 --server.module("name_lock")                             -- Prevent players from renaming
---server.module("mute_spectators")                       -- Mute all spectators, requiered for #mutespecs and #unmutespecs commands
+server.module("mute_spectators")                       -- Mute all spectators, requiered for #mutespecs and #unmutespecs commands
 
 --server.module("teamkill_protect")			 -- Disallow teamkills if the teamkiller tk/frags ratio is above 0.25
 
---server.module("mapbattle")                             -- Vote for map at intermission
---server.module("mapsucks")                              -- Module for #mapsucks
+server.module("mapbattle")                             -- Vote for map at intermission
+server.module("mapsucks")                              -- Module for #mapsucks
 --server.module("flagrun")                               -- Record and display best flagrun time
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
