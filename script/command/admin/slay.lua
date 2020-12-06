@@ -12,15 +12,15 @@ return function(cn, target)
 		for p in server.gplayers() do p:slay() end
         
 		return
-	elseif not server.valid_cn(target) then
+	elseif server.valid_cn(target) then
+    server.player_slay(target)
+  else
 		target = server.name_to_cn_list_matches(cn, target)
 
-		if not target then
-			return
-		end
-	else
-		return false, usage
+		if target then
+      server.player_slay(target)
+    else
+      return false, usage
+    end
 	end
-
-	server.player_slay(target)
 end
