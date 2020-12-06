@@ -127,7 +127,7 @@ server.event_handler("intermission", function()
         format_message("damage", best.damage))
         
     if #stats_message > 0 then
-        server.msg("awards_stats", {stats_message = stats_message})
+        server.msg("awards_stats", {stats = stats_message})
     end
     
     if check_ctf_stats then
@@ -139,7 +139,7 @@ server.event_handler("intermission", function()
             format_message("flagrun", best.timetrial, " ms"))
         
         if #flagstats_message > 0 then
-			server.msg("awards_flags", {flagstats_message = flagstats_message})
+			server.msg("awards_flags", {flagstats = flagstats_message})
         end
     end
     
