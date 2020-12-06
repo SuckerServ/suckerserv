@@ -2,6 +2,14 @@
 
 ///////////////////////////// console ////////////////////////
 
+void conoutfv(int type, const char *fmt, va_list args)
+{
+    string sf, sp;
+    vformatstring(sf, fmt, args);
+    filtertext(sp, sf);
+    puts(sp);
+}
+
 void conoutf(const char *fmt, ...)
 {
     va_list args;

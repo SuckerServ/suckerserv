@@ -43,14 +43,6 @@ void fatal(const char *s, ...)
     printf("servererror: %s\n", msg);
     exit(EXIT_FAILURE);
 }
-
-void conoutfv(int type, const char *fmt, va_list args)
-{
-    string sf, sp;
-    vformatstring(sf, fmt, args);
-    filtertext(sp, sf);
-    puts(sp);
-}
 #endif
 
 enum { ST_EMPTY, ST_LOCAL, ST_TCPIP };
