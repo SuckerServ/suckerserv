@@ -70,6 +70,7 @@ namespace server
 
     extern bool regenbluearmour;
     extern bool overtime;
+    extern string demodir;
     
     namespace message{
 

@@ -564,6 +564,7 @@ namespace server
     int hide_and_seek = 0; //MOD
     bool regenbluearmour = true;
     bool overtime = false;
+    string demodir = "demo";
     
     vector<uint> allowedips;
     
@@ -1223,8 +1224,6 @@ namespace server
 
         loopv(clients) sendwelcome(clients[i]);
     }
-
-    SVARP(demodir, "demo");
 
     const char *getdemofile(const char *file, bool init)
     {

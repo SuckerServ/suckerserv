@@ -425,6 +425,7 @@ void bind_core_variables(lua_State * L, int T)
     bind_var(L, T, "extinfo_show_ip", server::extinfoip);
     bind_var(L, T, "regen_blue_armour", server::regenbluearmour);
     bind_var(L, T, "overtime", server::overtime);
+    bind_var(L, T, "demo_dir", server::demodir);
 
     bind_prop<bool>(L, T, "auto_record_demo", server::get_autorecorddemo, server::set_autorecorddemo);
 

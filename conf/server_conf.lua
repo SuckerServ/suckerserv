@@ -62,6 +62,9 @@ server.extinfo_show_ip = true
 -- Enable server-side demo recording automatically for every match
 server.auto_record_demo = false
 
+-- Directory to store auto-recorded demos
+server.demo_dir = "demo"
+
 -- Enable teams persistency across matches and avoid autobalancing
 server.persistteams = false
 
