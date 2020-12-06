@@ -72,7 +72,7 @@ server.shell_label = "server"
 
 server.publicserver = 1
 server.masterserverport = 28787
-server.masterservers = {{"master.crapmod.net", "28787"}, {"master.sauerbraten.org", "28787"}}
+server.masterservers = {{"master.sauerbraten.org", "28787"}}
 
 server.masterauth_banned = {}
 server.server_admin_password = ""
