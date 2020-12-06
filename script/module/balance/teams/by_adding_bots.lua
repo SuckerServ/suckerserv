@@ -88,7 +88,7 @@ if using_moveblock then
     server.event_handler("chteamrequest", function(cn, curteam, newteam)
 	    local teams = server.team_sizes()
 	    if (teams[curteam] or 0) > (teams[newteam] or 0) then
-            server.player_msg(cn, red(string.format(server.balancebot_enought_message, newteam)))
+            server.player_msg(cn, "balance_disallow", {team = newteam})
             return -1
 	    end
     end)
@@ -98,7 +98,7 @@ server.event_handler("setmastermode", function(cn, current, new)
 
     if new ~= "open" and bots_added then
         remove_bots()
-        server.player_msg(cn, string.format(server.balancebot_disabled_message))
+        server.player_msg(cn, "balancebot_disabled")
     end
 end)
 

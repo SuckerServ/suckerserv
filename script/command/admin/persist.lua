@@ -9,10 +9,10 @@ return function(cn, option)
         return false, usage
     elseif tonumber(option) == 1 then
         server.persistteams = 1
-        server.player_msg(cn, server.persist_disabled_message)
+        server.player_msg(cn, "persist_disabled")
     elseif tonumber(option) == 0 then
         server.persistteams = 0
-        server.player_msg(cn, server.persist_enabled_message)
+        server.player_msg(cn, "persist_enabled")
     else
         return false, usage
     end

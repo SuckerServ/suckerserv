@@ -13,6 +13,6 @@ return function(cn)
   elseif server.player_status_code(cn) ~= server.SPECTATOR then
     server.mapsucks_vote(cn)
   else
-    return false, server.mapbattle_cant_vote_message
+    return false, server.parse_message(cn, "mapbattle_cant_vote")
   end
 end

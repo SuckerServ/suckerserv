@@ -8,7 +8,7 @@ server.event_handler("rename", function(cn, old, new)
 	no_rename_event = true
 	server.sleep(10, function()
 		server.player_rename(cn, old, true)
-		server.player_msg(cn, server.player_namelock_message)
+		server.player_msg(cn, "player_namelock")
 		no_rename_event = false
 	end)
 end)

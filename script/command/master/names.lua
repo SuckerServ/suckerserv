@@ -17,5 +17,5 @@ return function(cn, target_cn)
   local names = server.find_names_by_ip(server.player_ip(target_cn), current_name)
   local namelist = table.concat(names, ", ")
 
-  server.player_msg(cn, string.format(server.names_command_message, current_name, namelist))
+  server.player_msg(cn, "names_command", {current_name = current_name, namelist = namelist})
 end

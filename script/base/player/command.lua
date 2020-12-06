@@ -121,7 +121,7 @@ end
 
 local function send_command_error(cn, error_message)
   
-    local output_message = server.command_error_message
+    local output_message = server.parse_message(cn, "command_error")
     if error_message then
         output_message = output_message .. ": " .. error_message .. "."
     else
@@ -164,7 +164,7 @@ local function exec_command(cn, text, force)
     local command = player_commands[command_name]
     
     if not command then
-        server.player_msg(cn, server.command_not_found_message)
+        server.player_msg(cn, "command_not_found")
         return -1
     end
     

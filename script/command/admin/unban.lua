@@ -14,7 +14,7 @@ return function(cn, ip)
     end
     if server.ip_vars(ip).ban_time then
         server.unban(ip)
-        server.msg("unban_message", { name = server.player_displayname(cn), ip = ip })
+        server.msg("unban", { name = server.player_displayname(cn), ip = ip })
         admin_log(string.format("UNBAN: %s unbaned IP: %s", server.player_displayname(cn), ip))
     else
         server.player_msg(cn, "no_matching_ban", { ip = ip })

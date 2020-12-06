@@ -34,9 +34,9 @@ local function resume()
 					return -1
 				else
 					if cdown == 1 then
-						server.msg(string.format(server.game_resume_sec, cdown))
+						server.msg("game_resume_sec", { cdown = cdown, s = ""})
 					else
-						server.msg(string.format(server.game_resume_secs, cdown))
+						server.msg("game_resume_sec", { cdown = cdown, s = "s"})
 					end
 					cdown = cdown - 1
 				end
@@ -67,7 +67,7 @@ local activer = server.event_handler("mapchange", function(map, mode)
 	if not running then return end
 
 	server.interval(1000, function()
-		server.msg(server.fairgame_waiting_message)
+		server.msg("clanwar_waiting")
 		for k,v in pairs(players) do
 			if v == "not_loaded" then return end
 		end
@@ -75,17 +75,17 @@ local activer = server.event_handler("mapchange", function(map, mode)
 		return -1
 	end)
 
-	server.msg(server.fairgame_demorecord_message)
+	server.msg("clanwar_demorecord")
 	server.recorddemo()
 
 	local cdown = tonumber(countdown)
 	server.interval(1000, function()
 		if allmapsloaded then
 			cdown = cdown - 1
-			server.msg(string.format(server.fairgame_countdown_message, cdown, (cdown > 1) and "s" or ""))
+			server.msg("clanwar_countdown", {cdown = cdown, s = (cdown > 1) and "s" or ""})
 
 			if cdown == 0 then
-				server.msg(server.fairgame_started_message)
+				server.msg("clanwar_started")
 
 				for _, cn in ipairs(server.players()) do
 					server.player_nospawn(cn, 0)
@@ -127,13 +127,13 @@ end)
 
 local teamchange = server.event_handler("chteamrequest", function(cn)
 	if not teams_locked or not running then return end
-	server.player_msg(cn, server.fairgame_teams_locked_message)
+	server.player_msg(cn, "clanwar_teams_locked")
 	return -1
 end)
 
 return function(cn, map, mode, lockteams)
 	if running then
-		server.player_msg(cn, server.fairgame_already_running_message)
+		server.player_msg(cn, "clanwar_already_running")
 		return
 	end
 
@@ -146,7 +146,7 @@ return function(cn, map, mode, lockteams)
 	mode = mode or server.gamemode
 
 	if not server.parse_mode(mode) then
-		return false, server.unrecognized_gamemode_message
+		return false, server.parse_message(cn, "unrecognized_gamemode")
 	else
 		mode = server.parse_mode(mode)
 	end

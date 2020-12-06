@@ -43,9 +43,9 @@ local function run(cn, option, target)
 	end
 
 	if option then
-		server.player_msg(cn, server.editmute_enabled_message)
+		server.player_msg(cn, "editmute_enabled")
 	else
-		server.player_msg(cn, server.editmute_disabled_message)
+		server.player_msg(cn, "editmute_disabled")
 	end
 end
 

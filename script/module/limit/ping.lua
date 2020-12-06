@@ -56,7 +56,7 @@ server.interval(interval_time, function()
         	p:msg(red(string.format("Your ping is too high! The server expects pings to be below %i ms.", ping_limit)))
         	p:vars().ping_warnings = warns + 1
             else
-                p:msg(server.pinglimit_message)
+                p:msg("pinglimit")
                 p:spec()
                 server.log("Server moved " .. p:name() .. " to spectators, because of lags. (ping: " .. ping .. ", pj: " .. pj .. ")")
             end

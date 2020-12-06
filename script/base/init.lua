@@ -57,7 +57,7 @@ exec("base/saveconf.lua")
 server.event_handler("started", function()
     server.reload_maprotation()
 
-    server.log_status(messages[messages.languages.default].server_start_message)
+    server.log_status(messages[messages.languages.default].server_start)
 end)
 
 server.event_handler("shutdown", function()

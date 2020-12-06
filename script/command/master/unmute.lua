@@ -13,7 +13,7 @@ return function(cn,tcn)
     tcn = server.name_to_cn_list_matches(cn,tcn)
     if not tcn then return end
   elseif not server.is_muted(tcn) then
-    server.player_msg(cn, string.format(server.player_not_muted, server.player_displayname(tcn)))
+    server.player_msg(cn, "player_not_muted", {name = server.player_displayname(tcn)})
     return
   end
 

@@ -10,12 +10,10 @@ end
 
 
 function msg_admins(cn, msg)
-    
-    local line = string.format(server.spectator_muted_message, server.player_displayname(cn), msg)
-    
-    for _, cn in ipairs(server.clients()) do
-        if server.player_priv_code(cn) == server.PRIV_ADMIN then
-            server.player_msg(cn, line)
+    for _, scn in ipairs(server.clients()) do
+        if server.player_priv_code(scn) == server.PRIV_ADMIN then
+            local line = server.parse_message(scn, "spectator_muted", {name = server.player_displayname(cn), msg = msg})
+            server.player_msg(scn, line)
         end
     end
 end

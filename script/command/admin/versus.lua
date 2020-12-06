@@ -52,7 +52,7 @@ end
 local function onIntermission()
   local p2won = server.player_score(player1_cn) < server.player_score(player2_cn)
   if server.player_score(player1_cn) > server.player_score(player2_cn) then
-    server.msg(string.format(server.versus_win_message, server.player_name(p2won and player2_cn or player1_cn)))
+    server.msg("versus_win", {winner = server.player_name(p2won and player2_cn or player1_cn)})
   else
     server.msg("--[ 1on1 Game ended - No Winner!")
   end
@@ -77,7 +77,7 @@ local function onDisconnect(cn)
   local id = server.player_id(cn)
 
   if id == player1_id or id == player2_id then 
-    server.msg(string.format(server.versus_disconnect_message, server.player_name(cn)))
+    server.msg("versus_disconnect", {name = server.player_name(cn)})
     server.pausegame(true)
     suspended = true
   end
@@ -102,17 +102,17 @@ return function(cn, player1, player2, mode, map)
     server.player_msg(cn, red("Already running"))
     return
   elseif not server.valid_cn(player1) or not server.valid_cn(player2) then
-    server.player_msg(cn, string.format(server.versus_invalidcn_message))
+    server.player_msg(cn, "versus_invalidcn")
     return
   elseif player1 == player2 then 
-     server.player_msg(cn, string.format(server.versus_samecn_message))
+     server.player_msg(cn, "versus_samecn")
      return 
   end
   
   mode = mode or server.gamemode  
   
   if not server.parse_mode(mode) then
-    return false, server.unrecognized_gamemode_message
+    return false, server.parse_message(cn, "unrecognized_gamemode")
   else
     mode = server.parse_mode(mode)
   end
@@ -124,9 +124,9 @@ return function(cn, player1, player2, mode, map)
   
   installHandlers()
   
-  server.msg(string.format(server.versus_announce_message, server.player_name(player1), server.player_name(player2), mode, map))
-  server.msg(string.format(server.versus_announce_message, server.player_name(player1), server.player_name(player2), mode, map))
-  server.msg(string.format(server.versus_announce_message, server.player_name(player1), server.player_name(player2), mode, map))
+  server.msg("versus_announce", {player1 = server.player_name(player1), player2 = server.player_name(player2), mode = mode, map = map})
+  server.msg("versus_announce", {player1 = server.player_name(player1), player2 = server.player_name(player2), mode = mode, map = map})
+  server.msg("versus_announce", {player1 = server.player_name(player1), player2 = server.player_name(player2), mode = mode, map = map})
   
   server.specall()
   server.unspec(player1)
@@ -139,7 +139,7 @@ return function(cn, player1, player2, mode, map)
   
   server.interval(1000, function()
     countdown = countdown - 1
-    server.msg(orange(string.format(server.versus_countdown_message, countdown)))
+    server.msg("versus_countdown", {cdown = countdown})
     if countdown == 0 then
       server.changemap(map, mode, -1)
       return -1

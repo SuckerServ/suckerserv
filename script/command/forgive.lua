@@ -10,7 +10,7 @@ local event_handlers = {}
 
 
 local function teamkill_callback(actor, target)
-  server.player_msg(target, string.format(server.forgive_propose_message, server.player_displayname(actor)))
+  server.player_msg(target, "forgive_propose", {name = server.player_displayname(actor)})
   local actor_id = server.player_id(actor)
   local target_id = server.player_id(target)
   if not teamkills[actor_id] then
@@ -37,7 +37,7 @@ end
 
 local function text_callback(cn, text)
   if (string.match(text:lower(), "^np") or string.match(text:lower(), "no problem")) then
-    server.player_msg(cn, string.format(server.forgive_analysetext_message))
+    server.player_msg(cn, "forgive_analysetext")
   end
 end
 
@@ -56,10 +56,10 @@ end
 
 local function run(cn)
   local cn_id = server.player_id(cn)
-  if not teamkills[cn_id] then return false, server.forgive_not_teamkilled_message end
+  if not teamkills[cn_id] then return false, server.parse_message(cn, "forgive_not_teamkilled") end
 
   local actor_id = teamkills[cn_id]["teamkilled_by"][table_size(teamkills[cn_id]["teamkilled_by"])] or nil
-  if not actor_id then return false, server.forgive_not_teamkilled_message end
+  if not actor_id then return false, server.parse_message(cn, "forgive_not_teamkilled") end
 
   local actor_cn = teamkills[actor_id]["cn"]
   for _,actor_teamkilled in pairs(teamkills[actor_id]["teamkilled"]) do
@@ -69,13 +69,13 @@ local function run(cn)
       teamkills[cn_id]["teamkilled_by"][table_size(teamkills[cn_id]["teamkilled_by"])] = nil
       teamkills[actor_id]["teamkilled"][table_size(teamkills[actor_id]["teamkilled"])] = nil
 
-      server.player_msg(actor_cn, string.format(server.forgive_actor_forgiven_message, server.player_displayname(cn)))
-      server.player_msg(cn, string.format(server.forgive_target_forgiven_message, server.player_displayname(actor_cn)))
+      server.player_msg(actor_cn, "forgive_actor_forgiven", {name = server.player_displayname(cn)})
+      server.player_msg(cn, "forgive_target_forgiven", {name = server.player_displayname(actor_cn)})
       return
     end
   end
 
-  return false, server.forgive_not_teamkilled_message
+  return false, server.parse_message(cn, "forgive_not_teamkilled")
 end
 
 return {init = init,run = run,unload = unload}

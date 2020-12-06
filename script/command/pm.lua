@@ -18,5 +18,5 @@ return function(cn, tcn, ...)
     end
   end
 
-  server.player_msg(tcn, "priv_message", { name = server.player_displayname(cn), msg = text })
+  server.player_msg(tcn, "priv", { name = server.player_displayname(cn), msg = text })
 end, "<cn|name> <message>", "Send a private message to another player", { "pm", "pchat", "pc", "msg" }

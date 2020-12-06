@@ -22,14 +22,14 @@ local function total_stats(query_backend, sendto, player)
         player_ranking = "Unknown" 
     end
 
-    server.player_msg(sendto, string.format(server.stats_total_player_message,
-        row.games,
-        row.frags,
-        row.deaths,
-        kpd,
-        acc,
-        row.wins,
-        player_ranking))
+    server.player_msg(sendto, "stats_total_player", {
+        games = row.games,
+        frags = row.frags,
+        deaths = row.deaths,
+        kpd = kpd,
+        acc = acc,
+        wins = row.wins,
+        rank = player_ranking})
 end
 
 local function periodly_stats(query_backend, period, sendto, player)
@@ -54,14 +54,14 @@ local function periodly_stats(query_backend, period, sendto, player)
         ranking = "Unknown" 
     end
     
-    server.player_msg(sendto, string.format(server.stats_total_player_message,
-        row.games,
-        row.frags,
-        row.deaths,
-        kpd,
-        acc,
-        row.wins,
-        ranking))
+    server.player_msg(sendto, "stats_total_player", {
+        games = row.games,
+        frags = row.frags,
+        deaths = row.deaths,
+        kpd = kpd,
+        acc = acc,
+        wins = row.wins,
+        rank = ranking})
 end
 
 local function initialize(query_backend)

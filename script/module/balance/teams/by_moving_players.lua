@@ -58,7 +58,7 @@ local function move_player(cn, team)
     if server.player_team(cn) == team
     then
 	server.changeteam(cn, team_map[team])
-	server.player_msg(cn,string.format(server.balance_switched_message))
+	server.player_msg(cn, "balance_switched")
 	
 	search_dead_player = nil
 	
@@ -141,7 +141,7 @@ server.event_handler("chteamrequest", function(cn, old, new)
     then
 	if not team_map[new]
 	then
-	    server.player_msg(cn, string.format(server.balance_allowed_teams_message))
+	    server.player_msg(cn, "balance_allowed_teams")
 	    return (-1)
 	    
 	elseif not (server.player_status_code(cn) == 5) and using_moveblock
@@ -150,7 +150,7 @@ server.event_handler("chteamrequest", function(cn, old, new)
 	    
 	    if (math.abs(((sizes[old] or 0) - 1) - ((sizes[new] or 0) + 1))) > 1
 	    then
-		server.player_msg(cn, string.format(server.balance_disallow_message, new))
+		server.player_msg(cn, "balance_disallow", {team = new})
 		return (-1)
 	    end
 	end

@@ -13,11 +13,11 @@ end
 local function set_priv(cn, priv, user_id)
     if priv == "admin" or priv:lower() == "a" then
         server.set_invisible_admin(cn)
-        server.player_msg(cn, string.format(server.invadmin_activation_message))
+        server.player_msg(cn, "invadmin_activation")
         server.log(user_id .. " playing as " .. server.player_name(cn) .. "(" .. cn .. ") used auth to claim invadmin.")
     elseif priv == "master" or priv:lower() == "m" then
         server.set_invisible_master(cn)
-        server.player_msg(cn, string.format(server.invmaster_activation_message))
+        server.player_msg(cn, "invmaster_activation")
         server.log(user_id .. " playing as " .. server.player_name(cn) .. "(" .. cn .. ") used auth to claim invmaster.")
     end
 end

@@ -1,5 +1,5 @@
 return {
-server_start_message = "--> Démarrage de Suckerserv réussi.",
+server_start = "--> Démarrage de Suckerserv réussi.",
 
 client_connect = "(%{green}%{time}%{white}) Connecté de %{yellow}%{country}%{white} : %{blue}%{name} %{magenta}(%{cn}) %{white}(%{priv}%{white})",
 client_connect_admin = "%{white}IP: %{blue}%{ip}%{white}",

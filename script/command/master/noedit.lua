@@ -36,9 +36,9 @@ local function run(cn, option)
 	end
 
 	if noedit then
-		server.player_msg(cn, server.noedit_enabled_message)
+		server.player_msg(cn, "noedit_enabled")
 	else
-		server.player_msg(cn, server.noedit_disabled_message)
+		server.player_msg(cn, "noedit_disabled")
 	end
 end
 

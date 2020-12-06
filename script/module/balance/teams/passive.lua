@@ -65,7 +65,7 @@ then
 	    if server.player_team(cn) == fuller
 	    then
 		server.changeteam(cn, team_map[fuller])
-		server.player_msg(cn, string.format(server.balance_switched_message))
+		server.player_msg(cn, "balance_switched")
 	    end
 	end
     end)
@@ -78,7 +78,7 @@ server.event_handler("chteamrequest", function(cn, old, new)
     then
 	if not team_map[new]
 	then
-	    server.player_msg(cn, string.format(server.balance_allowed_teams_message))
+	    server.player_msg(cn, "balance_allowed_teams")
 	    return (-1)
 	    
 	elseif not (server.player_status_code(cn) == 5) and using_moveblock
@@ -87,7 +87,7 @@ server.event_handler("chteamrequest", function(cn, old, new)
 	    
 	    if (math.abs(((sizes[old] or 0) - 1) - ((sizes[new] or 0) + 1))) > 1
 	    then
-		server.player_msg(cn, string.format(server.balance_disallow_message, new))
+		server.player_msg(cn, "balance_disallow", {team = new})
 		return (-1)
 	    end
 	end
@@ -105,7 +105,7 @@ then
 	    if server.player_team(cn) == fuller and server.player_status(cn) == "dead" and (string.match(text, "balance") or string.match(text, "BALANCE") or string.match(text, "teams") or string.match(text, "TEAMS"))
 	    then
 		server.changeteam(cn, team_map[fuller])
-		server.player_msg(cn, string.format(server.balance_switched_message))
+		server.player_msg(cn, "balance_switched")
 	    end
 	end
     end)

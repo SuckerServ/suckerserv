@@ -24,10 +24,10 @@ local function run(cn, option)
 		return false, usage
 	elseif tonumber(option) == 1 then
 		nodamage = true
-		server.player_msg(cn, server.nodamage_enabled_message)
+		server.player_msg(cn, "nodamage_enabled")
 	elseif tonumber(option) == 0 then
 		nodamage = false
-		server.player_msg(cn, server.nodamage_disabled_message)
+		server.player_msg(cn, "nodamage_disabled")
 	else
 		return false, usage
 	end

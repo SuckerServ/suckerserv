@@ -2,9 +2,9 @@
 return function(cn)
     
     if not server.mute_spectators then
-        return false, server.missing_mute_spectator_module_message
+        return false, server.parse_message(cn, "missing_mute_spectator_module")
     end
     
     server.mute_spectators(true)
-    server.player_msg(cn, server.all_spectator_muted_message)
+    server.player_msg(cn, "all_spectator_muted")
 end

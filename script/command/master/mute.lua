@@ -13,10 +13,10 @@ return function(cn,tcn,reason,time)
     tcn = server.name_to_cn_list_matches(cn,tcn)
     if not tcn then return end
   elseif server.is_muted(tcn) then
-    server.player_msg(cn, string.format(server.player_muted_already, server.player_displayname(tcn)))
+    server.player_msg(cn, "player_muted_already", {name = server.player_displayname(tcn)})
     return
   end
 
   server.mute(tcn, time, reason or nil)
-  server.player_msg(cn, string.format(server.player_mute_admin_message, server.player_displayname(tcn)))
+  server.player_msg(cn, "player_mute_admin", {name = server.player_displayname(tcn)})
 end

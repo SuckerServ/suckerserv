@@ -9,13 +9,13 @@ return function(cn, command_name)
     local command = player_commands[command_name]
 
     if not command then
-      return false, server.help_unknown_command_message
+      return false, server.parse_message(cn, "help_unknown_command")
     elseif not is_player_command_enabled(command_name) then
-      return false, server.help_command_disabled_message
+      return false, server.parse_message(cn, "help_command_disabled")
     elseif privilege < command.permission then
-      return false, server.help_access_denied_message
+      return false, server.parse_message(cn, "help_access_denied")
     elseif not command.help_message then
-      return false, server.help_no_description_message % { command_name = command_name }
+      return false, server.parse_message(cn, "help_no_description", { command_name = command_name })
     end
     
     server.player_msg(cn, "help_command", { command_name = command_name, help_parameters = command.help_parameters or "", help_message = command.help_message })
