@@ -13,8 +13,8 @@ client_crcfail = "%{red}>>> %{white}Le joueur %{blue}%{name} %{yellow}utilise %{
 
 clearbans = "%{red}>>> %{green}Suppression %{white}de tous les %{blue}bannissements%{white}.",
 
-awards_stats = "%{red}>>> %{white}Awards : %{stats_message}",
-awards_flags = "%{red}>>> %{white}Best Flags : %{flagstats_message}",
+awards_stats = "%{red}>>> %{white}Awards : %{stats}",
+awards_flags = "%{red}>>> %{white}Best Flags : %{flagstats}",
 
 inactivitylimit = "%{red}>>> %{white}Le serveur vous a mit %{magenta}spectateur %{white}pour inactivité, tapez '%{green}/spectator 0%{white}' pour %{yellow}rejoindre %{white}la %{blue}partie%{white}.",
 
