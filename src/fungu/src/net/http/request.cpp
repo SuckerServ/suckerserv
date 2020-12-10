@@ -31,7 +31,7 @@ request * request::create(connection & conn, resource & handler_dispatcher)
 
 void request::destroy(request & req)
 {
-    req.m_connection.io_service().post(boost::bind(delete_request, &req));
+    post(req.m_connection.executor(), boost::bind(delete_request, &req));
 }
 
 request::request(connection & conn, resource & root_resource)

@@ -623,8 +623,8 @@ static int url_encode(lua_State * L)
 class listener_client_connection:public http::server::client_connection
 {
 public:
-    listener_client_connection(boost::asio::io_service & service, listener_client_connection * prev_connection)
-    :http::server::client_connection(service)
+    listener_client_connection(boost::asio::ip::tcp::socket::executor_type executor, listener_client_connection * prev_connection)
+    :http::server::client_connection(executor)
     {
         m_prev = prev_connection;
         m_next = NULL;
@@ -829,7 +829,7 @@ private:
     
     void async_accept()
     {
-        listener_client_connection * client = new listener_client_connection(m_acceptor->get_io_service(), m_client_tail);
+        listener_client_connection * client = new listener_client_connection(m_acceptor->get_executor(), m_client_tail);
         
         if(!m_client_head) m_client_head = client;
         m_client_tail = client;

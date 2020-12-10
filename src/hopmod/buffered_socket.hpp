@@ -34,7 +34,7 @@ public:
     {
         if(readSize < m_buffer.size())
         {
-            m_socket.get_io_service().post(boost::bind(handler, boost::system::error_code(), readSize));
+            post(m_socket.get_executor(), boost::bind(handler, boost::system::error_code(), readSize));
         }
         else
         {
