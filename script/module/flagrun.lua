@@ -138,7 +138,10 @@ end
 
 local function load_flagruns(map)
     local load_flagruns_query = execute_statement(string.format("SELECT playername, time FROM flagruns WHERE mapname = '%s'", map))
-    row = load_flagruns_query:fetch ({}, "a")
+    local row = load_flagruns_query:fetch ({}, "a")
+    if row == nil then
+        return nil
+    end
     return {row.playername, tonumber(row.time)}
 end
 
