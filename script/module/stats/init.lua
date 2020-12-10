@@ -37,7 +37,7 @@ if using_mysql then
         database    = server.stats_mysql_database,
         schema      = "./script/module/stats/mysql_schema.sql",
         triggers    = "./script/module/stats/mysql_triggers.sql",
-        install     = server.stats_mysql_install == "true",
+        install     = server.stats_mysql_install == true,
         servername  = server.stats_servername
     })
 
@@ -56,7 +56,7 @@ if using_psql then
         database    = server.stats_psql_database,
         schema      = "./script/module/stats/postgres_schema.sql",
         triggers    = "./script/module/stats/postgres_triggers.sql",
-        install     = server.stats_psql_install == "true",
+        install     = server.stats_psql_install == true,
         servername  = server.stats_servername
     })
     then commit_backends.psql = nil end
