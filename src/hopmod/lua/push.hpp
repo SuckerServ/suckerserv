@@ -1,7 +1,7 @@
 #ifndef _PROJECT_LUA_PUSH_HPP
 #define _PROJECT_LUA_PUSH_HPP
 
-#include <luajit-2.0/lua.hpp>
+#include <lua.hpp>
 #include <string>
 
 namespace lua{

@@ -2,7 +2,7 @@
 #define HOPMOD_LUA_NET_IPMASK_HPP
 
 #include "../../../net/prefix_tree.hpp"
-#include <luajit-2.0/lua.hpp>
+#include <lua.hpp>
 
 namespace lua{
 

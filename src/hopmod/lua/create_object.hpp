@@ -2,7 +2,7 @@
 #define HOPMOD_LUA_CREATE_OBJECT_HPP
 
 #include <new>
-#include <luajit-2.0/lua.hpp>
+#include <lua.hpp>
 #include <cassert>
 
 namespace lua{

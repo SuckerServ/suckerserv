@@ -18,8 +18,8 @@
 
 #include "mysql.h"
 
-#include "luajit-2.0/lua.h"
-#include "luajit-2.0/lauxlib.h"
+#include "lua.h"
+#include "lauxlib.h"
 
 #include "luasql.h"
 

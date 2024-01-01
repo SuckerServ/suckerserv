@@ -1,7 +1,7 @@
 #ifndef HOPMOD_LUA_NET_MODULE_HPP
 #define HOPMOD_LUA_NET_MODULE_HPP
 
-#include <luajit-2.0/lua.hpp>
+#include <lua.hpp>
 #include <asio.hpp>
 
 void log_error(lua_State * L, const char *);

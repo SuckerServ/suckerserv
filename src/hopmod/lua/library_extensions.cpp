@@ -1,4 +1,4 @@
-#include <luajit-2.0/lua.hpp>
+#include <lua.hpp>
 #include <unistd.h>
 #include <errno.h>
 #include <sys/types.h>

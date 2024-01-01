@@ -1,7 +1,7 @@
 #ifndef HOPMOD_LUA_NET_FILE_STREAM_HPP
 #define HOPMOD_LUA_NET_FILE_STREAM_HPP
 
-#include <luajit-2.0/lua.hpp>
+#include <lua.hpp>
 #include <asio.hpp>
 
 namespace lua{
