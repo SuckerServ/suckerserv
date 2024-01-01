@@ -213,7 +213,7 @@ player_namelock = "%{red}>>> WARNING: %{white}names are locked!",
 clantag_rename = "%{red}>>> Server has renamed you to 'unnamed'.",
 
 --Stats
-stats_total_player = "%{red}>>> %{blue}Games %{white}%{games} %{blue}Frags %{white}%{frags} %{blue}Deaths %{white}%{deaths} %{blue}Kpd %{white}%{kpd} %{blue}Accuracy %{white}%{acc}%% %{blue}Win %{white}%{win} %{blue}Rank %{white}%{rank}",
+stats_total_player = "%{red}>>> %{blue}Games %{white}%{games} %{blue}Frags %{white}%{frags} %{blue}Deaths %{white}%{deaths} %{blue}Kpd %{white}%{kpd} %{blue}Accuracy %{white}%{acc}% %{blue}Win %{white}%{wins} %{blue}Rank %{white}%{rank}",
 
 --Balance
 balance_disallow = "%{red}>>> %{white}Team change %{blue}disallowed%{white}: %{team} team has %{blue}enough %{white}players.",
