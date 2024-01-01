@@ -16,7 +16,7 @@ clearbans = "%{red}>>> %{green}Suppression %{white}de tous les %{blue}bannisseme
 awards_stats = "%{red}>>> %{white}Awards : %{stats}",
 awards_flags = "%{red}>>> %{white}Best Flags : %{flagstats}",
 
-inactivitylimit = "%{red}>>> %{white}Le serveur vous a mit %{magenta}spectateur %{white}pour inactivité, tapez '%{green}/spectator 0%{white}' pour %{yellow}rejoindre %{white}la %{blue}partie%{white}.",
+inactivitylimit = "%{red}>>> %{white}Le serveur vous a mis %{magenta}spectateur %{white}pour inactivité, tapez '%{green}/spectator 0%{white}' pour %{yellow}rejoindre %{white}la %{blue}partie%{white}.",
 
 command_disabled = "%{red}>>> ERREUR: %{white}Commande désactivée",
 command_permission_denied = "%{red}>>> ERREUR: %{white}Permission refusée",
