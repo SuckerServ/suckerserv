@@ -65,7 +65,7 @@ static void reload_hopmod_now()
 
 void reload_hopmod()
 {
-    get_main_io_service().post(reload_hopmod_now);
+    post(get_main_io_service(), reload_hopmod_now);
 }
 
 namespace server{
@@ -90,7 +90,7 @@ static void initiate_shutdown()
 void shutdown()
 {
     if(std::this_thread::get_id() != main_thread) return;
-    get_main_io_service().post(initiate_shutdown);
+    post(get_main_io_service(), initiate_shutdown);
 }
 
 } //namespace server

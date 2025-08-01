@@ -9,7 +9,7 @@ namespace lua{
 
 struct tcp_socket
 {
-    tcp_socket(asio::io_service &);
+    tcp_socket(asio::io_context &);
     asio::ip::tcp::socket socket;
     asio::streambuf read_buffer_buffer;
     read_stream_buffer<asio::streambuf, char> read_buffer;

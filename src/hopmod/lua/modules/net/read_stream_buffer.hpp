@@ -68,8 +68,8 @@ private:
         std::error_code ec, std::size_t bytes_transferred, ReadHandler handler)
     {
         m_consume = std::min(bytes_buffered + bytes_transferred, max_consume);
-        handler(ec, asio::buffer_cast<const PodType *>(
-            *m_buffer.data().begin()), static_cast<std::size_t>(m_consume/sizeof(PodType)));
+        handler(ec, static_cast<const PodType *>(
+            m_buffer.data().data()), static_cast<std::size_t>(m_consume/sizeof(PodType)));
         if (!m_consume) return; // not the best solution, but doesn't "crash" the server at least.
     }
     

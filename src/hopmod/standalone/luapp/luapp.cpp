@@ -5,9 +5,9 @@
 #include <asio.hpp>
 using namespace asio;
 
-static io_service main_io_service;
+static io_context main_io_service;
 
-io_service & get_main_io_service()
+io_context & get_main_io_service()
 {
     return main_io_service;
 }

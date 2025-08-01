@@ -68,9 +68,9 @@ size_t info_queries = 0;
 size_t tx_info_bytes = 0;
 size_t rx_info_bytes = 0;
 
-io_service main_io_service;
+io_context main_io_service;
 
-io_service & get_main_io_service()
+io_context & get_main_io_service()
 {
     return main_io_service;
 }
@@ -111,13 +111,17 @@ void stopgameserver(int)
     if(lansock != ENET_SOCKET_NULL) enet_socket_destroy(lansock);
     pongsock = lansock = ENET_SOCKET_NULL;
 
-    update_timer.cancel(error);
-    if(error)
-        std::cerr<<"Error while trying to stop the update timer: "<<error.message()<<std::endl;
+    try {
+        update_timer.cancel();
+    } catch(const std::system_error & se) {
+        std::cerr<<"Error while trying to stop the update timer: "<<se.what()<<std::endl;
+    }
 
-    netstats_timer.cancel(error);
-    if(error)
+    try {
+        netstats_timer.cancel();
+    } catch(const std::system_error & se) {
         std::cerr<<"Error while trying to stop the net stats timer: "<<error.message()<<std::endl;
+    }
 
 }
 
@@ -390,11 +394,11 @@ static void update_time()
 
 void sched_next_update()
 {
-    std::chrono::duration<long int, std::ratio<1l, 1000000000l> > expires_from_now = update_timer.expires_from_now();
+    std::chrono::duration<long int, std::ratio<1l, 1000000000l> > expires_from_now = update_timer.expiry() - high_resolution_timer::clock_type::now();
 
     if(expires_from_now < std::chrono::duration<long int, std::ratio<1l, 1000000000l> >::zero())
     {
-        update_timer.expires_from_now(std::chrono::duration<long int, std::milli>(5));
+        update_timer.expires_after(std::chrono::duration<long int, std::milli>(5));
         update_timer.async_wait(update_server);
     }
 }
@@ -537,7 +541,7 @@ void netstats_handler(const std::error_code & ec)
         tx_info_bytes = 0;
     }
 
-    netstats_timer.expires_from_now(std::chrono::duration<int, std::ratio<60> >(1));
+    netstats_timer.expires_after(std::chrono::duration<int, std::ratio<60> >(1));
     netstats_timer.async_wait(netstats_handler);
 }
 
@@ -565,7 +569,7 @@ void rundedicatedserver()
 
     sched_next_update();
 
-    netstats_timer.expires_from_now(std::chrono::duration<int, std::ratio<60> >(1));
+    netstats_timer.expires_after(std::chrono::duration<int, std::ratio<60> >(1));
     netstats_timer.async_wait(netstats_handler);
 
     try

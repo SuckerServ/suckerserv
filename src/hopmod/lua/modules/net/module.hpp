@@ -5,7 +5,7 @@
 #include <asio.hpp>
 
 void log_error(lua_State * L, const char *);
-asio::io_service & get_main_io_service(lua_State * L);
+asio::io_context & get_main_io_service(lua_State * L);
 
 #endif
 

@@ -774,7 +774,7 @@ static void execute_addbot(int skill)
 
 void addbot(int skill)
 {
-    get_main_io_service().post(std::bind(&execute_addbot, skill));
+    asio::post(get_main_io_service(), std::bind(&execute_addbot, skill));
 }
 
 static void execute_deletebot(int cn)
@@ -789,7 +789,7 @@ void deletebot(int cn)
 {
     if(get_ci(cn)->state.aitype == AI_NONE) 
         luaL_error(get_lua_state(), "not a bot player");
-    get_main_io_service().post(std::bind(&execute_deletebot, cn));
+    asio::post(get_main_io_service(), std::bind(&execute_deletebot, cn));
 }
 
 void update_mastermask()

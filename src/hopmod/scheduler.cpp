@@ -40,7 +40,7 @@ static void async_wait_handler(lua_State * L,
     
     if(repeat)
     {
-        timer->expires_from_now(std::chrono::duration<long int, std::milli>(countdown));
+        timer->expires_after(std::chrono::duration<long int, std::milli>(countdown));
         timer->async_wait(std::bind(async_wait_handler, L, timer, repeat, countdown, callback, std::placeholders::_1));
     }
     else
@@ -56,8 +56,10 @@ static int high_resolution_timer_ptr_gc(lua_State * L)
     
     if(!timer->expired())
     {
-        std::error_code ec;
-        timer->lock()->cancel(ec);
+        try {
+            timer->lock()->cancel();
+        } catch(const std::system_error & se) {
+        }
     }
     
     timer->~weak_ptr<high_resolution_timer>();
@@ -72,7 +74,7 @@ int async_wait(lua_State * L, bool repeat)
     
     std::shared_ptr<high_resolution_timer> timer(new high_resolution_timer(get_main_io_service()));
     
-    timer->expires_from_now(std::chrono::duration<long int, std::milli>(countdown));
+    timer->expires_after(std::chrono::duration<long int, std::milli>(countdown));
     
     timer->async_wait(std::bind(async_wait_handler, L, timer, repeat, countdown,
         lua::weak_ref::create(L), std::placeholders::_1));
@@ -103,8 +105,10 @@ int cancel_timer(lua_State * L)
     std::weak_ptr<high_resolution_timer> timer = *reinterpret_cast<std::weak_ptr<high_resolution_timer> *>(
         luaL_checkudata(L, 1, "high_resolution_timer"));
     if(timer.expired()) return 0;
-    std::error_code ec;
-    timer.lock()->cancel(ec);
+    try {
+        timer.lock()->cancel();
+    } catch(const std::system_error & se) {
+    }
     return 0;
 }
 
@@ -120,12 +124,12 @@ static void sched_callback_handler(high_resolution_timer * timer, int (* fun)(vo
 void sched_callback(int (* fun)(void *), void * closure, int delay)
 {
     high_resolution_timer * timer = new high_resolution_timer(get_main_io_service());
-    timer->expires_from_now(std::chrono::duration<long int, std::milli>(delay));
+    timer->expires_after(std::chrono::duration<long int, std::milli>(delay));
     timer->async_wait(std::bind(sched_callback_handler, timer, fun, closure, std::placeholders::_1));
 }
 
 void sched_callback(int (* fun)(void *), void * closure)
 {
-    get_main_io_service().post(std::bind(fun, closure));
+    post(get_main_io_service(), std::bind(fun, closure));
 }
 

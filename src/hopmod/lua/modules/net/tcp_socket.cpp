@@ -43,14 +43,14 @@ int push_endpoint(lua_State * L, const EndpointType & endpoint)
     
     if(endpoint.address().is_v4())
     {
-        lua_pushinteger(L, endpoint.address().to_v4().to_ulong());
+        lua_pushinteger(L, endpoint.address().to_v4().to_uint());
         lua_setfield(L, -2, "iplong");
     }
     
     return 1;
 }
 
-tcp_socket::tcp_socket(io_service & service)
+tcp_socket::tcp_socket(io_context & service)
  :socket(service), read_buffer(read_buffer_buffer)
 {
     
@@ -368,7 +368,7 @@ static void async_connect_handler(managed_tcp_socket::target_type managed_socket
 static void async_connect_resolve_handler(std::shared_ptr<ip::tcp::resolver> resolver, 
     managed_tcp_socket::target_type managed_socket,
     lua_State * L, lua::weak_ref callback, 
-    const std::error_code& ec, asio::ip::tcp::resolver::iterator iterator)
+    const std::error_code& ec, const ip::tcp::resolver::results_type& endpoints)
 {
     if(callback.is_expired()) return;
     
@@ -388,7 +388,7 @@ static void async_connect_resolve_handler(std::shared_ptr<ip::tcp::resolver> res
         return;
     }
     
-    managed_socket->socket.async_connect(iterator->endpoint(), std::bind(async_connect_handler,
+    async_connect(managed_socket->socket, endpoints, std::bind(async_connect_handler,
         managed_socket, L, callback, std::placeholders::_1));
 }
 
@@ -414,10 +414,9 @@ int managed_tcp_socket::async_connect(lua_State * L)
         }
     }
     
-    ip::tcp::resolver::query query(hostname, port);
     std::shared_ptr<ip::tcp::resolver> resolver(new ip::tcp::resolver(get_main_io_service(L)));
     
-    resolver->async_resolve(query, std::bind(async_connect_resolve_handler, resolver, self, L, 
+    resolver->async_resolve(hostname, port, std::bind(async_connect_resolve_handler, resolver, self, L, 
         callback_ref, std::placeholders::_1, std::placeholders::_2));
     
     return 0;
@@ -443,7 +442,7 @@ int managed_tcp_socket::bind(lua_State * L)
     
     std::error_code ec;
     
-    ip::address_v4 host = ip::address_v4::from_string(ip, ec);
+    ip::address host = ip::make_address(ip, ec);
     if(ec)
     {
         lua_pushboolean(L, 1);
