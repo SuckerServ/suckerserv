@@ -13,7 +13,7 @@ namespace lua{
 
 static void async_resolve_handler(std::shared_ptr<ip::tcp::resolver>,
     lua_State * L, lua::weak_ref callback, 
-    const std::error_code & ec, ip::tcp::resolver::iterator iterator)
+    const std::error_code & ec, const ip::tcp::resolver::results_type& endpoints)
 {
     if(callback.is_expired()) return;
     
@@ -27,7 +27,9 @@ static void async_resolve_handler(std::shared_ptr<ip::tcp::resolver>,
         lua_newtable(L);
         
         int count = 1;
-        for(; iterator != ip::tcp::resolver::iterator(); ++iterator)
+        for(ip::tcp::resolver::results_type::const_iterator iterator = endpoints.begin();
+            iterator != endpoints.end();
+            ++iterator)
         {
             lua_pushinteger(L, count++);
             lua_pushstring(L, iterator->endpoint().address().to_string().c_str());
@@ -53,8 +55,7 @@ int async_resolve(lua_State * L)
     lua_pushvalue(L, 2);
     lua::weak_ref callback_ref = lua::weak_ref::create(L);
     
-    ip::tcp::resolver::query query(hostname, "");
-    resolver->async_resolve(query, std::bind(async_resolve_handler, resolver, 
+    resolver->async_resolve(hostname, "", std::bind(async_resolve_handler, resolver,
         L, callback_ref, std::placeholders::_1, std::placeholders::_2));
     
     return 0;

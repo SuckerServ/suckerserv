@@ -34,7 +34,7 @@ int tcp_acceptor::create_object(lua_State * L)
     const char * ip = luaL_checkstring(L, 1);
     int port = luaL_checkint(L, 2);
     
-    ip::tcp::endpoint endpoint(ip::address_v4::from_string(ip), port);
+    ip::tcp::endpoint endpoint(ip::make_address(ip), port);
     
     std::shared_ptr<ip::tcp::acceptor> acceptor(new ip::tcp::acceptor(get_main_io_service(L)));
     lua::create_object<tcp_acceptor>(L, acceptor);
@@ -67,7 +67,7 @@ int tcp_acceptor::listen(lua_State * L)
 {
     target_type self = *lua::to<tcp_acceptor>(L, 1);
     std::error_code ec;
-    self->listen(socket_base::max_connections, ec);
+    self->listen(socket_base::max_listen_connections, ec);
     if(ec) return luaL_error(L, ec.message().c_str());
     return 0;
 }

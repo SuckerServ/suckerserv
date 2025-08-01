@@ -35,9 +35,9 @@
 
 using namespace asio;
 
-static io_service main_io_service;
+static io_context main_io_service;
 
-io_service & get_main_io_service()
+io_context & get_main_io_service()
 {
     return main_io_service;
 }
@@ -455,9 +455,11 @@ void stopauthserver(int)
 
     std::error_code error;
 
-    update_timer.cancel(error);
-    if(error)
+    try {
+        update_timer.cancel();
+    } catch(const std::system_error & se) {
         std::cerr<<"Error while trying to stop the update timer: "<<error.message()<<std::endl;
+    }
 }
 
 void signal_shutdown(int val)
@@ -479,7 +481,7 @@ static void initiate_shutdown()
 
 void shutdown()
 {
-    get_main_io_service().post(initiate_shutdown);
+    post(get_main_io_service(), initiate_shutdown);
 }
 
 static void shutdown_from_signal(int i)
@@ -495,11 +497,11 @@ void update_server(const std::error_code & error);
 
 void sched_next_update()
 {
-    std::chrono::duration<long int, std::ratio<1l, 1000000000l> > expires_from_now = update_timer.expires_from_now();
+    std::chrono::duration<long int, std::ratio<1l, 1000000000l> > expires_from_now = update_timer.expiry() - high_resolution_timer::clock_type::now();
 
     if(expires_from_now < std::chrono::duration<long int, std::ratio<1l, 1000000000l> >::zero())
     {
-        update_timer.expires_from_now(std::chrono::duration<long int, std::milli>(5));
+        update_timer.expires_after(std::chrono::duration<long int, std::milli>(5));
         update_timer.async_wait(update_server);
     }
 }
@@ -554,7 +556,7 @@ static void reload_authserver_now()
 
 void reload_authserver()
 {
-    get_main_io_service().post(reload_authserver_now);
+    post(get_main_io_service(), reload_authserver_now);
 }
 
 void restart_now()

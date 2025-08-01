@@ -10,7 +10,7 @@
 lua::event_environment & event_listeners();
 
 #include <asio.hpp>
-asio::io_service & get_main_io_service();
+asio::io_context & get_main_io_service();
 
 #include <iostream>
 #include <set>
