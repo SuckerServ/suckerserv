@@ -20,5 +20,4 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     target_link_libraries(luapp -lrt)
 endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-install(TARGETS luapp RUNTIME DESTINATION ${INSTALL_RUNTIME_DIR}/utils)
-
+install(TARGETS luapp RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}/utils")

@@ -71,9 +71,7 @@ if(NOT MMDB_FOUND)
     
     add_library(${MMDB_LIBRARY} SHARED ${MMDB_SOURCES})
     
-    install(TARGETS
-        ${MMDB_LIBRARY}
-        LIBRARY DESTINATION ${INSTALL_LIBRARY_DIR})
+    install(TARGETS ${MMDB_LIBRARY})
 endif()
 
 option(WITH_MMDB "Enable MMDB support" ON)
@@ -93,7 +91,7 @@ FILE(GLOB LuaTZ_FILES "${CMAKE_CURRENT_SOURCE_DIR}/luatz/luatz/*.lua")
 
 install(FILES
     ${LuaTZ_FILES}
-    DESTINATION ${PROJECT_SOURCE_DIR}/script/package/luatz)
+    DESTINATION script/package/luatz)
 
 
 add_subdirectory(fungu)
@@ -238,11 +236,8 @@ add_executable(monitor hopmod/standalone/monitor.cpp hopmod/lib/program_argument
 
 install(TARGETS 
     sauer_server
-    monitor
-    RUNTIME DESTINATION ${INSTALL_RUNTIME_DIR} 
-    LIBRARY DESTINATION ${INSTALL_LIBRARY_DIR} 
-    ARCHIVE DESTINATION ${INSTALL_ARCHIVE_DIR})
+    monitor)
 
 install(TARGETS 
     keygen
-    RUNTIME DESTINATION ${INSTALL_RUNTIME_DIR}/utils)
+	RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}/utils")

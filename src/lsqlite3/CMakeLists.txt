@@ -10,11 +10,6 @@ if(SQLITE3_FOUND)
     add_library(${LSQLITE3_LIBRARY} SHARED lsqlite3.c)
     target_link_libraries(${LSQLITE3_LIBRARY} ${LUA_LIBRARY} -lsqlite3)
     
-    install(TARGETS 
-                ${LSQLITE3_LIBRARY}
-            LIBRARY DESTINATION 
-                ${INSTALL_LIBRARY_DIR}
-            ARCHIVE DESTINATION
-                ${INSTALL_ARCHIVE_DIR})
+    install(TARGETS ${LSQLITE3_LIBRARY})
 
 endif(SQLITE3_FOUND)

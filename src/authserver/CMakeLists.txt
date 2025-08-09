@@ -24,7 +24,4 @@ target_link_libraries(sauer_authserver
     ${ENET_LIBRARY}
     -lrt)
 
-install(TARGETS
-            sauer_authserver
-       RUNTIME DESTINATION ${INSTALL_RUNTIME_DIR})
-
+install(TARGETS sauer_authserver)

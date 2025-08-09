@@ -29,10 +29,4 @@ endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 target_link_libraries(${FUNGU_HTTP_LIBRARY} ${FUNGU_STRING_LIBRARY})
 
-install(TARGETS 
-            ${FUNGU_HTTP_LIBRARY}
-        LIBRARY DESTINATION
-            ${INSTALL_LIBRARY_DIR}
-        ARCHIVE DESTINATION
-            ${INSTALL_ARCHIVE_DIR})
-
+install(TARGETS ${FUNGU_HTTP_LIBRARY})

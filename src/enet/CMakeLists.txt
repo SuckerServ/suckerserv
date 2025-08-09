@@ -85,10 +85,5 @@ include_directories(${ENET_INCLUDE_DIRS})
 
 add_library(${ENET_LIBRARY} STATIC ${ENET_SOURCES})
 
-install(TARGETS 
-            ${ENET_LIBARY} 
-       LIBRARY DESTINATION
-            ${INSTALL_LIBRARY_DIR} 
-       ARCHIVE DESTINATION
-            ${INSTALL_LIBRARY_DIR})
+install(TARGETS ${ENET_LIBARY})
 
