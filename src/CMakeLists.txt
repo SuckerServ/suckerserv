@@ -18,7 +18,7 @@ else()
   unset(Lua_FOUND CACHE)
   unset(LUA_INCLUDE_DIR CACHE)
   unset(LUA_LIBRARY CACHE)
-  find_package(LuaJIT REQUIRED)
+  find_package(Lua REQUIRED)
 
   set(LUA_INCLUDE_DIRS ${LUA_INCLUDE_DIR})
   set(LUA_LIBRARIES ${LUA_LIBRARY})
