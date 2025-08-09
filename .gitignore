@@ -1,4 +1,5 @@
 bin/monitor
+bin/sauer_authserver
 bin/sauer_server
 bin/utils/keygen
 bin/utils/luapp
