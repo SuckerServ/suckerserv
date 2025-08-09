@@ -10,14 +10,19 @@ else(ENET_FOUND)
 endif(ENET_FOUND)
 
 ## LuaJIT##
-option(LUA_USE_LUAJIT "Use LuaJIT instead of default Lua" ON)
-unset(Lua_FOUND CACHE)
-unset(LUA_INCLUDE_DIR CACHE)
-unset(LUA_LIBRARY CACHE)
-find_package(LuaJIT REQUIRED)
+find_package(PkgConfig)
+if(PkgConfig_FOUND)
+  pkg_check_modules(LUA REQUIRED luajit)
+else()
+  option(LUA_USE_LUAJIT "Use LuaJIT instead of default Lua" ON)
+  unset(Lua_FOUND CACHE)
+  unset(LUA_INCLUDE_DIR CACHE)
+  unset(LUA_LIBRARY CACHE)
+  find_package(LuaJIT REQUIRED)
 
-set(LUA_INCLUDE_DIRS ${LUA_INCLUDE_DIR})
-set(LUA_LIBRARY ${LUA_LIBRARY})
+  set(LUA_INCLUDE_DIRS ${LUA_INCLUDE_DIR})
+  set(LUA_LIBRARIES ${LUA_LIBRARY})
+endif()
 
 ## Asio ##
 find_package(Asio)
@@ -194,7 +199,7 @@ endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 target_link_libraries(lua_modules 
     sauertools
-    ${LUA_LIBRARY}
+    ${LUA_LIBRARIES}
     ${MMDB_LIBRARY}
     ${FUNGU_STRING_LIBRARY}
     ${FUNGU_HTTP_LIBRARY}
