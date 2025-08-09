@@ -78,6 +78,7 @@ server.masterauth_banned = {}
 server.server_admin_password = ""
 
 server.web_admins = {}
+server.web_require_login_localhost = 1
 
 server.mute_triggers = {"nigger", "nigga", "negro", "kike", "faggot", "motherfucker", "jude", "wichser", "kanake", "polake", "kinderficker", "scheiss auslaender"}
 

@@ -35,7 +35,7 @@ local function isLoggedIn(request)
 end
 
 local function requireLogin(request)
-    if request:client_ip() ~= "127.0.0.1" and not isLoggedIn(request) then
+    if (server.web_require_login_localhost == 1 or request:client_ip() ~= "127.0.0.1") and not isLoggedIn(request) then
         http_response.redirect(request, "http://" .. request:host() .. "/login?return=" .. http_request.absolute_uri(request))
         return true
     end
@@ -43,7 +43,7 @@ local function requireLogin(request)
 end
 
 local function requireBackendLogin(request)
-    if request:client_ip() ~= "127.0.0.1" and not isLoggedIn(request) then
+    if (server.web_require_login_localhost == 1 or request:client_ip() ~= "127.0.0.1") and not isLoggedIn(request) then
         http_response.send_error(request, 401, "You must be logged in to access this resource.\n",{["WWW-Authenticate"] = "HopmodWebLogin"})
         return true
     end

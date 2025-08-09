@@ -214,10 +214,11 @@ server.restrict_gamespeed = 1         -- Restrict gamespeed setting to admins
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Web admin configuration
+-- The web admin control panel url is http://localhost:<serverport+3>/admin
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
--- The web admin control panel url is http://localhost:28788/admin
--- There is no login required when access is through localhost
+-- Control whether login is required when access is through localhost
+server.web_require_login_localhost = 1
 
 -- To create a new web admin user run this shell command: source bin/env.sh; bin/utils/luapp bin/utils/web_admin.lua <username> <password>
 -- Copy and paste the output here into the web_admins list:
