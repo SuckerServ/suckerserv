@@ -25,7 +25,7 @@ function Client(server){
 }
 
 Client.prototype.kick = function(bantime, reason){
-    var admin = this.serverObject.web_admin_username;
+    var admin = this.serverObject.web_admin_session_username;
     bantime = bantime || -1;
     reason = reason || "";
     this.serverObject.executeCommand(this.serverObject.makeCommand("kick", this.cn, bantime, admin, reason), function(){});
