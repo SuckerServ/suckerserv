@@ -29,7 +29,11 @@ ELSE (LUA_USE_LUAJIT)
     SET (LUA_INCLUDE_DIRS /usr/include/lua5.1 /usr/local/include/lua5.1)
 ENDIF(LUA_USE_LUAJIT)
  
-FIND_PATH (LUA_INCLUDE_DIR lua.h ${LUA_INCLUDE_DIRS} )
+# Try to look for files in the lua$version subdirectory first.
+# Absolute paths must be hardcoded and system directories not searched.
+# It is unfortunately not possible to use the PATH_SUFFIXES argument as system path (without subdirectory) will take precedence.
+FIND_PATH (LUA_INCLUDE_DIR lua.h PATHS ${LUA_INCLUDE_DIRS} NO_DEFAULT_PATH)
+FIND_PATH (LUA_INCLUDE_DIR lua.h)
 FIND_LIBRARY (LUA_LIBRARY NAMES ${LUA_LIBRARY_NAME} PATHS /usr/lib /usr/local/lib)
  
 IF (LUA_INCLUDE_DIR AND LUA_LIBRARY)
