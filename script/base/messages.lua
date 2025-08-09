@@ -111,7 +111,7 @@ function server.msg(text, vars)
 end
 
 local function player_timezone(cn)
-        local timezone
+	local timezone
 	if server.enable_timezone == 1 then
 		local ret, val = pcall(function() return server.mmdatabase:lookup_ip(server.player_ip(cn), "location", "time_zone") end)
 		if ret and val ~= "" then
@@ -131,18 +131,18 @@ server.event_handler("connect", function(cn)
 end)
 
 server.event_handler("disconnect", function(cn)
-	for _, dest_cn in ipairs(server.clients()) do
-		if server.player_priv_code(dest_cn) == server.PRIV_ADMIN then
-			server.player_msg(dest_cn, server.parse_message(dest_cn, "client_disconnect", {name = server.player_name(cn), cn = cn}) .. server.parse_message(dest_cn, "client_disconnect_admin", {ip = server.player_ip(cn)}))
+	for p in server.gclients() do
+		if server.player_priv_code(p.cn) == server.PRIV_ADMIN then
+			server.player_msg(p.cn, server.parse_message(p.cn, "client_disconnect", {name = server.player_name(cn), cn = cn}) .. server.parse_message(p.cn, "client_disconnect_admin", {ip = server.player_ip(cn)}))
 		else
-			server.player_msg(dest_cn, "client_disconnect", {name = server.player_name(cn), cn = cn})
+			server.player_msg(p.cn, "client_disconnect", {name = server.player_name(cn), cn = cn})
 		end
 	end
 end)
 
 local function init()
 	for p in server.gclients() do
-		p:vars().timezone = player_timezone(cn)
+		p:vars().timezone = player_timezone(p.cn)
 	end
 end
 
