@@ -140,7 +140,7 @@ function Server(){
         }
     });
         
-    this.executeCommand("// nop"); //try to trigger an error
+    this.executeCommand("-- nop"); //try to trigger an error
 }
 
 Server.prototype.executeCommand = function(commandLine, responseHandler){
@@ -185,16 +185,30 @@ Server.prototype.executeCommand = function(commandLine, responseHandler){
 }
 
 Server.prototype.makeCommand = function(){
-    var commandLine = "";
-    for(var i = 0; i < arguments.length; i++){
-        var argument = "" + arguments[i];
-        if(argument.match(/[\r\n ;$@\/#"]/m)){
-            argument = argument.replace(/([\r\n"])/gm, "\\$1");
-            argument = "\"" + argument + "\"";
+    var commandLine = "server." + arguments[0] + "("; // Commands are always a function in the server table
+    for(var i = 1; i < arguments.length; i++){
+        var argument = arguments[i];
+        if (typeof argument !== "number") { // Number as passed as-is, everything else is converted to string
+          argument = argument.toString();
+          argument = argument.replace(/\\/g, "\\\\"); // Escape backslashes
+          argument = argument.replace(/"/g, "\\\""); // Escape double-quotes
+          argument = "\"" + argument + "\""; // Enclose content in double-quotes to make a string
         }
-        commandLine += (i > 0 ? " " : "") + argument;
+        commandLine += (i > 1 ? ", " : "") + argument; // Separate subsequent arguments with comma
     }
+    commandLine += ")";
     return commandLine;
+}
+
+Server.prototype.makeVariableSetter = function(){
+    var argument = arguments[1];
+    if (typeof argument !== "number") { // Number as passed as-is, everything else is converted to string
+      argument = argument.toString();
+      argument = argument.replace(/\\/g, "\\\\"); // Escape backslashes
+      argument = argument.replace(/"/g, "\\\""); // Escape double-quotes
+      argument = "\"" + argument + "\""; // Enclose content in double-quotes to make a string
+    }
+    return "server." + arguments[0] + " = " + argument; // Variables are always a key in the server table
 }
 
 Server.prototype.getServerVariables = function(varset, completionHandler){

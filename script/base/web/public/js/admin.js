@@ -736,13 +736,13 @@ function createCommandLinks(parent, server){
     function changeMotd(){
         var msg = prompt("Change the Message of the Day");
         if(!msg) return;
-        server.executeCommand(server.makeCommand("motd", msg));
+        server.executeCommand(server.makeVariableSetter("motd", msg));
     }
     
     function changeServerName(){
         var msg = prompt("Change the server name");
         if(!msg) return;
-        server.executeCommand(server.makeCommand("servername", msg));
+        server.executeCommand(server.makeVariableSetter("servername", msg));
     }
     
     var changeMessageCommands = [
