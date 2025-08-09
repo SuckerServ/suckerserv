@@ -1,6 +1,6 @@
-project(fungu CXX)
+cmake_minimum_required(VERSION 3.10)
 
-cmake_minimum_required(VERSION 2.6)
+project(fungu CXX)
 
 set(FUNGU_INCLUDE_DIRS 
     ${CMAKE_CURRENT_SOURCE_DIR}/include
