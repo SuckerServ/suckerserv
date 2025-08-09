@@ -145,10 +145,10 @@ namespace aiman
         if(ci->ownernum >= 0 && !ci->aireinit && smode) smode->leavegame(ci, true);
         sendf(-1, 1, "ri2", N_CDIS, ci->clientnum);
         event_botleft(event_listeners(), std::make_tuple(ci->clientnum));
-        event_disconnect(event_listeners(), std::make_tuple(ci->clientnum, ""));
         clientinfo *owner = (clientinfo *)getclientinfo(ci->ownernum);
         if(owner) owner->bots.removeobj(ci);
         clients.removeobj(ci);
+        event_disconnect(event_listeners(), std::make_tuple(ci->clientnum, ""));
         DELETEP(bots[cn]);
 		dorefresh = true;
 	}
