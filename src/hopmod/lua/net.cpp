@@ -18,7 +18,7 @@ extern "C"{
 }
 
 // External
-boost::asio::io_service & get_main_io_service();
+boost::asio::io_context & get_main_io_service();
 void report_script_error(const char *);
 
 static const char * TCP_ACCEPTOR_MT = "lnetlib_tcp_acceptor";
@@ -31,7 +31,7 @@ static const char * LOCAL_ACCEPTOR_MT = "lnetlib_local_acceptor";
 static const char * LOCAL_SOCKET_CLIENT_MT = "lnetlib_local_client";
 
 static lua_State * lua_state;
-static io_service * main_io;
+static io_context * main_io;
 
 static int async_resolve_operations = 0;
 
@@ -44,7 +44,7 @@ class tcp_socket: public ip::tcp::socket,
                   public buffered_reading<ip::tcp::socket>
 {
 public:
-    tcp_socket(boost::asio::io_service & service)
+    tcp_socket(boost::asio::io_context & service)
      :ip::tcp::socket(service),
       buffered_reading<ip::tcp::socket>(*static_cast<ip::tcp::socket *>(this)),
       m_resolver(service)
@@ -61,13 +61,12 @@ private:
     template<typename ConnectHandler>
     void _async_connect(const std::string & hostname, const std::string & port, ConnectHandler handler)
     {
-        ip::tcp::resolver::query query(hostname, port);
-        m_resolver.async_resolve(query, boost::bind(&tcp_socket::resolve_handler<ConnectHandler>, this, lua_state, handler, _1, _2));
+        m_resolver.async_resolve(hostname, port, boost::bind(&tcp_socket::resolve_handler<ConnectHandler>, this, lua_state, handler, _1, _2));
         async_resolve_operations++;
     }
     
     template<typename ConnectHandler>
-    void resolve_handler(lua_State * L, ConnectHandler handler, const boost::system::error_code error, ip::tcp::resolver::iterator addresses)
+    void resolve_handler(lua_State * L, ConnectHandler handler, const boost::system::error_code error, const ip::tcp::resolver::results_type& endpoints)
     {
         async_resolve_operations--;
         
@@ -82,7 +81,7 @@ private:
         }
         
         ip::tcp::socket * self = this;
-        self->async_connect(addresses->endpoint(), handler);
+        boost::asio::async_connect(*self, endpoints, handler);
     }
     
     ip::tcp::resolver m_resolver;
@@ -92,7 +91,7 @@ class local_socket: public local::stream_protocol::socket,
                     public buffered_reading<local::stream_protocol::socket>
 {
 public:
-    local_socket(boost::asio::io_service & service)
+    local_socket(boost::asio::io_context & service)
      :local::stream_protocol::socket(service),
       buffered_reading<local::stream_protocol::socket>(*static_cast<local::stream_protocol::socket *>(this))
     {
@@ -157,12 +156,12 @@ void push_endpoint(lua_State * L, const EndpointType & endpoint)
     
     if(endpoint.address().is_v4())
     {
-        lua_pushinteger(L, endpoint.address().to_v4().to_ulong());
+        lua_pushinteger(L, endpoint.address().to_v4().to_uint());
         lua_setfield(L, -2, "iplong");
     }
 }
 
-void resolve_handler(lua_State * L, int luaFunctionCbRef, const boost::system::error_code ec, ip::tcp::resolver::iterator it)
+void resolve_handler(lua_State * L, int luaFunctionCbRef, const boost::system::error_code ec, const ip::tcp::resolver::results_type& endpoints)
 {
     #ifndef DISABLE_RELOADSCRIPTS
     if(L != lua_state) return;
@@ -176,7 +175,7 @@ void resolve_handler(lua_State * L, int luaFunctionCbRef, const boost::system::e
         lua_newtable(lua_state);
         
         int count = 1;
-        for(; it != ip::tcp::resolver::iterator(); ++it)
+        for(ip::tcp::resolver::results_type::const_iterator it = endpoints.begin(); it != endpoints.end(); ++it)
         {
             lua_pushinteger(lua_state, count++);
             lua_pushstring(lua_state, it->endpoint().address().to_string().c_str());
@@ -201,8 +200,7 @@ int async_resolve(lua_State * L)
     const char * hostname = luaL_checkstring(L, 1);
     luaL_checktype(L, 2, LUA_TFUNCTION);
     lua_pushvalue(L, 2);
-    ip::tcp::resolver::query query(hostname, "");
-    dns.async_resolve(query, boost::bind(resolve_handler, L, luaL_ref(L, LUA_REGISTRYINDEX), _1, _2));
+    dns.async_resolve(hostname, "", boost::bind(resolve_handler, L, luaL_ref(L, LUA_REGISTRYINDEX), _1, _2));
     return 0;
 }
 
@@ -296,7 +294,7 @@ int create_tcp_acceptor(lua_State * L)
     luaL_getmetatable(L, TCP_ACCEPTOR_MT);
     lua_setmetatable(L, -2);
     
-    ip::tcp::endpoint server_ep(ip::address_v4::from_string(ip), port);
+    ip::tcp::endpoint server_ep(ip::make_address(ip), port);
     
     acceptor->open(server_ep.protocol());
     acceptor->set_option(ip::tcp::acceptor::reuse_address(true));
@@ -447,7 +445,7 @@ void async_read_until_handler(lua_State * L, int functionRef, boost::asio::strea
     
     if(!error)
     {
-        lua_pushlstring(lua_state, boost::asio::buffer_cast<const char *>(*buf->data().begin()), readlen);
+        lua_pushlstring(lua_state, static_cast<const char *>(buf->data().data()), readlen);
         buf->consume(readlen);
         lua_pushnil(lua_state);
     }
@@ -494,7 +492,7 @@ void async_read_handler(lua_State * L, int functionRef, streambuf * socketbuf, l
     }
     else
     {
-        memcpy(rbuf->produced, buffer_cast<const void *>(socketbuf->data()), reqreadsize);
+        memcpy(rbuf->produced, static_cast<const void *>(socketbuf->data().data()), reqreadsize);
         socketbuf->consume(reqreadsize);
         rbuf->produced += reqreadsize;
     }
@@ -778,7 +776,7 @@ int udp_socket_bind(lua_State * L)
     const char * ip = luaL_checkstring(L, 2);
     int port = luaL_checkint(L, 3);
     
-    ip::udp::endpoint server_ep(ip::address_v4::from_string(ip), port);
+    ip::udp::endpoint server_ep(ip::make_address(ip), port);
     
     boost::system::error_code error;
     
@@ -895,7 +893,7 @@ int async_send_to(lua_State * L)
     
     try
     {
-        endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(ip), port);
+        endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::make_address(ip), port);
     }
     catch(const boost::system::system_error & error)
     {
@@ -1073,7 +1071,7 @@ int tcp_client_bind(lua_State * L)
     
     boost::system::error_code ec;
     
-    ip::address_v4 host = ip::address_v4::from_string(ip, ec);
+    ip::address host = ip::make_address(ip, ec);
     if(ec)
     {
         lua_pushboolean(L, 1);

@@ -15,7 +15,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
-boost::asio::io_service & get_main_io_service();
+boost::asio::io_context & get_main_io_service();
 
 #include <iostream>
 #include <set>

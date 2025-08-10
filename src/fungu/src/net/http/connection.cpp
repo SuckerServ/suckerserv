@@ -61,7 +61,7 @@ std::string connection::remote_ip_string()const
 unsigned long connection::remote_ip_v4_ulong()const
 {
     assert(m_socket.remote_endpoint().address().is_v4());
-    return m_socket.remote_endpoint().address().to_v4().to_ulong();
+    return m_socket.remote_endpoint().address().to_v4().to_uint();
 }
 
 bool connection::parse_chunk_size(const char * start, const char * end, std::size_t * output)

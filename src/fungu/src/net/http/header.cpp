@@ -9,6 +9,7 @@
 #include "fungu/string.hpp"
 #include "fungu/convert.hpp"
 #include <cstddef>  // std::size_t
+#include <ctime>
 #include <ctype.h>  // tolower()
 #include <string.h> // strstr()
 

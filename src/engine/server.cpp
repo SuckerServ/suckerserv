@@ -185,9 +185,9 @@ size_t tx_packets = 0 , rx_packets = 0, tx_bytes = 0, rx_bytes = 0;
 int laststatus = 0; 
 ENetSocket pongsock = ENET_SOCKET_NULL, lansock = ENET_SOCKET_NULL;
 
-io_service main_io_service;
+io_context main_io_service;
 
-io_service & get_main_io_service()
+io_context & get_main_io_service()
 {
     return main_io_service;
 }

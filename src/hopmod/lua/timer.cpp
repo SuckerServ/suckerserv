@@ -13,7 +13,7 @@ extern "C"{
 #include <boost/asio.hpp>
 using namespace boost::asio;
 
-boost::asio::io_service & get_main_io_service();
+boost::asio::io_context & get_main_io_service();
 void report_script_error(const char *);
 
 class deadline_timer_wrapper:public deadline_timer

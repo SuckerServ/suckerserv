@@ -117,7 +117,7 @@ static void reload_hopmod_now()
     if(get_num_async_resolve_operations())
     {
         //Reload scripts delayed due to pending async resolve operations. Rescheduling reload...
-        get_main_io_service().post(reload_hopmod_now);
+        post(get_main_io_service(), reload_hopmod_now);
         return;
     }
 
@@ -138,7 +138,7 @@ static void reload_hopmod_now()
 
 void reload_hopmod()
 {
-    get_main_io_service().post(reload_hopmod_now);
+    post(get_main_io_service(), reload_hopmod_now);
 }
 
 void update_hopmod()

@@ -156,7 +156,7 @@ private:
         }
         else
         {            
-            handler(boost::asio::buffer_cast<const char *>(*m_read_buffer.data().begin()), readSize, error());
+            handler(static_cast<const char *>(m_read_buffer.data().data()), readSize, error());
         }
         
         consume_header();
@@ -174,7 +174,7 @@ private:
         
         if(readSize)
         {
-            output.write(boost::asio::buffer_cast<const char *>(*m_read_buffer.data().begin()), readSize);
+            output.write(static_cast<const char *>(m_read_buffer.data().data()), readSize);
             m_read_buffer.consume(readSize);
         }
         else if(m_read_buffer.size()) //read what was left over from when the header was read
@@ -215,7 +215,7 @@ private:
             return;
         }
         
-        const char * line = boost::asio::buffer_cast<const char *>(*m_read_buffer.data().begin());
+        const char * line = static_cast<const char *>(m_read_buffer.data().data());
         std::size_t chunk_size;
         
         if(!parse_chunk_size(line, line + readSize, &chunk_size))
@@ -250,7 +250,7 @@ private:
         
         if(readSize)
         {
-            const char * data = boost::asio::buffer_cast<const char *>(*m_read_buffer.data().begin());
+            const char * data = static_cast<const char *>(m_read_buffer.data().data());
             output->write(data, readSize);
             m_read_buffer.consume(readSize);
         }

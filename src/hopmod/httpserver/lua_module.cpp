@@ -24,7 +24,7 @@ extern "C"{
 using namespace boost::asio;
 using namespace boost::system;
 
-boost::asio::io_service & get_main_io_service();
+boost::asio::io_context & get_main_io_service();
 void setup_ext_to_ct_map();
 
 void report_script_error(const char *);
@@ -788,7 +788,7 @@ private:
         m_acceptor = new ip::tcp::acceptor(get_main_io_service());
         m_acceptor->open(ip::tcp::v4());
         m_acceptor->set_option(socket_base::reuse_address(true));
-        m_acceptor->bind(ip::tcp::endpoint(ip::address_v4::from_string(ip), atoi(port)));
+        m_acceptor->bind(ip::tcp::endpoint(ip::make_address(ip), atoi(port)));
     }
     
     void cleanup_client_connection(listener_client_connection * client)

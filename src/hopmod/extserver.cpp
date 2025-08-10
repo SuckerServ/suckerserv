@@ -637,7 +637,7 @@ static void execute_addbot(int skill)
 
 void addbot(int skill)
 {
-    get_main_io_service().post(boost::bind(&execute_addbot, skill));
+    post(get_main_io_service(), boost::bind(&execute_addbot, skill));
 }
 
 static void execute_deletebot(int cn)
@@ -652,7 +652,7 @@ void deletebot(int cn)
 {
     if(get_ci(cn)->state.aitype == AI_NONE) 
         throw fungu::script::error(fungu::script::OPERATION_ERROR, boost::make_tuple(std::string("not a bot player")));
-    get_main_io_service().post(boost::bind(&execute_deletebot, cn));
+    post(get_main_io_service(), boost::bind(&execute_deletebot, cn));
 }
 
 void update_mastermask()

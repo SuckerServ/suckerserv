@@ -14,11 +14,11 @@ extern "C"{
 int lua_packlibopen(lua_State *L);
 }
 
-static io_service main_io_service;
+static io_context main_io_service;
 static lua_State * L = NULL;
 static script::env cubescript_env;
 
-io_service & get_main_io_service()
+io_context & get_main_io_service()
 {
     return main_io_service;
 }

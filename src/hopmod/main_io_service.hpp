@@ -3,6 +3,6 @@
 
 #include <boost/asio.hpp>
 
-boost::asio::io_service & get_main_io_service();
+boost::asio::io_context & get_main_io_service();
 
 #endif
