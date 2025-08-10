@@ -103,8 +103,9 @@ static int load_mmdb_database(lua_State * L)
     maxMind->status = MMDB_open(filename, MMDB_MODE_MMAP, &maxMind->db);
 
     if (maxMind->status != MMDB_SUCCESS) {
+        const char *err = MMDB_strerror(maxMind->status);
         delete maxMind;
-        return luaL_error(L, MMDB_strerror(maxMind->status));
+        return luaL_error(L, err);
     }
 
     maxMinds.push_back(maxMind);
