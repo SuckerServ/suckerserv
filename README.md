@@ -52,6 +52,12 @@ And to stop it:
 
 The configuration file is located at `conf/server_conf.lua`
 
+## System service
+
+Enable and start the systemd user service:
+```
+systemctl --user enable --now ./share/suckerserv.service
+```
 
 ## Help
 

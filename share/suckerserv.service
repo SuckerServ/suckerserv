@@ -1,0 +1,12 @@
+[Unit]
+Description=SuckerServ
+After=network.target mariadb.service postgresql.service
+
+[Service]
+WorkingDirectory=%Y
+ExecStart=/bin/bash -c "cd ..; ./bin/sauer_server;"
+Restart=always
+SyslogIdentifier=suckerserv
+
+[Install]
+WantedBy=default.target
