@@ -8,7 +8,7 @@ namespace ip{
 
 address_mask::address_mask(std::size_t bits)
 {
-    assert(bits >= 0 && bits < 33);
+    assert(bits < 33);
     m_value = static_cast<address::integral_type>((pow(2, bits)-1)) << (32 - bits);
 }
 

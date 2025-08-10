@@ -92,10 +92,12 @@ void address_prefix::to_string(cstring_buffer * output)const
     char mask[4];
     mask[0] = '\0';
 
-    int bits = static_cast<int>(m_mask.bits());
-    if(bits < 32) sprintf(mask, "/%i", bits);
+    std::size_t bits = m_mask.bits();
+    if(bits < 32) snprintf(mask, sizeof(mask), "/%u", static_cast<unsigned int>(bits));
 
-    sprintf(*output, "%s%s", ip, mask);
+
+
+    snprintf(*output, sizeof(cstring_buffer), "%s%s", ip, mask);
 }
 
 std::string address_prefix::to_string()const
