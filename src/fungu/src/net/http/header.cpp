@@ -370,7 +370,7 @@ bool parse_content_length(header_field & field, std::size_t * content_length)
     {
         *content_length = to_int<std::size_t>(to_const_string(value.get_content()));
     }
-    catch(std::bad_cast)
+    catch(const std::bad_cast &)
     {
         return false;
     }
@@ -504,7 +504,7 @@ static int parse_int(const char ** date_string, char delim)
     {
         return to_int<int>(const_string(start, end - 1));
     }
-    catch(std::bad_cast)
+    catch(const std::bad_cast &)
     {
         return -1;
     }

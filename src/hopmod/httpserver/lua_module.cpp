@@ -724,7 +724,7 @@ public:
         {
             new (lua_newuserdata(L, sizeof(listener))) listener(L, ip, port);
         }
-        catch(system_error se)
+        catch(const system_error &se)
         {
             lua_pop(L, 1);
             lua_pushnil(L);
@@ -777,7 +777,7 @@ private:
             {
                 self->create_acceptor(self->m_ip.c_str(), self->m_port.c_str());
             }
-            catch(system_error se)
+            catch(const system_error &se)
             {
                 lua_pop(L, 1);
                 lua_pushboolean(L, 0);
@@ -790,7 +790,7 @@ private:
         {
             self->m_acceptor->listen();
         }
-        catch(system_error se)
+        catch(const system_error &se)
         {
             lua_pop(L, 1);
             lua_pushboolean(L, 0);

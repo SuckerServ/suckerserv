@@ -102,7 +102,7 @@ int file_stream::async_read_some(lua_State * L)
     {
         char_buffer = new char[max_length];
     }
-    catch(std::bad_alloc)
+    catch(const std::bad_alloc &)
     {
         luaL_error(L, "memory allocation error");
         return 0;

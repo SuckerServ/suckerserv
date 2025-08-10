@@ -34,7 +34,7 @@ int ipmask::create_object(lua_State * L)
         {
             value = hopmod::ip::address_prefix::parse(lua_tostring(L, 1));
         }
-        catch(std::bad_cast)
+        catch(const std::bad_cast &)
         {
             return luaL_argerror(L, 1, "invalid ip prefix");
         }
@@ -121,7 +121,7 @@ int ipmask_table::__index(lua_State * L)
         {
             key = hopmod::ip::address_prefix::parse(lua_tostring(L, 2));
         }
-        catch(std::bad_cast)
+        catch(const std::bad_cast &)
         {
             luaL_argerror(L, 2, "invalid ip prefix");
             return 0;
@@ -159,7 +159,7 @@ int ipmask_table::__newindex(lua_State * L)
         {
             key = hopmod::ip::address_prefix::parse(lua_tostring(L, 2));
         }
-        catch(std::bad_cast)
+        catch(const std::bad_cast &)
         {
             luaL_argerror(L, 2, "invalid ip prefix");
         }
