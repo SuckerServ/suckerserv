@@ -30,7 +30,7 @@ setmaster_refused = "%{red}>>> %{orange}WARNING%{white}: no longer accepting you
 
 demo_recording = "%{red}>>> %{white}Recording demo",
 
-info_command = "%{red}>>> %{white}Serveur uptime : %{blue}%{uptime}%{white}. SuckerServ %{verstr}",
+info_command = "%{red}>>> %{white}Server uptime : %{blue}%{uptime}%{white}. SuckerServ %{verstr}",
 version = "%{white}rev%{blue}%{revision}%{white} compiled at %{green}%{version}%{white}",
 
 help = "Command descriptions: #help <command>\n%{blue}List %{white}of %{green}commands%{white}",
