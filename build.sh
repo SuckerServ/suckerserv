@@ -32,8 +32,8 @@ if [ -z "${DESTDIR}" ]; then
 fi
 
 COMPILEDIR="release_build"
-BUILDTYPE="$(color 6 release)"
-BUILDTYPEFLAGS="-DCMAKE_BUILD_TYPE=Release"
+BUILDTYPE="Release"
+BUILDTYPEMSG="$(color 6 $BUILDTYPE)"
 
 for arg in "$@"; do
   case $arg in
@@ -43,8 +43,8 @@ for arg in "$@"; do
     ;;
     --debug)
       COMPILEDIR="debug_build"
-      BUILDTYPEFLAGS="-DCMAKE_BUILD_TYPE=Debug"
-      BUILDTYPE="$(color 1 debug)"
+      BUILDTYPE="Debug"
+      BUILDTYPEMSG="$(color 1 $BUILDTYPE)"
     ;;
     --recompile)
       STRCOMPILE="$(color 5 Recompiling)"
@@ -55,7 +55,7 @@ for arg in "$@"; do
   esac
 done
 
-COMPILEFLAGS="$COMPILEFLAGS $BUILDTYPEFLAGS"
+COMPILEFLAGS="$COMPILEFLAGS -DCMAKE_BUILD_TYPE=$BUILDTYPE"
 
 if [ "$RECOMPILE" = true ]; then
   rm -rf $COMPILEDIR
@@ -66,13 +66,15 @@ if [ -z "${STRIP}" ]; then
 fi
 
 # Now compile the source code and install it in server's directory
-echo "$STRCOMPILE $PROJECT ($BUILDTYPE build)"
+echo "$STRCOMPILE $PROJECT ($BUILDTYPEMSG build)"
 echo "Extra flags passed to CMake: $COMPILEFLAGS"
 cmake -S . -B "$COMPILEDIR" $COMPILEFLAGS
-cmake --build "$COMPILEDIR" --parallel
-
 [ "$?" != "0" ] && color 1 "CMAKE FAILED" && exit 1
-if `echo "$COMPILEFLAGS" | grep -q "DEBUG"` | [ "${STRIP}" = "0" ]; then
+
+cmake --build "$COMPILEDIR" --parallel
+[ "$?" != "0" ] && color 1 "CMAKE BUILDFAILED" && exit 1
+
+if [ "$BUILDTYPE" = "Debug" ] || [ "${STRIP}" = "0" ]; then
   cmake --install "$COMPILEDIR"
   [ "$?" != "0" ] && color 1 "CMAKE INSTALL FAILED" && exit 1
 else
