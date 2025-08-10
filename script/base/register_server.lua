@@ -1,6 +1,8 @@
 require "net"
 
 local UPDATE = 60*60*1000
+local is_unload = false
+local master_client = net.tcp_client()
 
 local function close_connection(client, callback, error_message)
     client:close()
@@ -53,39 +55,39 @@ local function readmasterinput(client, callback, hostname, banlist)
     end)
 end
 
-local function register_server(hostname, port, gameport, callback)
-
-    local client = net.tcp_client()
-    
+local function register_server(client, hostname, port, gameport, callback)
     if #server.serverip > 0 then
         client:bind(server.serverip, 0)
     end
-    
+
     client:async_connect(hostname, port, function(error_message)
-        
+
         if error_message then
             close_connection(client, callback, error_message)
             return
         end
-        
+
         client:async_send(string.format("regserv %i\n", gameport), function(error_message)
-            
+
             if error_message then
                 close_connection(client, callback, error_message)
                 return
             end
-            
+
             readmasterinput(client, callback, hostname)
         end)
     end)
 end
 
 local function update()
+    if is_unload then
+        return -1
+    end
 
     if server.publicserver == 1 then
         for _, fields in ipairs(server.masterservers) do
             if #fields == 2 then
-                register_server(fields[1], fields[2], server.serverport, function(error_message)
+                register_server(master_client, fields[1], fields[2], server.serverport, function(error_message)
                     if error_message then
                         server.log_error("Master server error: " .. error_message)
                     else
@@ -99,3 +101,11 @@ end
 
 server.interval(UPDATE, update)
 update()
+
+local function unload()
+    is_unload = true
+    master_client:cancel()
+    master_client:close()
+end
+
+return {unload = unload}
