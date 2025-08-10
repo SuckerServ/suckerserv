@@ -88,7 +88,7 @@ public:
         catch(std::bad_cast &)
         {
             std::cerr << "invalid ip-address (" << addr << ") passed to " << __FUNCTION__ << "()" << std::endl;
-            memset(&prefix, 0, sizeof(prefix));
+            prefix = {};
         }
 
         *this = netban(prefix.value(), prefix.mask(), persist);
