@@ -3416,7 +3416,7 @@ namespace server
                 bool canspawn = canspawnitem(type);
                 if(i<MAXENTS && (sents.inrange(i) || canspawnitem(type)))
                 {
-                    server_entity se = { NOTUSED, 0, false };
+                    server_entity se = { NOTUSED, 0, false, -1 };
                     while(sents.length()<=i) sents.add(se);
                     sents[i].type = type;
                     if(canspawn ? !sents[i].spawned : (sents[i].spawned || sents[i].spawntime))
