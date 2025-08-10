@@ -157,8 +157,6 @@ endif(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 target_link_libraries(sauertools -lz ${ENET_LIBRARY})
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-
 set(LUA_MODULES_SOURCES
     hopmod/lib/md5.c
     hopmod/utils/time.cpp

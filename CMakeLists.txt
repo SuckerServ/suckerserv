@@ -41,6 +41,7 @@ endif()
 message("${PROJECT_NAME} release: ${SUCKERSERV_REVISION} ${SUCKERSERV_SOURCE_URL}")
 
 add_definitions(-Wall -Wextra -Wno-unused-parameter)
+set(CMAKE_CXX_STANDARD 17)
 
 add_subdirectory(src)
 

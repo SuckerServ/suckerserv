@@ -1,4 +1,3 @@
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 add_definitions(-DNO_EVENTS -DNO_CORE_TABLE -DASIO_STANDALONE)
 
 include_directories(
