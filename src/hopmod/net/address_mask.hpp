@@ -17,7 +17,7 @@ public:
     address_mask operator<<(std::size_t)const;
     bool operator==(address_mask)const;
 private:
-    address::integral_type m_value;
+    address::integral_type m_value = 0ul;
 };
 
 } //namespace ip

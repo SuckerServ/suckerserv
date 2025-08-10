@@ -41,7 +41,7 @@ public:
 private:
     union
     {
-        integral_type m_value;
+        integral_type m_value = 0ul;
         struct{
             octet_type m_value_part[octet_parts];
         };
