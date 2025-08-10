@@ -1,4 +1,3 @@
-
 #include <fungu/string.hpp>
 #include <fungu/stringutils.hpp>
 #include <assert.h>
@@ -27,16 +26,16 @@ const_string::const_string(const_iterator firstc, const_iterator lastc)
 
 const_string::const_string(const std::string & src)
  :m_copy(src),
-  m_firstc(&((const std::string &)m_copy)[0]),
-  m_lastc(&((const std::string &)m_copy)[m_copy.length()-1])
+  m_firstc(&((const std::string &)m_copy.value())[0]),
+  m_lastc(&((const std::string &)m_copy.value())[m_copy.value().length()-1])
 {
     
 }
 
 const_string::const_string(const char * raw_string)
  :m_copy(raw_string),
-  m_firstc(&((const std::string &)m_copy)[0]),
-  m_lastc(&((const std::string &)m_copy)[m_copy.length()-1])
+  m_firstc(&((const std::string &)m_copy.value())[0]),
+  m_lastc(&((const std::string &)m_copy.value())[m_copy.value().length()-1])
 {
     
 }
@@ -46,14 +45,34 @@ const_string::const_string(const const_string & src)
   m_firstc(src.m_firstc),
   m_lastc(src.m_lastc)
 {
-    m_firstc = addr(m_copy,0) + (src.m_firstc - addr(src.m_copy,0));
-    m_lastc = addr(m_copy,0) + (src.m_lastc - addr(src.m_copy,0));
+    // Compute firstc/lastc according to new copy if the string was owned by src
+    // Otherwise keep src firstc/lastc (e.g. literal)
+    if (m_copy.has_value()) {
+        m_firstc = addr(m_copy.value(), 0) + (src.m_firstc - addr(src.m_copy.value(), 0));
+        m_lastc = addr(m_copy.value(), 0) + (src.m_lastc - addr(src.m_copy.value(), 0));
+    }
 }
 
 const_string::const_string(const std::pair<const char *, const char *> & src)
  :m_firstc(src.first), m_lastc(src.second)
 {
     
+}
+
+const_string &const_string::operator=(const_string src)
+{
+    m_copy = src.m_copy;
+    m_firstc = src.m_firstc;
+    m_lastc = src.m_lastc;
+
+    // Compute firstc/lastc according to new copy if the string was owned by src
+    // Otherwise keep src firstc/lastc (e.g. literal)
+    if (m_copy.has_value()) {
+        m_firstc = addr(m_copy.value(), 0) + (src.m_firstc - addr(src.m_copy.value(), 0));
+        m_lastc = addr(m_copy.value(), 0) + (src.m_lastc - addr(src.m_copy.value(), 0));
+    }
+
+    return *this;
 }
 
 const_string const_string::literal(const char * literalString)
@@ -88,7 +107,7 @@ const_string const_string::substring(const_iterator first, const_iterator last)c
             first <= m_lastc &&
             last <= m_lastc );
     
-    const_string tmp(m_copy);
+    const_string tmp(*this);
     tmp.m_firstc = first;
     tmp.m_lastc = last;
     return tmp;

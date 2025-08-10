@@ -8,6 +8,7 @@
 #ifndef FUNGU_STRING_HPP
 #define FUNGU_STRING_HPP
 
+#include <optional>
 #include <string>
 
 #define FUNGU_LITERAL_STRING(str) str,str+sizeof(str)-2
@@ -28,6 +29,7 @@ public:
     const_string(const char * raw_string);
     const_string(const const_string & src);
     const_string(const std::pair<const char *, const char *> &);
+    const_string &operator=(const_string src);
 
     static const_string literal(const char * literalString);
 
@@ -46,7 +48,7 @@ public:
     bool operator<(const const_string & operand)const;
     bool operator==(const const_string & operand)const;
 private:
-    std::string m_copy;
+    std::optional<std::string> m_copy;
     const_iterator m_firstc;
     const_iterator m_lastc;
 };
