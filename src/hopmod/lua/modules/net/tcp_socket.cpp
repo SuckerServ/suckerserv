@@ -86,15 +86,15 @@ int managed_tcp_socket::create_object(lua_State * L)
 {   
     managed_tcp_socket::target_type self = *lua::create_object<managed_tcp_socket>(L, 
         std::shared_ptr<tcp_socket>(new tcp_socket(get_main_io_service(L))));
+
     return 1;
 }
 
 int managed_tcp_socket::__gc(lua_State * L)
 {
-    target_type self = *lua::to<managed_tcp_socket>(L, 1);
+    target_type self = std::move(*lua::to<managed_tcp_socket>(L, 1));
     std::error_code ec;
     self->socket.close(ec);
-    self.~target_type();
     return 0;
 }
 

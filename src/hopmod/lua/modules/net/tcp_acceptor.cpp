@@ -56,10 +56,9 @@ int tcp_acceptor::create_object(lua_State * L)
 
 int tcp_acceptor::__gc(lua_State * L)
 {
-    tcp_acceptor::target_type self = *lua::to<tcp_acceptor>(L, 1);
+    tcp_acceptor::target_type self = std::move(*lua::to<tcp_acceptor>(L, 1));
     std::error_code ec;
     self->close(ec);
-    self.~target_type();
     return 0;
 }
 
