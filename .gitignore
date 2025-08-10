@@ -3,7 +3,7 @@ bin/sauer_authserver
 bin/sauer_server
 bin/utils/keygen
 bin/utils/luapp
-debug-build/
+debug_build/
 release_build/
 lib/
 log/
