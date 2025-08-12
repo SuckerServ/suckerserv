@@ -1,6 +1,7 @@
 require "net"
 
-local UPDATE = 60*60*1000
+local UPDATE = 60 * 60 * 1000 -- 1 hour interval between each register request
+local REGISTER_TIMEOUT = 10 * 1000 -- 10 seconds timeout for master connection
 local is_unload = false
 local master_client = net.tcp_client()
 
@@ -31,7 +32,6 @@ end
 
 local function readmasterinput(client, callback, hostname, banlist)
     client:async_read_until("\n", function(line, error_message)
-
         if not line then
             close_connection(client, callback, not banlist and (error_message or "failed to read reply from server"))
             return
@@ -40,6 +40,7 @@ local function readmasterinput(client, callback, hostname, banlist)
         local command, args = line:match("([^ ]+)%s*(.*)\n")
 
         if command == "succreg" then
+            server.log_status("Master server registration succeeded.")
             readmasterinput(client, callback, hostname, true)
         elseif command == "cleargbans" then
             cleargbans(hostname)
@@ -55,27 +56,39 @@ local function readmasterinput(client, callback, hostname, banlist)
     end)
 end
 
-local function register_server(client, hostname, port, gameport, callback)
-    if #server.serverip > 0 then
-        client:bind(server.serverip, 0)
-    end
-
-    client:async_connect(hostname, port, function(error_message)
-
+local function send_register_request(client, hostname, port, gameport, callback)
+    client:async_send(string.format("regserv %i\n", gameport), function(error_message)
         if error_message then
             close_connection(client, callback, error_message)
             return
         end
 
-        client:async_send(string.format("regserv %i\n", gameport), function(error_message)
+        readmasterinput(client, callback, hostname)
+    end)
+end
 
-            if error_message then
-                close_connection(client, callback, error_message)
-                return
-            end
+local function register_server(client, hostname, port, gameport, callback)
+    server.log_status("Attempting to register to master server: " .. hostname .. ":" .. port)
 
-            readmasterinput(client, callback, hostname)
-        end)
+    -- Close possible existing connection before establishing a new one
+    client:close()
+
+    if #server.serverip > 0 then
+        client:bind(server.serverip, 0)
+    end
+
+    -- Close connection after some time whatever happens, should be enough to get reply and not keep a socket open for nothing
+    server.sleep(REGISTER_TIMEOUT, function()
+        client:close()
+    end)
+
+    client:async_connect(hostname, port, function(error_message)
+        if error_message then
+            close_connection(client, callback, error_message)
+            return
+        end
+
+        send_register_request(client, hostname, port, gameport, callback)
     end)
 end
 
@@ -91,7 +104,7 @@ local function update()
                     if error_message then
                         server.log_error("Master server error: " .. error_message)
                     else
-                        server.log_status("Server registration succeeded.")
+                        server.log_status("Master server connection terminated.")
                     end
                 end)
             end
@@ -100,7 +113,7 @@ local function update()
 end
 
 server.interval(UPDATE, update)
-update()
+server.event_handler("started", update)
 
 local function unload()
     is_unload = true
