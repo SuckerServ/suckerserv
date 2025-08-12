@@ -40,6 +40,11 @@ function server.ban(ipmask, bantime, admin, reason, name, gban)
 
     reason = reason or ""
 
+    local log_message = string.format("%s banned %s, reason: %s", admin, net.ipmask(ipmask):to_string(), reason)
+
+    server.log(log_message)
+    server.log_status(log_message)
+
     server.set_ip_var(ipmask, "ban_name", name)
     server.set_ip_var(ipmask, "ban_time", os.date())
     server.set_ip_var(ipmask, "ban_expire", os.time() + bantime)
